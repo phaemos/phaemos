@@ -88,6 +88,28 @@ npm install
 npm run dev
 ```
 
+### Quick API Smoke Test (No Hardware)
+
+Run this when you want to validate core backend flows quickly without wiring sensors.
+
+```bash
+cd backend
+uvicorn app.main:app --reload
+```
+
+In a second terminal:
+
+```bash
+python scripts/quick_api_smoke.py
+```
+
+What it tests:
+- auth register/login
+- device registration
+- telemetry ingest with generated device API key
+- latest telemetry fetch
+- ML score endpoint
+
 ## Project Structure
 
 ```
