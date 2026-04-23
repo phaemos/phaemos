@@ -5,7 +5,7 @@ services:
     image: postgres:15
     restart: unless-stopped
     environment:
-      POSTGRES_DB: pulsewatch
+      POSTGRES_DB: phaemos
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -25,7 +25,7 @@ services:
     ports:
       - '8000:8000'
     environment:
-      DATABASE_URL: postgresql://postgres:password@db:5432/pulsewatch
+      DATABASE_URL: postgresql://postgres:password@db:5432/phaemos
       REDIS_URL: redis://redis:6379
       SECRET_KEY: change_this_in_production
       ALGORITHM: HS256

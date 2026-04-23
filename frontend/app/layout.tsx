@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'PulseWatch',
+  title: 'PHAEMOS',
   description: 'Smart Maintenance Platform',
 };
 

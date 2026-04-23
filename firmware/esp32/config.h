@@ -1,5 +1,5 @@
 // ============================================================
-// config.h - PulseWatch ESP32 Configuration
+// config.h - PHAEMOS ESP32 Configuration
 // Copy this file and fill in your own values.
 // DO NOT commit credentials to Git.
 // ============================================================

@@ -1,5 +1,5 @@
 /* ============================================================
- * PulseWatch - STM32 Firmware
+ * PHAEMOS - STM32 Firmware
  * High-frequency MPU6050 sampling (100 Hz) via I2C
  * Outputs readings over UART to ESP32 or USB serial
  *

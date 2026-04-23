@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">PulseWatch Dashboard</h1>
+      <h1 className="text-2xl font-bold tracking-tight">PHAEMOS Dashboard</h1>
 
       {alerts.length > 0 && (
         <div className="space-y-2">

@@ -1,4 +1,4 @@
-# PulseWatch
+# PHAEMOS
 
 Smart Maintenance Platform - collects real-time sensor data from ESP32/Arduino/STM32 hardware nodes, displays a live dashboard, fires alerts when readings exceed thresholds and uses machine learning to predict faults before they happen.
 
@@ -68,7 +68,7 @@ npm run dev
 ## Project Structure
 
 ```
-pulsewatch/
+phaemos/
 ├── firmware/           ESP32, Arduino, STM32 firmware
 ├── backend/            FastAPI backend + ML pipeline
 ├── frontend/           Next.js dashboard
