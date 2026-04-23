@@ -1,5 +1,5 @@
 // ============================================================
-// PulseWatch - ESP32 Firmware
+// PHAEMOS - ESP32 Firmware
 // Reads DHT22, MPU6050 and LDR then POSTs JSON to the API
 // ============================================================
 

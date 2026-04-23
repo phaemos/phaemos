@@ -9,7 +9,7 @@ from app.routes import telemetry, devices, alerts, tickets, auth, ml
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="PulseWatch API",
+    title="PHAEMOS API",
     description="Smart Maintenance Platform - telemetry ingestion, alert rules, tickets and ML anomaly detection",
     version="1.0.0",
 )
@@ -32,4 +32,4 @@ app.include_router(ml.router,        prefix="/api/v1/ml",          tags=["ML"])
 
 @app.get("/", include_in_schema=False)
 def health():
-    return {"status": "ok", "service": "PulseWatch API"}
+    return {"status": "ok", "service": "PHAEMOS API"}

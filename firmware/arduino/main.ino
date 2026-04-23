@@ -1,5 +1,5 @@
 // ============================================================
-// PulseWatch - Arduino Uno Firmware
+// PHAEMOS - Arduino Uno Firmware
 // Reads DHT22 and LDR, outputs formatted serial strings
 // to be parsed by the ESP32 Wi-Fi gateway.
 //

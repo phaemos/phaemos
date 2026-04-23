@@ -1,5 +1,5 @@
 """
-preprocess.py - Feature engineering for PulseWatch ML pipeline.
+preprocess.py - Feature engineering for PHAEMOS ML pipeline.
 
 Adds rolling statistics (mean + std over last 10 readings) and
 a time-of-day feature to the raw telemetry dataframe.
