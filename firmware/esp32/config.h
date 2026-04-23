@@ -11,8 +11,11 @@
 #define WIFI_PASSWORD    "YourNetworkPassword"
 
 // API
+// Telemetry ingest endpoint exposed by the FastAPI backend.
 #define API_URL          "http://your-backend-url/api/v1/telemetry"
+// Generated when creating a device in the admin/API.
 #define DEVICE_API_KEY   "your-device-api-key-from-admin-panel"
+// UUID of the matching device record in the backend.
 #define DEVICE_ID        "your-device-uuid"
 
 // Pins

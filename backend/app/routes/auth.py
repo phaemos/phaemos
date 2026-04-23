@@ -23,6 +23,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(data: dict) -> str:
+    # JWT carries user identity/role and a short-lived expiration.
     payload = data.copy()
     payload["exp"] = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
@@ -32,6 +33,7 @@ def create_access_token(data: dict) -> str:
 
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
+    # Basic duplicate check keeps email unique until dedicated constraints/migrations are added.
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     user = User(

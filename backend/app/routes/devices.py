@@ -18,6 +18,7 @@ def list_devices(db: Session = Depends(get_db)):
 
 @router.post("", response_model=DeviceWithKey, status_code=201)
 def register_device(payload: DeviceCreate, db: Session = Depends(get_db)):
+    # API key is generated once at registration and used by the device for ingest auth.
     api_key = secrets.token_urlsafe(32)
     device  = Device(api_key=api_key, **payload.model_dump())
     db.add(device)
