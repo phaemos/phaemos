@@ -12,6 +12,39 @@ Why this fits: PHAEMOS reveals hidden machine behavior through telemetry, alerti
 
 Suggested tagline: **Reveal before failure.**
 
+## Links & Contact
+
+<p align="center">
+      <a href="https://github.com/zaccesss/phaemos">
+            <img src="https://img.shields.io/badge/GitHub-zaccesss%2Fphaemos-181717?style=for-the-badge&logo=github&logoColor=white">
+      </a>
+      <a href="http://localhost:3000">
+            <img src="https://img.shields.io/badge/Frontend-localhost%3A3000-0ea5e9?style=for-the-badge&logo=googlechrome&logoColor=white">
+      </a>
+      <a href="http://localhost:8000/docs">
+            <img src="https://img.shields.io/badge/API%20Docs-localhost%3A8000%2Fdocs-009688?style=for-the-badge&logo=swagger&logoColor=white">
+      </a>
+      <a href="https://www.linkedin.com/in/isaacadjei">
+            <img src="https://img.shields.io/badge/LinkedIn-Isaac_Adjei-0a66c2?style=for-the-badge&logo=linkedin&logoColor=white">
+      </a>
+      <a href="mailto:contact@zacess.com">
+            <img src="https://img.shields.io/badge/Email-contact%40zacess.com-ff6f61?style=for-the-badge&logo=gmail&logoColor=white">
+      </a>
+</p>
+
+## Quick Navigation
+
+<p align="center">
+      <a href="#architecture">Architecture</a> •
+      <a href="#quickstart">Quickstart</a> •
+      <a href="#project-structure">Project Structure</a> •
+      <a href="#docs">Docs</a> •
+      <a href="#milestone-plan">Milestone Plan</a> •
+      <a href="#hardware">Hardware</a> •
+      <a href="#tech-stack">Tech Stack</a> •
+      <a href="#languages--tools-used">Languages &amp; Tools Used</a>
+</p>
+
 ## Architecture
 
 ```
