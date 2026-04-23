@@ -2,6 +2,16 @@
 
 Smart Maintenance Platform - collects real-time sensor data from ESP32/Arduino/STM32 hardware nodes, displays a live dashboard, fires alerts when readings exceed thresholds and uses machine learning to predict faults before they happen.
 
+## Name, Pronunciation, and Meaning
+
+- Pronunciation: **FAY-mos**
+- Meaning: **"an ordered system that reveals"**
+- Origin: coined from Ancient Greek roots tied to revelation/appearance and structure/order
+
+Why this fits: PHAEMOS reveals hidden machine behavior through telemetry, alerting, anomaly detection, and maintenance workflows before visible failure occurs.
+
+Suggested tagline: **Reveal before failure.**
+
 ## Architecture
 
 ```
