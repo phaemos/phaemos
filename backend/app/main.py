@@ -14,6 +14,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Keep local frontend access straightforward during development.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.origins,
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Route registration is grouped by domain to keep API boundaries clear.
 app.include_router(auth.router,      prefix="/api/v1/auth",        tags=["Auth"])
 app.include_router(devices.router,   prefix="/api/v1/devices",     tags=["Devices"])
 app.include_router(telemetry.router, prefix="/api/v1/telemetry",   tags=["Telemetry"])

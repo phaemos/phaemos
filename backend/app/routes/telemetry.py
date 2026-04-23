@@ -14,6 +14,7 @@ router = APIRouter()
 
 
 def get_device_by_api_key(api_key: str, db: Session) -> Device:
+    # Device API key is the auth mechanism for firmware ingest requests.
     device = db.query(Device).filter(Device.api_key == api_key).first()
     if not device:
         raise HTTPException(status_code=401, detail="Invalid API key")
@@ -28,6 +29,7 @@ def ingest_telemetry(
 ):
     device = get_device_by_api_key(x_api_key, db)
 
+    # Normalize payload into a dict reused by ML scoring and persistence.
     reading = {
         "temperature": payload.temperature,
         "humidity":    payload.humidity,
@@ -37,6 +39,7 @@ def ingest_telemetry(
         "light_level": payload.light_level,
     }
 
+    # Score first so the row stores both the reading and model decision atomically.
     anomaly_score, is_anomaly = score_reading(reading)
 
     row = Telemetry(
@@ -53,6 +56,7 @@ def ingest_telemetry(
     db.commit()
     db.refresh(row)
 
+    # Evaluate alert rules after persistence so alerts reference committed state.
     evaluate_rules(device, reading, db)
 
     return row
