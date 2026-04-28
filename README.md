@@ -104,6 +104,7 @@ python scripts/quick_api_smoke.py
 ```
 
 What it tests:
+
 - auth register/login
 - device registration
 - telemetry ingest with generated device API key
