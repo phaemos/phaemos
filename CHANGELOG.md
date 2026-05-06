@@ -15,6 +15,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - GitHub Actions CI pipeline for backend linting and frontend type-checking
 - Gitleaks secret scanning workflow
 - GitHub release workflow with changelog version validation on pushed tags
+- Biweekly GitHub workflow that opens or updates a security issue when `npm audit --omit=dev` reports frontend production vulnerabilities
 - Issue templates for bug reports and feature requests
 - Pull request template
 - Dependabot configuration for automated dependency updates
@@ -27,6 +28,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Frontend upgraded from `next@14.2.3` to `next@15.5.15`
 - Frontend PostCSS pinned to `8.5.10` in direct dev dependencies
+- Release changelog date heading format standardised to `DD-MM-YYYY`
 
 ### Security
 
