@@ -11,6 +11,14 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    open-pull-requests-limit: 3
+    groups:
+      backend-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
     labels:
       - "chore"
     commit-message:
@@ -22,6 +30,14 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    open-pull-requests-limit: 3
+    groups:
+      frontend-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
     labels:
       - "chore"
     commit-message:
@@ -33,6 +49,14 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    open-pull-requests-limit: 2
+    groups:
+      actions-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
     labels:
       - "chore"
     commit-message:
