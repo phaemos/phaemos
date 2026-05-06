@@ -19,6 +19,8 @@ Suggested tagline: **Reveal before failure.**
       <a href="#quickstart">Quickstart</a> •
       <a href="#project-structure">Project Structure</a> •
       <a href="#docs">Docs</a> •
+      <a href="#deployment-checklist">Deployment Checklist</a> •
+      <a href="#release-flow">Release Flow</a> •
       <a href="#milestone-plan">Milestone Plan</a> •
       <a href="#hardware">Hardware</a> •
       <a href="#tech-stack">Tech Stack</a> •
@@ -130,6 +132,37 @@ phaemos/
 - [Database Schema](docs/schema.md)
 - [API Reference](docs/api-reference.md)
 - [Decision Log](docs/decisions.md)
+- [Deployment Checklist](docs/deployment-checklist.md)
+
+## Deployment Checklist
+
+Use the production checklist before each release:
+
+- [Render + Vercel Deployment Checklist](docs/deployment-checklist.md)
+
+## Release Flow
+
+PHAEMOS uses tag-based releases with changelog validation.
+
+1. Update `CHANGELOG.md` with a new version section in this format:
+   `## [X.Y.Z] - YYYY-MM-DD`
+1. Commit and merge to `main`.
+1. Create and push the tag:
+
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+1. GitHub Actions `Release` workflow validates the changelog entry and creates
+   the GitHub release.
+
+### Security Note for Frontend Dependencies
+
+Frontend dependencies have been upgraded to `next@15.5.15` and
+`postcss@8.5.10`. If `npm audit` still reports the transitive PostCSS advisory,
+track updates in the Next.js release line and apply them as soon as an upstream
+fix is published.
 
 ## Milestone Plan
 
