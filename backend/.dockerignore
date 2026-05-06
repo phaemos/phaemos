@@ -1,0 +1,20 @@
+# Exclude Python caches and virtual environments from Docker build context
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Exclude local tooling metadata
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Exclude local environment and logs
+.env
+*.log
+logs/

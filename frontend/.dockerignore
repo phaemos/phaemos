@@ -1,0 +1,18 @@
+# Exclude local dependencies and build artefacts from Docker build context
+node_modules
+.next
+out
+
+# Exclude editor, VCS and OS metadata
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Exclude environment and logs
+.env
+.env.local
+*.log
+npm-debug.log*
