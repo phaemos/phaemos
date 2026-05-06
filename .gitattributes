@@ -1,0 +1,14 @@
+# .gitattributes
+# Enforce LF line endings for all text files in the repository.
+# This prevents CRLF/LF mismatches between Windows and Unix contributors.
+
+* text=auto eol=lf
+
+# Explicitly mark binary files to prevent line-ending conversion
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pkl  binary
+*.tar  binary
