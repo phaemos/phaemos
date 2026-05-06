@@ -145,7 +145,7 @@ Use the production checklist before each release:
 PHAEMOS uses tag-based releases with changelog validation.
 
 1. Update `CHANGELOG.md` with a new version section in this format:
-   `## [X.Y.Z] - YYYY-MM-DD`
+   `## [X.Y.Z] - DD-MM-YYYY`
 1. Commit and merge to `main`.
 1. Create and push the tag:
 

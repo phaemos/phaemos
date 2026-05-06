@@ -38,14 +38,14 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       # Ensure CHANGELOG.md has a heading for this version.
-      # Expected format: ## [0.3.0] - YYYY-MM-DD
+      # Expected format: ## [0.3.0] - DD-MM-YYYY
       - name: Validate changelog entry
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if ! grep -Eq "^## \[${VERSION}\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
+          if ! grep -Eq "^## \[${VERSION}\] - [0-9]{2}-[0-9]{2}-[0-9]{4}$" CHANGELOG.md; then
             echo "Missing changelog section for version ${VERSION}."
-            echo "Expected line format: ## [${VERSION}] - YYYY-MM-DD"
+            echo "Expected line format: ## [${VERSION}] - DD-MM-YYYY"
             exit 1
           fi
 

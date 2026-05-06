@@ -1,0 +1,124 @@
+# Biweekly production dependency audit.
+#
+# This workflow checks frontend production dependencies every two weeks.
+# If vulnerabilities are found, it opens or updates a GitHub issue so they
+# are tracked with visibility.
+
+name: Biweekly Security Issue
+
+on:
+  schedule:
+    # Runs weekly, then uses an ISO week parity gate in script to execute
+    # real audit work every second week.
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  frontend-prod-audit:
+    name: Frontend production audit
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository content.
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      # Set up Node.js for npm audit commands.
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      # Gate execution to every second ISO week.
+      # Odd week number means skip, even means run.
+      - name: Biweekly gate
+        id: gate
+        shell: bash
+        run: |
+          WEEK="$(date +%V)"
+          if (( 10#${WEEK} % 2 == 1 )); then
+            echo "run_audit=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping this week (${WEEK}); biweekly gate not met."
+          else
+            echo "run_audit=true" >> "$GITHUB_OUTPUT"
+            echo "Running audit this week (${WEEK})."
+          fi
+
+      # Install production dependencies only for realistic production audit scope.
+      - name: Install production dependencies
+        if: steps.gate.outputs.run_audit == 'true'
+        working-directory: frontend
+        run: npm ci --omit=dev --ignore-scripts
+
+      # Run npm audit in JSON mode so vulnerability counts can be parsed.
+      # Continue even when npm exits non-zero because findings are expected.
+      - name: Run production audit
+        if: steps.gate.outputs.run_audit == 'true'
+        id: audit
+        working-directory: frontend
+        shell: bash
+        run: |
+          npm audit --omit=dev --json > audit.json || true
+          TOTAL="$(jq '.metadata.vulnerabilities.total // 0' audit.json)"
+          MODERATE="$(jq '.metadata.vulnerabilities.moderate // 0' audit.json)"
+          HIGH="$(jq '.metadata.vulnerabilities.high // 0' audit.json)"
+          CRITICAL="$(jq '.metadata.vulnerabilities.critical // 0' audit.json)"
+          echo "total=${TOTAL}" >> "$GITHUB_OUTPUT"
+          echo "moderate=${MODERATE}" >> "$GITHUB_OUTPUT"
+          echo "high=${HIGH}" >> "$GITHUB_OUTPUT"
+          echo "critical=${CRITICAL}" >> "$GITHUB_OUTPUT"
+
+      # Create or update an issue if production vulnerabilities are present.
+      - name: Create or update tracking issue
+        if: steps.gate.outputs.run_audit == 'true' && steps.audit.outputs.total != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TITLE="security: review frontend production vulnerabilities"
+          LABEL="security"
+
+          # Ensure security label exists before creating an issue.
+          gh label create "${LABEL}" --color "d73a4a" --description "Security related work" 2>/dev/null || true
+
+          OPEN_ISSUE="$(gh issue list --state open --search "${TITLE} in:title" --json number --jq '.[0].number // empty')"
+
+          BODY=$(cat <<EOF
+          ## What
+          Automated biweekly security audit found production dependency vulnerabilities in frontend npm packages.
+
+          ## Why
+          Production vulnerabilities should be triaged quickly and fixed or documented to reduce deployment risk.
+
+          ## Audit summary
+          - Total: ${{ steps.audit.outputs.total }}
+          - Moderate: ${{ steps.audit.outputs.moderate }}
+          - High: ${{ steps.audit.outputs.high }}
+          - Critical: ${{ steps.audit.outputs.critical }}
+
+          ## Acceptance criteria
+          - [ ] Confirm vulnerability details from latest npm audit output
+          - [ ] Apply safe dependency updates where available
+          - [ ] Document unresolved transitive advisories in CHANGELOG or release notes
+
+          ## Notes
+          Triggered by GitHub Actions workflow: Biweekly Security Issue
+          EOF
+          )
+
+          if [[ -n "${OPEN_ISSUE}" ]]; then
+            gh issue comment "${OPEN_ISSUE}" --body "Biweekly audit still reports production vulnerabilities.\n\n${BODY}"
+          else
+            gh issue create --title "${TITLE}" --label "${LABEL}" --body "${BODY}"
+          fi
+
+      # Log clean result explicitly for workflow readability.
+      - name: No vulnerabilities found
+        if: steps.gate.outputs.run_audit == 'true' && steps.audit.outputs.total == '0'
+        run: echo "No production vulnerabilities detected in frontend dependencies."
