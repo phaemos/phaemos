@@ -14,11 +14,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Repo health files: LICENSE, CHANGELOG, CONTRIBUTING, CODE_OF_CONDUCT and SECURITY
 - GitHub Actions CI pipeline for backend linting and frontend type-checking
 - Gitleaks secret scanning workflow
+- GitHub release workflow with changelog version validation on pushed tags
 - Issue templates for bug reports and feature requests
 - Pull request template
 - Dependabot configuration for automated dependency updates
 - CODEOWNERS file
 - `.editorconfig` for consistent formatting across editors
+- Deployment checklist for Render backend and Vercel frontend
+- Docker build-context ignore files for backend and frontend images
+
+### Changed
+
+- Frontend upgraded from `next@14.2.3` to `next@15.5.15`
+- Frontend PostCSS pinned to `8.5.10` in direct dev dependencies
+
+### Security
+
+- Removed previously reported critical and high severity frontend advisories by moving off the vulnerable Next 14 line
+- Remaining moderate transitive PostCSS advisory is currently upstream in Next.js and is tracked for future patch updates
 
 ---
 
