@@ -34,4 +34,4 @@ app.include_router(ml.router,        prefix="/api/v1/ml",          tags=["ML"])
 
 @app.get("/", include_in_schema=False)
 def health():
-    return {"status": "ok", "service": "PHAEMOS API"}
+    return {"status": "ok", "service": "PHAEMOS API", "version": app.version, "environment": settings.environment}
