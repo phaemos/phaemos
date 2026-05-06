@@ -54,6 +54,7 @@ Use this checklist before every production deployment.
 ## 6. Release Finalisation
 
 - [ ] Move relevant `[Unreleased]` entries to a dated version section in `CHANGELOG.md`.
+- [ ] Use changelog date format `DD-MM-YYYY` for version headings.
 - [ ] Push tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 - [ ] Confirm GitHub `Release` workflow completed successfully.
 - [ ] Publish release notes and link key changes.
