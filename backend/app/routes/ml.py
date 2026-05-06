@@ -29,7 +29,7 @@ def score(payload: TelemetryIngest):
 def anomaly_history(device_id: UUID, limit: int = 100, db: Session = Depends(get_db)):
     return (
         db.query(Telemetry)
-        .filter(Telemetry.device_id == device_id, Telemetry.is_anomaly == True)
+        .filter(Telemetry.device_id == device_id, Telemetry.is_anomaly)
         .order_by(Telemetry.recorded_at.desc())
         .limit(limit)
         .all()
