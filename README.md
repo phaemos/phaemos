@@ -226,5 +226,5 @@ fix is published.
 ---
 
 <p align="center">
-      Email: <a href="mailto:contact@zacess.com">contact@zacess.com</a>
+      Email: <a href="mailto:contact@isaacadjei.me">contact@isaacadjei.me</a>
 </p>
