@@ -228,3 +228,14 @@ fix is published.
 <p align="center">
       Email: <a href="mailto:contact@isaacadjei.me">contact@isaacadjei.me</a>
 </p>
+
+
+## Contact and Support
+
+Open an [issue](https://github.com/zaccesss/phaemos/issues) in this repository for questions or bugs.
+
+You can also reach me directly at [contact@isaacadjei.me](mailto:contact@isaacadjei.me) or via my [website contact page](https://isaacadjei.me/contact).
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=80&section=footer" />
+</p>
