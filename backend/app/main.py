@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.config import settings
 from app.db import Base, engine
-from app.routes import telemetry, devices, alerts, tickets, auth, ml
+from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware
 
-# Create all tables on startup (use Alembic migrations for production)
+# I create all tables on startup - use Alembic migrations for production
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -14,7 +15,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Keep local frontend access straightforward during development.
+# I expose a /metrics endpoint that Prometheus scrapes for API performance data.
+Instrumentator().instrument(app).expose(app)
+
+# I keep local frontend access straightforward during development.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.origins,
@@ -23,13 +27,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Route registration is grouped by domain to keep API boundaries clear.
+# I group route registration by domain to keep API boundaries clear.
 app.include_router(auth.router,      prefix="/api/v1/auth",        tags=["Auth"])
 app.include_router(devices.router,   prefix="/api/v1/devices",     tags=["Devices"])
 app.include_router(telemetry.router, prefix="/api/v1/telemetry",   tags=["Telemetry"])
 app.include_router(alerts.router,    prefix="/api/v1",             tags=["Alerts"])
 app.include_router(tickets.router,   prefix="/api/v1/tickets",     tags=["Tickets"])
 app.include_router(ml.router,        prefix="/api/v1/ml",          tags=["ML"])
+app.include_router(firmware.router,  prefix="/api/v1",             tags=["Firmware"])
+# I give WebSocket routes a different prefix - no /api/v1 so the WS URL is clean.
+app.include_router(ws.router,        tags=["WebSocket"])
 
 
 @app.get("/", include_in_schema=False)

@@ -50,6 +50,52 @@ jobs:
       - name: Lint backend
         run: ruff check backend/
 
+  # ── Backend tests ────────────────────────────────────────────────────────────
+  backend-test:
+    name: Backend tests (pytest)
+    runs-on: ubuntu-latest
+    needs: backend-lint  # only run tests if lint passes
+
+    permissions:
+      contents: read
+
+    # Spin up a real PostgreSQL instance — the models use PostgreSQL UUID types
+    # that are incompatible with SQLite, so we can't mock the database.
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: phaemos_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run tests
+        working-directory: backend
+        run: pytest tests/ --cov=app --cov-report=term-missing -v
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/phaemos_test
+          SECRET_KEY: ci-test-secret-key-not-for-production
+          REDIS_URL: redis://localhost:6379
+
   # ── Frontend check ───────────────────────────────────────────────────────────
   frontend-check:
     name: Frontend lint and build (Next.js)

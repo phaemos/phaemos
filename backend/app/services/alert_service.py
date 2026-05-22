@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.alert import Alert, AlertRule
 from app.models.device import Device
+from app.services import notify_service
 
 
 _CONDITIONS = {
@@ -31,14 +32,20 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
         check = _CONDITIONS.get(rule.condition)
         if check and check(value, rule.threshold):
             alert = Alert(
-                device_id = device.id,
-                rule_id   = rule.id,
-                message   = (
+                device_id=device.id,
+                rule_id=rule.id,
+                message=(
                     f"{rule.metric} is {value} "
                     f"({rule.condition} {rule.threshold}) on {device.name}"
                 ),
-                severity  = rule.severity,
-                resolved  = False,
+                severity=rule.severity,
+                resolved=False,
+            )
+            # I only notify on warning/critical - info alerts stay silent to avoid noise.
+            notify_service.send_discord_alert(alert.message, rule.severity)
+            notify_service.send_email_alert(
+                subject=f"PHAEMOS [{rule.severity.upper()}] {device.name}",
+                body=alert.message,
             )
             db.add(alert)
 

@@ -1,0 +1,13 @@
+# Prometheus scrape configuration for PHAEMOS.
+# Polls the FastAPI /metrics endpoint (exposed by prometheus-fastapi-instrumentator).
+
+global:
+  scrape_interval: 15s      # how often to collect metrics
+  evaluation_interval: 15s  # how often to evaluate alert rules
+
+scrape_configs:
+  - job_name: "phaemos-backend"
+    static_configs:
+      # In Docker Compose, service names resolve as hostnames.
+      - targets: ["backend:8000"]
+    metrics_path: /metrics
