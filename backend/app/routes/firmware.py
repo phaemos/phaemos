@@ -5,12 +5,10 @@ to check for a newer version and download it if one exists.
 
 import hashlib
 import logging
-import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Header
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
 
 from app.config import settings
 
