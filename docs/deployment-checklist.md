@@ -28,7 +28,7 @@ Use this checklist before every production deployment.
   - [ ] `ACCESS_TOKEN_EXPIRE_MINUTES`
   - [ ] `ALLOWED_ORIGINS`
   - [ ] `ENVIRONMENT=production`
-- [ ] Health endpoint returns expected metadata:
+  - [ ] Health endpoint returns expected metadata:
   - [ ] `status=ok`
   - [ ] `service=PHAEMOS API`
   - [ ] correct `version`
@@ -39,7 +39,7 @@ Use this checklist before every production deployment.
 
 - [ ] Vercel project points to the correct repository and branch.
 - [ ] Required environment variable is set:
-  - [ ] `NEXT_PUBLIC_API_URL` points to the Render backend URL
+- [ ] `NEXT_PUBLIC_API_URL` points to the Render backend URL
 - [ ] Frontend build logs show no TypeScript or lint errors.
 - [ ] Dashboard loads and can fetch backend data.
 
