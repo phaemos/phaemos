@@ -7,7 +7,7 @@ import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.services.ws_manager import broadcast, subscribe, unsubscribe
+from app.services.ws_manager import subscribe, unsubscribe
 
 router = APIRouter()
 
