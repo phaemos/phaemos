@@ -37,6 +37,12 @@ Thumbs.db
 .idea/
 *.swp
 
-# Logs
+# Log files
 *.log
+
+# Reference extract folder - never commit
+extract/
+
+# Cursor IDE local config - never commit
+.cursor/
 

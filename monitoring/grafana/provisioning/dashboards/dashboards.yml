@@ -1,0 +1,13 @@
+# Tells Grafana where to find pre-built dashboard JSON files.
+# Any .json file dropped in the path below is loaded automatically on startup.
+
+apiVersion: 1
+
+providers:
+  - name: "PHAEMOS Dashboards"
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards

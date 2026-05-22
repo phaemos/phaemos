@@ -23,7 +23,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(data: dict) -> str:
-    # JWT carries user identity/role and a short-lived expiration.
+    # I include user identity, role and a short-lived expiration in the JWT payload.
     payload = data.copy()
     payload["exp"] = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
@@ -33,7 +33,7 @@ def create_access_token(data: dict) -> str:
 
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
-    # Basic duplicate check keeps email unique until dedicated constraints/migrations are added.
+    # I do a basic duplicate check to keep email unique until a proper DB constraint migration is added.
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     user = User(
@@ -58,5 +58,5 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 def me():
-    # TODO: decode JWT from Authorization header and return current user (Phase 2)
+    # TODO: I need to decode the JWT from the Authorization header and return the current user (Phase 2)
     raise HTTPException(status_code=501, detail="Not implemented yet")

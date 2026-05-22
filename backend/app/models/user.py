@@ -8,10 +8,17 @@ from app.db import Base
 class User(Base):
     __tablename__ = "users"
 
-    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4) # unique identifier for the user, generated automatically using uuid4 to ensure uniqueness across distributed systems and prevent enumeration attacks
-    name          = Column(String(100))
-    email         = Column(String(150), unique=True, nullable=False)
+    # UUID4 is randomly generated, ensuring uniqueness across distributed systems
+    # and preventing enumeration attacks (sequential IDs let attackers guess valid IDs)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100))
+    # unique=True enforces that no two accounts can share the same email at the DB level
+    email = Column(String(150), unique=True, nullable=False)
+    # The plain-text password is never stored — only its bcrypt hash,
+    # so a DB leak doesn't expose real passwords
     password_hash = Column(String(255), nullable=False)
-    role          = Column(String(20), default="viewer")   # admin / technician / viewer (default is viewer for security reasons - only admins can assign roles to users other than viewer to prevent privilege escalation attacks - this way, if an attacker compromises a user account, they will only have viewer access by default)
-    created_at    = Column(DateTime(timezone=True), server_default=func.now()) # when the user account was created
-    last_login    = Column(DateTime(timezone=True)) # when the user last logged in
+    # Default is "viewer" for security: a newly created or compromised account gets
+    # the least privilege; only admins can elevate a role to technician or admin
+    role = Column(String(20), default="viewer")  # admin / technician / viewer
+    created_at = Column(DateTime(timezone=True), server_default=func.now())  # when the account was created
+    last_login = Column(DateTime(timezone=True))  # updated each time the user authenticates

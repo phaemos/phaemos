@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 import uuid
@@ -9,12 +9,13 @@ from app.models.telemetry import Telemetry
 from app.schemas.telemetry import TelemetryIngest, TelemetryResponse
 from app.services.ml_service import score_reading
 from app.services.alert_service import evaluate_rules
+from app.services import ws_manager
 
 router = APIRouter()
 
 
 def get_device_by_api_key(api_key: str, db: Session) -> Device:
-    # Device API key is the auth mechanism for firmware ingest requests.
+    # I use the device API key as the auth mechanism for firmware ingest requests.
     device = db.query(Device).filter(Device.api_key == api_key).first()
     if not device:
         raise HTTPException(status_code=401, detail="Invalid API key")
@@ -24,40 +25,46 @@ def get_device_by_api_key(api_key: str, db: Session) -> Device:
 @router.post("", response_model=TelemetryResponse, status_code=201)
 def ingest_telemetry(
     payload: TelemetryIngest,
+    background_tasks: BackgroundTasks,
     x_api_key: str = Header(...),
     db: Session = Depends(get_db),
 ):
     device = get_device_by_api_key(x_api_key, db)
 
-    # Normalize payload into a dict reused by ML scoring and persistence.
+    # I normalise the payload into a dict reused by ML scoring and persistence.
     reading = {
         "temperature": payload.temperature,
-        "humidity":    payload.humidity,
+        "humidity": payload.humidity,
         "vibration_x": payload.vibration_x,
         "vibration_y": payload.vibration_y,
         "vibration_z": payload.vibration_z,
         "light_level": payload.light_level,
     }
 
-    # Score first so the row stores both the reading and model decision atomically.
+    # I score first so the row stores both the reading and model decision atomically.
     anomaly_score, is_anomaly = score_reading(reading)
 
     row = Telemetry(
-        device_id     = device.id,
-        anomaly_score = anomaly_score,
-        is_anomaly    = is_anomaly,
+        device_id=device.id,
+        anomaly_score=anomaly_score,
+        is_anomaly=is_anomaly,
         **reading,
     )
     db.add(row)
 
     device.last_seen = datetime.now(timezone.utc)
-    device.status    = "online"
+    device.status = "online"
 
     db.commit()
     db.refresh(row)
 
-    # Evaluate alert rules after persistence so alerts reference committed state.
+    # I evaluate alert rules after persistence so alerts reference committed state.
     evaluate_rules(device, reading, db)
+
+    # Serialize before scheduling — the DB session closes after this function returns.
+    row_json = TelemetryResponse.model_validate(row).model_dump_json()
+    # Push to any WebSocket clients watching this device (runs after response is sent).
+    background_tasks.add_task(ws_manager.broadcast, str(device.id), row_json)
 
     return row
 

@@ -13,6 +13,8 @@ export default function DashboardPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [readings, setReadings] = useState<Telemetry[]>([]);
 
+  // I poll devices and active alerts every 5 seconds - they change infrequently
+  // so polling is fine. Only telemetry gets the real-time WebSocket treatment.
   useEffect(() => {
     const load = async () => {
       const [devRes, alertRes] = await Promise.all([
@@ -30,15 +32,30 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // I open a WebSocket for live telemetry - the chart updates the instant a reading arrives.
   useEffect(() => {
     if (!selected) return;
-    const load = async () => {
-      const res = await api.get<Telemetry[]>(`/telemetry/${selected}?limit=50`);
+
+    // I load the last 50 readings on initial device selection so the chart isn't empty.
+    api.get<Telemetry[]>(`/telemetry/${selected}?limit=50`).then((res) => {
       setReadings(res.data.reverse());
+    });
+
+    // I derive the WebSocket base URL from the HTTP API URL by swapping the protocol.
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+    const wsBase = apiBase.replace(/^http/, 'ws');
+    const ws = new WebSocket(`${wsBase}/ws/telemetry/${selected}`);
+
+    ws.onmessage = (event) => {
+      const newReading: Telemetry = JSON.parse(event.data);
+      // I keep a rolling window of 50 readings to avoid unbounded memory growth.
+      setReadings((prev) => [...prev.slice(-49), newReading]);
     };
-    load();
-    const interval = setInterval(load, 5000);
-    return () => clearInterval(interval);
+
+    // I close cleanly on error - the browser will not auto-reconnect.
+    ws.onerror = () => ws.close();
+
+    return () => ws.close();
   }, [selected]);
 
   return (
