@@ -8,17 +8,17 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379")
 os.environ.setdefault("DISCORD_WEBHOOK_URL", "")
 os.environ.setdefault("ALERT_EMAIL_TO", "")
 
-import secrets
-import pytest
-from passlib.context import CryptContext
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
+import secrets  # noqa: E402
+import pytest  # noqa: E402
+from passlib.context import CryptContext  # noqa: E402
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
-from app.db import Base, get_db
-from app.main import app
-from app.models.device import Device
-from app.models.user import User
+from app.db import Base, get_db  # noqa: E402
+from app.main import app  # noqa: E402
+from app.models.device import Device  # noqa: E402
+from app.models.user import User  # noqa: E402
 
 # Separate test engine so tests never touch the development database.
 _engine = create_engine(os.environ["DATABASE_URL"])
