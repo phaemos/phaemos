@@ -1,0 +1,39 @@
+# Monitoring stack — run alongside the main compose file:
+#   docker compose -f docker-compose.yml -f monitoring/docker-compose.monitoring.yml up
+#
+# Prometheus scrapes the backend /metrics endpoint every 15 seconds.
+# Grafana visualises those metrics on port 3001 (3000 is taken by Next.js).
+# Default Grafana credentials: admin / admin (change for any shared environment).
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: phaemos-prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: phaemos-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
