@@ -30,25 +30,33 @@ Suggested tagline: **Reveal before failure.**
 ## Architecture
 
 ```
-[ Hardware Layer ]
-  DHT22 + MPU6050 + LDR + DS18B20
+[ Hardware Layer - 4 nodes ]
+  ESP32 Primary Node          -- 11 sensors, OLED, buzzer, RGB LED, relay
+  STM32 Black Pill F411CEU6   -- MPU6050 at 100Hz + FFT, UART to ESP32
+  Arduino Nano                -- BME280 + LDR + FC-28, serial to ESP32
+  Raspberry Pi Pico 2W        -- BME280 + LDR + OLED, direct Wi-Fi POST
         |
   [ Firmware Layer ]
-  Arduino Uno (serial) --> ESP32 (Wi-Fi gateway)
-  STM32 (UART) ---------> ESP32 or direct USB
+  Nano (serial 9600) -------> ESP32 (parses + merges payload)
+  STM32 (UART 115200) ------> ESP32 (FFT peak Hz forwarded to API)
+  Pico 2W (Wi-Fi) ----------> API directly
+  ESP32 (Wi-Fi POST) -------> API every 5 seconds
         |
-        | HTTP POST / MQTT
+        | HTTP POST /api/v1/telemetry
         v
   [ Backend - FastAPI ]
-  /telemetry  /devices  /alerts  /tickets  /auth  /ml
+  /telemetry  /devices  /alerts  /tickets  /auth  /ml  /ws
         |
-   PostgreSQL + Redis
+   PostgreSQL 15 + Redis 7
         |
   [ ML Layer - Isolation Forest ]
-  anomaly scoring on every ingest
+  anomaly scoring on every ingest (Week 10 after hardware data collected)
         |
-  [ Frontend - Next.js ]
-  live dashboard, device list, ticket system, admin panel
+  [ Frontend - Next.js 15 ]
+  live dashboard, sensor grid, device list, ticket system, admin panel
+        |
+  [ Observability ]
+  Prometheus + Grafana monitoring overlay (docker-compose.monitoring.yml)
 ```
 
 ## Quickstart
@@ -117,10 +125,27 @@ What it tests:
 
 ```
 phaemos/
-├── firmware/           ESP32, Arduino, STM32 firmware
-├── backend/            FastAPI backend + ML pipeline
-├── frontend/           Next.js dashboard
-├── docs/               Architecture, schema, API reference, decisions
+├── firmware/
+│   ├── esp32/              v2 primary node (sensors/, outputs/, comms/, esp32.ino)
+│   ├── stm32_blackpill/    HAL vibration node (Core/Src + Core/Inc)
+│   ├── arduino_nano/       BME280 + LDR + FC-28 secondary node
+│   └── pico_w/             MicroPython ambient node
+├── backend/
+│   ├── app/                FastAPI routes, models, schemas, services
+│   ├── ml/                 Isolation Forest training and evaluation
+│   ├── migrations/         SQL schema for all tables
+│   └── tests/              pytest suite
+├── frontend/
+│   ├── app/                Next.js App Router pages
+│   ├── components/         Dashboard, tickets, admin, UI primitives
+│   ├── hooks/              useTelemetry, useAlerts polling hooks
+│   └── lib/                Axios API client, utility functions
+├── hardware/
+│   ├── schematics/         Proteus schematic placeholders (Phase 2)
+│   ├── wiring/             Pin connection tables for all 4 nodes
+│   └── pcb/                PCB design guide for Proteus ARES (Phase 3)
+├── docs/                   Architecture, API reference, sensor reference, deployment
+├── monitoring/             Grafana + Prometheus overlay
 ├── docker-compose.yml
 ├── .env.example
 └── README.md
@@ -131,8 +156,12 @@ phaemos/
 - [Architecture Overview](docs/architecture.md)
 - [Database Schema](docs/schema.md)
 - [API Reference](docs/api-reference.md)
-- [Decision Log](docs/decisions.md)
+- [Sensor Reference](docs/sensor_reference.md)
+- [Deployment Guide](docs/deployment.md)
 - [Deployment Checklist](docs/deployment-checklist.md)
+- [12-Week Plan](docs/week_by_week.md)
+- [Decision Log](docs/decisions.md)
+- [Verification Tracker](docs/VERIFICATION.md)
 
 ## Deployment Checklist
 
@@ -174,32 +203,44 @@ fix is published.
 
 ## Hardware
 
-| Board       | Role                                                         |
-| ----------- | ------------------------------------------------------------ |
-| ESP32       | Primary IoT node - reads sensors, POSTs to API over Wi-Fi    |
-| Arduino Uno | Secondary node - reads sensors over serial, relays via ESP32 |
-| STM32       | Advanced node - high-frequency vibration sampling via UART   |
+| Board | Language | Role |
+| --- | --- | --- |
+| ESP32 DevKit | C++ (Arduino IDE) | Primary node - 11 sensors, Wi-Fi POST, OLED, buzzer, RGB LED, relay |
+| STM32 Black Pill F411CEU6 | C (STM32 HAL) | Vibration node - MPU6050 at 100Hz, FFT, UART to ESP32 |
+| Arduino Nano | C++ (Arduino IDE) | Secondary node - BME280, LDR, FC-28, serial CSV to ESP32 |
+| Raspberry Pi Pico 2W | MicroPython | Ambient node - BME280, LDR, OLED, direct Wi-Fi POST |
 
-| Sensor  | Measures                           | Board           |
-| ------- | ---------------------------------- | --------------- |
-| DHT22   | Temperature + humidity             | ESP32 / Arduino |
-| MPU6050 | Vibration, acceleration, gyroscope | ESP32 / STM32   |
-| LDR     | Ambient light                      | Arduino / ESP32 |
-| DS18B20 | Precise temperature                | Any             |
+| Sensor | Measures | Interface | Node |
+| --- | --- | --- | --- |
+| BME280 | Temperature, humidity, pressure | I2C 0x76 | ESP32, Nano, Pico 2W |
+| MPU6050 | Acceleration + gyroscope (6-axis) | I2C 0x68 | ESP32, STM32 |
+| INA219 | Bus voltage, current, power | I2C 0x40 | ESP32 |
+| MLX90614 | Contactless IR surface temperature | I2C 0x5A | ESP32 |
+| VL53L0X | Time-of-flight distance | I2C 0x29 | ESP32 |
+| MQ-2 | Gas and smoke concentration | Analog GPIO34 | ESP32 |
+| AS5600 | Magnetic shaft angle and RPM | I2C 0x36 | ESP32 |
+| MAX4466 | Acoustic / sound level | Analog GPIO32 | ESP32 |
+| DS18B20 | Precision contact temperature | OneWire GPIO4 | ESP32 |
+| LDR | Ambient light | Analog GPIO33 | ESP32, Nano, Pico 2W |
+| FC-28 | Moisture / water ingress | Analog GPIO36 | ESP32, Nano |
+
+See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [docs/sensor_reference.md](docs/sensor_reference.md) for library details.
 
 ## Tech Stack
 
-| Layer       | Technology                                     |
-| ----------- | ---------------------------------------------- |
-| Frontend    | Next.js 14 + TypeScript + Tailwind CSS         |
-| Backend     | FastAPI (Python 3.11)                          |
-| Database    | PostgreSQL 15                                  |
-| Cache/Queue | Redis                                          |
-| ML          | scikit-learn (Isolation Forest), pandas, numpy |
-| Auth        | JWT (python-jose), bcrypt                      |
-| Hardware    | ESP32, Arduino Uno, STM32                      |
-| Containers  | Docker + Docker Compose                        |
-| Deployment  | Vercel (frontend), Render (backend + DB)       |
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 15 + TypeScript + Tailwind CSS |
+| Backend | FastAPI (Python 3.11) |
+| Database | PostgreSQL 15 |
+| Cache | Redis 7 |
+| ML | scikit-learn (Isolation Forest), pandas, numpy |
+| Auth | JWT (python-jose), bcrypt |
+| Firmware | C++ (Arduino IDE), C (STM32 HAL), MicroPython |
+| Hardware | ESP32, STM32 Black Pill F411CEU6, Arduino Nano, Raspberry Pi Pico 2W |
+| Containers | Docker + Docker Compose |
+| Monitoring | Prometheus + Grafana |
+| Deployment | Vercel (frontend), Render (backend + DB) |
 
 ## Languages & Tools Used
 
