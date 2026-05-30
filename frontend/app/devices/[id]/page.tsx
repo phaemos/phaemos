@@ -4,12 +4,15 @@
 
 // TODO: fetch device by ID and render SensorGrid with latest telemetry
 
+// I use Promise<{ id: string }> here because Next.js 15 changed params to be
+// async - the dynamic segment is now a Promise that must be awaited before
+// reading the id value. Using the old synchronous type causes a build error.
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function DeviceDetailPage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
