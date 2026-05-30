@@ -1,0 +1,25 @@
+Phaemos ESP32 Primary Node - Proteus ISIS Schematic Placeholder
+
+This file is a placeholder. The actual Proteus schematic (.pdsprj)
+will be created in Phase 2/3 using Proteus ISIS.
+
+Components to place in Phase 2:
+- ESP32 DevKit V1 module
+- BME280 breakout (I2C 0x76, SDA=GPIO21, SCL=GPIO22)
+- MPU6050 breakout (I2C 0x68, SDA=GPIO21, SCL=GPIO22)
+- INA219 breakout (I2C 0x40)
+- MLX90614 breakout (I2C 0x5A)
+- VL53L0X breakout (I2C 0x29)
+- MQ-2 gas sensor module
+- AS5600 encoder breakout (I2C 0x36)
+- DS18B20 temperature probe (OneWire GPIO4)
+- LDR + 10k voltage divider (GPIO33)
+- FC-28 moisture sensor module (GPIO36)
+- SSD1306 OLED 0.96" (I2C 0x3C)
+- WS2812B RGB LED strip (GPIO26)
+- Passive buzzer (GPIO25)
+- 4-channel relay module (GPIO13, 12, 14, 27)
+- LM2596 buck converter (12V to 5V)
+- AMS1117 regulator (5V to 3.3V)
+- 100nF decoupling caps per IC, 10uF on rails
+- 1N5819 Schottky diodes on relay coil outputs
