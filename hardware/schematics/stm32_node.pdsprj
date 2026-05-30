@@ -1,0 +1,10 @@
+Phaemos STM32 Black Pill Vibration Node - Proteus ISIS Schematic Placeholder
+
+This file is a placeholder. The actual Proteus schematic (.pdsprj)
+will be created in Phase 2/3 using Proteus ISIS.
+
+Components to place in Phase 2:
+- STM32F411CEU6 Black Pill module
+- MPU6050 breakout (I2C1, PB6=SCL, PB7=SDA)
+- UART output (PA9=TX to ESP32 RX)
+- 3.3V power from host or AMS1117
