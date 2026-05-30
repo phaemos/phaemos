@@ -1,0 +1,11 @@
+Phaemos Arduino Nano Secondary Node - Proteus ISIS Schematic Placeholder
+
+This file is a placeholder. The actual Proteus schematic (.pdsprj)
+will be created in Phase 2/3 using Proteus ISIS.
+
+Components to place in Phase 2:
+- Arduino Nano
+- BME280 breakout (I2C, A4=SDA, A5=SCL)
+- LDR + 10k voltage divider (A0)
+- FC-28 moisture sensor (A1)
+- TX/RX to ESP32 via level shifter (5V->3.3V)
