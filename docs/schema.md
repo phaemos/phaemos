@@ -31,9 +31,10 @@ CREATE TABLE devices (
   location    VARCHAR(100),
   type        VARCHAR(50),        -- 'esp32', 'arduino', 'stm32'
   api_key     VARCHAR(255) UNIQUE NOT NULL,
-  status      VARCHAR(20) DEFAULT 'offline', -- online/offline/warning/fault
-  last_seen   TIMESTAMP,
-  created_at  TIMESTAMP DEFAULT NOW()
+  status            VARCHAR(20) DEFAULT 'offline', -- online/offline/warning/fault
+  firmware_version  VARCHAR(50),   -- set when device downloads or reports its OTA version
+  last_seen         TIMESTAMP,
+  created_at        TIMESTAMP DEFAULT NOW()
 );
 ```
 
