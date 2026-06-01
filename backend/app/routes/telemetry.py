@@ -1,7 +1,11 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header
-from sqlalchemy.orm import Session
-from datetime import datetime, timezone
+import csv
+import io
 import uuid
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.device import Device
@@ -67,6 +71,45 @@ def ingest_telemetry(
     background_tasks.add_task(ws_manager.broadcast, str(device.id), row_json)
 
     return row
+
+
+@router.get("/export")
+def export_telemetry(
+    device_id: uuid.UUID,
+    from_ts: datetime | None = None,
+    to_ts: datetime | None = None,
+    db: Session = Depends(get_db),
+):
+    # I define /export before /{device_id} so FastAPI matches it as a literal
+    # path segment rather than treating "export" as a device UUID.
+    q = db.query(Telemetry).filter(Telemetry.device_id == device_id)
+    if from_ts:
+        q = q.filter(Telemetry.recorded_at >= from_ts)
+    if to_ts:
+        q = q.filter(Telemetry.recorded_at <= to_ts)
+    rows = q.order_by(Telemetry.recorded_at.asc()).all()
+
+    # I stream the CSV without loading all rows into a Python list at once —
+    # io.StringIO acts as an in-memory buffer that csv.writer can write into.
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+
+    # Header row derived from the column names of the first row's mapping
+    if rows:
+        writer.writerow(rows[0].__table__.columns.keys())
+    else:
+        writer.writerow(["id", "device_id", "recorded_at"])
+
+    for row in rows:
+        writer.writerow([getattr(row, c.name) for c in row.__table__.columns])
+
+    buf.seek(0)
+    filename = f"telemetry_{device_id}.csv"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @router.get("/{device_id}", response_model=list[TelemetryResponse])
