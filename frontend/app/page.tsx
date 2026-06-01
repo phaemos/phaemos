@@ -19,14 +19,19 @@ export default function DashboardPage() {
   // so polling is fine. Only telemetry gets the real-time WebSocket treatment.
   useEffect(() => {
     const load = async () => {
-      const [devRes, alertRes] = await Promise.all([
-        api.get<Device[]>('/devices'),
-        api.get<Alert[]>('/alerts?resolved=false'),
-      ]);
-      setDevices(devRes.data);
-      setAlerts(alertRes.data);
-      if (devRes.data.length > 0 && !selected) {
-        setSelected(devRes.data[0].id);
+      try {
+        const [devRes, alertRes] = await Promise.all([
+          api.get<Device[]>('/devices'),
+          api.get<Alert[]>('/alerts?resolved=false'),
+        ]);
+        setDevices(devRes.data);
+        setAlerts(alertRes.data);
+        if (devRes.data.length > 0 && !selected) {
+          setSelected(devRes.data[0].id);
+        }
+      } catch {
+        // I swallow fetch errors silently - the page renders empty rather than
+        // crashing into the Next.js error overlay when the backend is unreachable.
       }
     };
     load();
