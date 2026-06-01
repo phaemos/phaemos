@@ -94,6 +94,16 @@ export interface Ticket {
   updated_at: string;
 }
 
+export interface AlertRule {
+  id: string;
+  device_id: string;
+  metric: string;
+  condition: 'gt' | 'lt' | 'eq';
+  threshold: number;
+  severity: 'info' | 'warning' | 'critical';
+  created_at: string;
+}
+
 export interface User {
   id: string;
   name: string | null;
