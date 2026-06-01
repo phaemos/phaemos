@@ -41,10 +41,18 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] audit_service.py (log_action)
 - [x] 001_initial_schema.sql full schema
 - [x] ML evaluate.py skeleton
-- [ ] Isolation Forest model trained on real data (Week 10)
-- [ ] ML evaluate.py fully implemented
-- [ ] audit_log route (GET /api/v1/audit)
-- [ ] User management route (GET /api/v1/auth/users admin only)
+- [ ] Isolation Forest model trained on real data (waiting for hardware)
+- [x] ML evaluate.py fully implemented (load_model, evaluate_precision_recall, plot_anomaly_distribution, generate_report)
+- [x] audit_log route (GET /api/v1/audit-logs, admin-only, paginated)
+- [x] User management route (GET /api/v1/auth/users, admin-only, paginated)
+- [x] GET /api/v1/alert-rules (list, optional ?device_id=)
+- [x] PUT /api/v1/alert-rules/{id} and DELETE /api/v1/alert-rules/{id}
+- [x] GET /telemetry/export CSV streaming endpoint
+- [x] from_ts/to_ts time-range filter on GET /telemetry/{device_id}
+- [x] node_type filter on GET /telemetry/{device_id}
+- [x] Demo mode (POST /demo/start, POST /demo/stop, APScheduler)
+- [x] 90-day telemetry retention background task (APScheduler cron, daily 02:00 UTC)
+- [x] firmware_version column on Device + exposed in DeviceResponse
 
 ---
 
@@ -102,10 +110,17 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] UserTable (stub)
 - [x] AuditLog (stub)
 - [x] Device detail page stub
-- [ ] TicketForm wired to POST /api/v1/tickets
-- [ ] UserTable wired to GET /api/v1/auth/users
-- [ ] AuditLog wired to GET /api/v1/audit
-- [ ] Login page
+- [x] TicketForm wired to POST /api/v1/tickets (controlled form, ErrorToast on failure)
+- [x] UserTable wired to GET /api/v1/auth/users (role-coloured table)
+- [x] AuditLog wired to GET /api/v1/audit-logs (paginated, action badges)
+- [x] Device detail page full implementation (sensor grid + chart + export button)
+- [x] TelemetryChart per-sensor groups with 1h/6h/24h/7d time range picker
+- [x] AlertRulesPanel admin UI (inline edit, delete, new rule form with device picker)
+- [x] Device comparison page /compare with up to 3 side-by-side columns
+- [x] Global nav bar added to layout.tsx
+- [x] Dark/light mode toggle (ThemeToggle + localStorage + pre-hydration script)
+- [x] useTickets polling hook
+- [ ] Login page (not yet implemented)
 
 ---
 
@@ -136,3 +151,4 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] Deployment guide (docs/deployment.md)
 - [x] 12-week plan (docs/week_by_week.md)
 - [x] Verification tracker (this file)
+- [x] Uptime Kuma setup guide (docs/uptime-kuma.md)
