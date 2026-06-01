@@ -22,7 +22,9 @@ def list_alerts(resolved: bool | None = None, db: Session = Depends(get_db)):
     q = db.query(Alert)
     # Only add the resolved filter when the caller explicitly passes ?resolved=true or ?resolved=false
     if resolved is not None:
-        q = q.filter(Alert.resolved == resolved)
+        # I cast to string because the resolved column is Column(String) not Column(Boolean).
+        # PostgreSQL cannot compare varchar = boolean directly.
+        q = q.filter(Alert.resolved == str(resolved))
     # Show most recently triggered alerts first - useful for dashboards
     return q.order_by(Alert.triggered_at.desc()).all()
 
