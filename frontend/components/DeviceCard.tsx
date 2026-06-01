@@ -31,6 +31,9 @@ export default function DeviceCard({ device, active, onClick }: Props) {
       </div>
       <p className="text-xs text-gray-400">{device.location ?? 'No location'}</p>
       <p className="text-xs text-gray-500 mt-1">{cfg.label}</p>
+      {device.firmware_version && (
+        <p className="text-xs text-gray-600 mt-1 font-mono">fw {device.firmware_version}</p>
+      )}
     </button>
   );
 }

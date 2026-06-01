@@ -22,7 +22,8 @@ class Device(Base):
     type       = Column(String(50))          # esp32 / arduino / stm32
     # unique=True adds a UNIQUE constraint so no two devices can share the same API key
     api_key    = Column(String(255), unique=True, nullable=False)
-    status     = Column(String(20), default="offline")  # online/offline/warning/fault
+    status            = Column(String(20), default="offline")  # online/offline/warning/fault
+    firmware_version  = Column(String(50))   # set when device downloads or reports its OTA version
     # timezone=True stores the timestamp as UTC in the DB, preventing timezone confusion
     last_seen  = Column(DateTime(timezone=True))
     # server_default=func.now() lets the database set the timestamp, which is more reliable
