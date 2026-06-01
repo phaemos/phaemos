@@ -37,15 +37,19 @@ def create_ticket(
     db.commit()
     db.refresh(ticket)
 
+    # Serialise before audit call - audit_service commits its own transaction,
+    # which expires the ORM object and breaks FastAPI serialisation if we return
+    # the raw ORM object after that second commit.
+    response = TicketResponse.model_validate(ticket)
     audit_service.log_action(
         db,
         user_id=str(current_user.id),
         action="ticket_created",
         resource="ticket",
-        resource_id=str(ticket.id),
-        detail=f"title={ticket.title!r} priority={ticket.priority}",
+        resource_id=str(response.id),
+        detail=f"title={response.title!r} priority={response.priority}",
     )
-    return ticket
+    return response
 
 
 @router.get("/{ticket_id}", response_model=TicketResponse)
@@ -78,11 +82,15 @@ def update_ticket(
     db.commit()
     db.refresh(ticket)
 
+    # Serialise to Pydantic before the audit call for the same reason as create_ticket -
+    # audit_service.log_action() commits its own transaction which expires ORM objects.
+    response = TicketResponse.model_validate(ticket)
+
     # I only log when fields actually changed - empty PATCH calls should not pollute the audit log.
     if updates:
         detail = f"fields={list(updates.keys())}"
         if "status" in updates and updates["status"] != old_status:
-            detail += f" status={old_status}->{ticket.status}"
+            detail += f" status={old_status}->{response.status}"
         audit_service.log_action(
             db,
             user_id=str(current_user.id),
@@ -91,4 +99,4 @@ def update_ticket(
             resource_id=str(ticket_id),
             detail=detail,
         )
-    return ticket
+    return response
