@@ -119,6 +119,7 @@ def get_telemetry(
     offset: int = 0,
     from_ts: datetime | None = None,
     to_ts: datetime | None = None,
+    node_type: str | None = None,
     db: Session = Depends(get_db),
 ):
     # I use from_ts/to_ts rather than 'from' (reserved keyword) for the query param names.
@@ -127,6 +128,8 @@ def get_telemetry(
         q = q.filter(Telemetry.recorded_at >= from_ts)
     if to_ts:
         q = q.filter(Telemetry.recorded_at <= to_ts)
+    if node_type:
+        q = q.filter(Telemetry.node_type == node_type)
     return (
         q.order_by(Telemetry.recorded_at.desc())
         .offset(offset)
