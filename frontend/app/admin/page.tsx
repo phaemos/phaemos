@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import api from '@/lib/api';
+import UserTable from '@/components/admin/UserTable';
+import AuditLog from '@/components/admin/AuditLog';
+import AlertRulesPanel from '@/components/admin/AlertRulesPanel';
 
 export default function AdminPage() {
   const [fwVersion, setFwVersion] = useState('');
@@ -34,7 +37,7 @@ export default function AdminPage() {
       setFwVersion('');
       setFwFile(null);
     } catch {
-      setFwStatus('Upload failed — check the console and server logs.');
+      setFwStatus('Upload failed - check the console and server logs.');
     } finally {
       setUploading(false);
     }
@@ -44,15 +47,19 @@ export default function AdminPage() {
     <main className="p-6 max-w-5xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold">Admin Panel</h1>
 
-      {/* -- User management & audit logs (Phase 2) -- */}
-      <section className="rounded-lg border border-gray-800 p-4 space-y-2">
+      {/* User management */}
+      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
         <h2 className="text-lg font-semibold">User Management</h2>
-        <p className="text-gray-400 text-sm">
-          User registration, role assignment and audit logs — Phase 2.
-        </p>
+        <UserTable />
       </section>
 
-      {/* -- OTA Firmware Upload -- */}
+      {/* Alert rules */}
+      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
+        <h2 className="text-lg font-semibold">Alert Rules</h2>
+        <AlertRulesPanel />
+      </section>
+
+      {/* OTA Firmware Upload */}
       <section className="rounded-lg border border-gray-800 p-4 space-y-4">
         <div>
           <h2 className="text-lg font-semibold">OTA Firmware Update</h2>
@@ -94,13 +101,19 @@ export default function AdminPage() {
             disabled={uploading}
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
           >
-            {uploading ? 'Uploading…' : 'Upload Firmware'}
+            {uploading ? 'Uploading...' : 'Upload Firmware'}
           </button>
 
           {fwStatus && (
             <p className="text-sm text-gray-300">{fwStatus}</p>
           )}
         </div>
+      </section>
+
+      {/* Audit log */}
+      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
+        <h2 className="text-lg font-semibold">Audit Log</h2>
+        <AuditLog />
       </section>
     </main>
   );

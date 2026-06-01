@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 # Alert is a fired event; AlertRule is the config that defines when an alert should fire
 from app.models.alert import Alert, AlertRule
-from app.schemas.alert import AlertRuleCreate, AlertRuleResponse, AlertResponse
+from app.schemas.alert import AlertRuleCreate, AlertRuleUpdate, AlertRuleResponse, AlertResponse
 from app.routes.auth import get_current_user
 from app.models.user import User
 from app.services import audit_service
@@ -71,6 +71,14 @@ def resolve_alert(
     return response
 
 
+@router.get("/alert-rules", response_model=list[AlertRuleResponse])
+def list_rules(device_id: UUID | None = None, db: Session = Depends(get_db)):
+    q = db.query(AlertRule)
+    if device_id:
+        q = q.filter(AlertRule.device_id == device_id)
+    return q.order_by(AlertRule.created_at.desc()).all()
+
+
 @router.post("/alert-rules", response_model=AlertRuleResponse, status_code=201)
 def create_rule(payload: AlertRuleCreate, db: Session = Depends(get_db)):
     # **payload.model_dump() converts the Pydantic model to a dict and passes each key as a constructor argument
@@ -79,3 +87,24 @@ def create_rule(payload: AlertRuleCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(rule)
     return rule
+
+
+@router.put("/alert-rules/{rule_id}", response_model=AlertRuleResponse)
+def update_rule(rule_id: UUID, payload: AlertRuleUpdate, db: Session = Depends(get_db)):
+    rule = db.query(AlertRule).filter(AlertRule.id == rule_id).first()
+    if not rule:
+        raise HTTPException(status_code=404, detail="Alert rule not found")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(rule, field, value)
+    db.commit()
+    db.refresh(rule)
+    return rule
+
+
+@router.delete("/alert-rules/{rule_id}", status_code=204)
+def delete_rule(rule_id: UUID, db: Session = Depends(get_db)):
+    rule = db.query(AlertRule).filter(AlertRule.id == rule_id).first()
+    if not rule:
+        raise HTTPException(status_code=404, detail="Alert rule not found")
+    db.delete(rule)
+    db.commit()
