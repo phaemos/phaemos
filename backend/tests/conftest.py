@@ -11,7 +11,7 @@ os.environ.setdefault("ALERT_EMAIL_TO", "")
 import secrets  # noqa: E402
 import pytest  # noqa: E402
 from passlib.context import CryptContext  # noqa: E402
-from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -24,13 +24,35 @@ from app.models.user import User  # noqa: E402
 _engine = create_engine(os.environ["DATABASE_URL"])
 _pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# audit_log is a raw-SQL table (not an ORM model) so Base.metadata.create_all
+# does not create it. I create it explicitly here so audit_service.log_action()
+# does not fail in tests, which would roll back the outer transaction and corrupt
+# the test state that follows.
+_AUDIT_LOG_DDL = """
+CREATE TABLE IF NOT EXISTS audit_log (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     VARCHAR(255),
+    action      VARCHAR(100) NOT NULL,
+    resource    VARCHAR(100),
+    resource_id VARCHAR(255),
+    detail      TEXT,
+    created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+"""
+
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
     # Create all tables once for the whole test session, drop them at the end.
     Base.metadata.create_all(bind=_engine)
+    with _engine.connect() as conn:
+        conn.execute(text(_AUDIT_LOG_DDL))
+        conn.commit()
     yield
     Base.metadata.drop_all(bind=_engine)
+    with _engine.connect() as conn:
+        conn.execute(text("DROP TABLE IF EXISTS audit_log"))
+        conn.commit()
 
 
 @pytest.fixture
