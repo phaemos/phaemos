@@ -3,9 +3,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.db import Base, engine
+from app.limiter import limiter
 from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo
 from app.tasks.retention import start_retention_scheduler
 
@@ -28,16 +31,22 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# I wire the slowapi limiter onto app.state so @limiter.limit decorators on routes
+# can resolve the shared instance at request time.
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # I expose a /metrics endpoint that Prometheus scrapes for API performance data.
 Instrumentator().instrument(app).expose(app)
 
-# I keep local frontend access straightforward during development.
+# I restrict methods and headers explicitly rather than using ["*"] so the
+# CORS preflight cannot be used as a probe for unexpected endpoints.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 # I group route registration by domain to keep API boundaries clear.
