@@ -77,3 +77,30 @@
 - Role enforcement: middleware checks `user.role` on every protected endpoint
 - Password storage: bcrypt (cost factor 12)
 - No raw SQL: all queries via SQLAlchemy ORM
+
+---
+
+## Background Tasks (added 2026-06-01)
+
+Two APScheduler BackgroundScheduler instances run in daemon threads inside the FastAPI process:
+
+| Task | Schedule | Description |
+|------|----------|-------------|
+| Demo telemetry | Every 5s (on-demand) | Generates sinusoidal sensor data for the Demo Node when /demo/start is called |
+| Data retention | Daily at 02:00 UTC | Deletes telemetry rows older than 90 days; logs row count to audit_log |
+
+Both tasks use their own SQLAlchemy sessions (not the request-scoped Depends(get_db)) to avoid cross-thread session sharing.
+
+---
+
+## Frontend Routes (updated 2026-06-01)
+
+| Path | Description |
+|------|-------------|
+| `/` | Dashboard with device cards, live telemetry chart, alert banners, node type filter |
+| `/compare` | Side-by-side comparison of up to 3 devices |
+| `/devices` | Device list |
+| `/devices/[id]` | Device detail: sensor grid, per-sensor time-range charts, Export CSV button |
+| `/alerts` | Alert feed with resolve actions |
+| `/tickets` | Ticket table and create form |
+| `/admin` | User management, alert rules panel, OTA firmware upload, audit log |
