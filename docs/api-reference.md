@@ -298,6 +298,98 @@ Returns all anomalous telemetry rows for a device.
 
 ---
 
+## Audit
+
+### GET /audit-logs
+
+Returns paginated audit log entries. Admin-only.
+
+**Auth:** Bearer JWT (Admin)
+
+**Query params:** `skip`, `limit` (default 50)
+
+---
+
+## Alert Rules
+
+### GET /alert-rules
+
+List all alert rules. Optional `?device_id=` filter.
+
+**Auth:** Bearer JWT
+
+### PUT /alert-rules/{id}
+
+Update a rule's metric, condition, threshold or severity.
+
+**Auth:** Bearer JWT
+
+### DELETE /alert-rules/{id}
+
+Delete an alert rule.
+
+**Auth:** Bearer JWT
+
+---
+
+## Telemetry (additions from 2026-06-01)
+
+### GET /telemetry/export
+
+Stream all telemetry for a device as a CSV file.
+
+**Auth:** None (device-level, no JWT required)
+
+**Query params:** `device_id` (required), `from_ts` (ISO datetime, optional), `to_ts` (ISO datetime, optional)
+
+**Response:** `text/csv` with `Content-Disposition: attachment`
+
+### GET /telemetry/{device_id}
+
+Extended query params added: `from_ts`, `to_ts`, `node_type` (all optional).
+
+---
+
+## Demo
+
+### POST /demo/start
+
+Register (or reuse) a Demo Node virtual device and start a 5-second APScheduler job generating synthetic telemetry.
+
+**Auth:** None
+
+**Response:**
+
+```json
+{ "device_id": "uuid", "api_key": "string", "status": "started" }
+```
+
+### POST /demo/stop
+
+Cancel the demo telemetry job.
+
+**Auth:** None
+
+---
+
+## Auth (additions from 2026-06-01)
+
+### GET /auth/me
+
+Return the currently authenticated user's profile.
+
+**Auth:** Bearer JWT
+
+### GET /auth/users
+
+Return a paginated list of all users. Admin-only.
+
+**Auth:** Bearer JWT (Admin)
+
+**Query params:** `skip`, `limit` (default 50)
+
+---
+
 ## Error Responses
 
 | Code | Meaning                         |
