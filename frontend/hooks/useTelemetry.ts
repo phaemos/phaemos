@@ -7,6 +7,12 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Telemetry } from '../types/index';
 import api from '../lib/api';
 
+interface UseTelemetryOptions {
+  fromTs?: string;
+  toTs?: string;
+  limit?: number;
+}
+
 interface UseTelemetryResult {
   data: Telemetry[];
   loading: boolean;
@@ -16,19 +22,23 @@ interface UseTelemetryResult {
 
 export function useTelemetry(
   deviceId: string,
+  options: UseTelemetryOptions = {},
   intervalMs: number = 5000,
 ): UseTelemetryResult {
   const [data, setData] = useState<Telemetry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { fromTs, toTs, limit = 50 } = options;
+
   // I extract the fetch logic into useCallback so the interval handler and the
   // manual refetch both call the exact same function without duplicating code.
   const fetchTelemetry = useCallback(async () => {
     try {
-      const response = await api.get<Telemetry[]>('/telemetry', {
-        params: { device_id: deviceId, limit: 50 },
-      });
+      const params: Record<string, string | number> = { limit };
+      if (fromTs) params.from_ts = fromTs;
+      if (toTs) params.to_ts = toTs;
+      const response = await api.get<Telemetry[]>(`/telemetry/${deviceId}`, { params });
       setData(response.data);
       setError(null);
     } catch (err: unknown) {
@@ -38,11 +48,11 @@ export function useTelemetry(
     } finally {
       setLoading(false);
     }
-  }, [deviceId]);
+  }, [deviceId, fromTs, toTs, limit]);
 
   useEffect(() => {
-    // I set loading true whenever the deviceId changes so the consumer knows
-    // fresh data is incoming rather than displaying stale results.
+    // I set loading true whenever the deviceId or time range changes so the consumer
+    // knows fresh data is incoming rather than displaying stale results.
     setLoading(true);
     fetchTelemetry();
 

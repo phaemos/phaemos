@@ -74,12 +74,18 @@ def get_telemetry(
     device_id: uuid.UUID,
     limit: int = 100,
     offset: int = 0,
+    from_ts: datetime | None = None,
+    to_ts: datetime | None = None,
     db: Session = Depends(get_db),
 ):
+    # I use from_ts/to_ts rather than 'from' (reserved keyword) for the query param names.
+    q = db.query(Telemetry).filter(Telemetry.device_id == device_id)
+    if from_ts:
+        q = q.filter(Telemetry.recorded_at >= from_ts)
+    if to_ts:
+        q = q.filter(Telemetry.recorded_at <= to_ts)
     return (
-        db.query(Telemetry)
-        .filter(Telemetry.device_id == device_id)
-        .order_by(Telemetry.recorded_at.desc())
+        q.order_by(Telemetry.recorded_at.desc())
         .offset(offset)
         .limit(limit)
         .all()
