@@ -54,17 +54,21 @@ def resolve_alert(
     db.commit()
     db.refresh(alert)
 
-    # I log after commit so the audit row is written even if the caller's surrounding context
-    # were to roll back for unrelated reasons - audit_service commits its own transaction.
+    # I serialise to Pydantic BEFORE calling audit_service because audit_service
+    # calls db.commit() internally, which expires all SQLAlchemy ORM objects in
+    # the session. FastAPI would then fail to serialise the expired alert object.
+    # Capturing it as a Pydantic model first avoids that race.
+    response = AlertResponse.model_validate(alert)
+
     audit_service.log_action(
         db,
         user_id=str(current_user.id),
         action="alert_resolved",
         resource="alert",
         resource_id=str(alert_id),
-        detail=f"severity={alert.severity}",
+        detail=f"severity={response.severity}",
     )
-    return alert
+    return response
 
 
 @router.post("/alert-rules", response_model=AlertRuleResponse, status_code=201)
