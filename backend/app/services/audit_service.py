@@ -33,11 +33,12 @@ def log_action(
     # operation should still succeed - a lost audit row is far less damaging than a
     # failed user-facing write.
     try:
+        from sqlalchemy import text  # I import here to avoid a circular dependency at module level
         db.execute(
-            """
+            text("""
             INSERT INTO audit_log (id, user_id, action, resource, resource_id, detail, created_at)
             VALUES (:id, :user_id, :action, :resource, :resource_id, :detail, :created_at)
-            """,
+            """),
             {
                 "id": str(uuid.uuid4()),
                 "user_id": user_id,

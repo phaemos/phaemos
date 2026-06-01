@@ -20,6 +20,10 @@ from app.services import audit_service
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+# I cap firmware uploads at 2 MB to prevent a malicious or accidental upload
+# from exhausting server RAM (the whole file is read into memory before writing).
+_MAX_FIRMWARE_BYTES = 2 * 1024 * 1024
+
 # Metadata about the latest firmware is kept in memory (single file at a time).
 # A production system would use a database table to track version history.
 _latest: dict = {}
@@ -44,6 +48,9 @@ async def upload_firmware(
 
     dest = _firmware_path() / "firmware_latest.bin"
     contents = await file.read()
+
+    if len(contents) > _MAX_FIRMWARE_BYTES:
+        raise HTTPException(status_code=413, detail="Firmware file exceeds 2 MB limit")
 
     # SHA-256 checksum lets devices verify integrity after download.
     checksum = hashlib.sha256(contents).hexdigest()
