@@ -82,3 +82,13 @@ def admin_user(db):
     db.add(user)
     db.flush()
     return user
+
+
+@pytest.fixture
+def auth_headers(admin_user):
+    # I generate a real JWT here so tests exercise the actual token-validation path
+    # rather than mocking it - any regression in the auth dependency will surface
+    # in these tests rather than only in manual testing.
+    from app.routes.auth import create_access_token
+    token = create_access_token({"sub": str(admin_user.id), "role": admin_user.role})
+    return {"Authorization": f"Bearer {token}"}
