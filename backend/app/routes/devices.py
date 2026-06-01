@@ -6,8 +6,11 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.device import Device
-# DeviceWithKey is a separate schema that includes the api_key field — we only expose it at registration time
+# DeviceWithKey is a separate schema that includes the api_key field - we only expose it at registration time
 from app.schemas.device import DeviceCreate, DeviceUpdate, DeviceResponse, DeviceWithKey
+from app.routes.auth import get_current_user
+from app.models.user import User
+from app.services import audit_service
 
 # APIRouter groups related endpoints; the prefix ("/devices") is set when the router is mounted in main.py
 router = APIRouter()
@@ -24,7 +27,7 @@ def list_devices(db: Session = Depends(get_db)):
 @router.post("", response_model=DeviceWithKey, status_code=201)
 def register_device(payload: DeviceCreate, db: Session = Depends(get_db)):
     # API key is generated once at registration and used by the device for ingest auth.
-    # token_urlsafe(32) produces a 43-character URL-safe random string — cryptographically secure
+    # token_urlsafe(32) produces a 43-character URL-safe random string - cryptographically secure
     api_key = secrets.token_urlsafe(32)
     # **payload.model_dump() unpacks the Pydantic model into keyword arguments for the SQLAlchemy constructor
     device  = Device(api_key=api_key, **payload.model_dump())
@@ -35,7 +38,7 @@ def register_device(payload: DeviceCreate, db: Session = Depends(get_db)):
     return device
 
 
-# UUID in the path is automatically validated and parsed by FastAPI — a non-UUID value returns 422
+# UUID in the path is automatically validated and parsed by FastAPI - a non-UUID value returns 422
 @router.get("/{device_id}", response_model=DeviceResponse)
 def get_device(device_id: UUID, db: Session = Depends(get_db)):
     # .first() returns None if no row matches, avoiding an exception from .one()
@@ -61,11 +64,26 @@ def update_device(device_id: UUID, payload: DeviceUpdate, db: Session = Depends(
     return device
 
 
-# status_code=204 (No Content) signals success with no response body — standard for DELETE
+# status_code=204 (No Content) signals success with no response body - standard for DELETE
 @router.delete("/{device_id}", status_code=204)
-def delete_device(device_id: UUID, db: Session = Depends(get_db)):
+def delete_device(
+    device_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
     db.delete(device)  # mark the object for deletion in the current session
     db.commit()        # execute the DELETE statement and end the transaction
+
+    # I log after commit so the audit row references a device that no longer exists in a
+    # consistent state - logging before commit would record a deletion that might still roll back.
+    audit_service.log_action(
+        db,
+        user_id=str(current_user.id),
+        action="device_deleted",
+        resource="device",
+        resource_id=str(device_id),
+        detail=f"name={device.name}",
+    )

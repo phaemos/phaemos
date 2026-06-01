@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.ticket import Ticket
 from app.schemas.ticket import TicketCreate, TicketUpdate, TicketResponse
+from app.routes.auth import get_current_user
+from app.models.user import User
+from app.services import audit_service
 
 router = APIRouter()
 
@@ -18,25 +21,36 @@ def list_tickets(status: str | None = None, db: Session = Depends(get_db)):
     # A truthy check on `status` also correctly skips the filter when an empty string is passed
     if status:
         q = q.filter(Ticket.status == status)
-    # Show newest tickets first — important for maintenance workflows where recent issues take priority
+    # Show newest tickets first - important for maintenance workflows where recent issues take priority
     return q.order_by(Ticket.created_at.desc()).all()
 
 
 @router.post("", response_model=TicketResponse, status_code=201)
-def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
-    # TODO: inject current user id from JWT token (Phase 2)
-    # model_dump() converts the validated Pydantic object into a plain dict the SQLAlchemy model can accept
-    ticket = Ticket(**payload.model_dump())
-    db.add(ticket)   # register the object with the session — no SQL is sent yet
-    db.commit()      # write the INSERT to the database and finalize the transaction
-    # After commit the session expires the object; refresh re-fetches it so auto-set fields (id, etc.) are available
+def create_ticket(
+    payload: TicketCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # I set created_by from the authenticated user so the audit trail is accurate.
+    ticket = Ticket(**payload.model_dump(), created_by=current_user.id)
+    db.add(ticket)
+    db.commit()
     db.refresh(ticket)
+
+    audit_service.log_action(
+        db,
+        user_id=str(current_user.id),
+        action="ticket_created",
+        resource="ticket",
+        resource_id=str(ticket.id),
+        detail=f"title={ticket.title!r} priority={ticket.priority}",
+    )
     return ticket
 
 
 @router.get("/{ticket_id}", response_model=TicketResponse)
 def get_ticket(ticket_id: UUID, db: Session = Depends(get_db)):
-    # .first() is safe here — returns None instead of raising an exception when no row is found
+    # .first() is safe here - returns None instead of raising an exception when no row is found
     ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
     if not ticket:
         # HTTP 404 tells the client the resource doesn't exist, which is more informative than a 500 server error
@@ -44,16 +58,37 @@ def get_ticket(ticket_id: UUID, db: Session = Depends(get_db)):
     return ticket
 
 
-# PATCH allows partial updates — the client only sends fields they want to change
+# PATCH allows partial updates - the client only sends fields they want to change
 @router.patch("/{ticket_id}", response_model=TicketResponse)
-def update_ticket(ticket_id: UUID, payload: TicketUpdate, db: Session = Depends(get_db)):
+def update_ticket(
+    ticket_id: UUID,
+    payload: TicketUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
+
+    old_status = ticket.status
     # exclude_none=True means fields the client omitted are not included, preventing accidental overwrites with None
-    for field, value in payload.model_dump(exclude_none=True).items():
-        # setattr lets us update any attribute by name dynamically rather than writing one line per field
+    updates = payload.model_dump(exclude_none=True)
+    for field, value in updates.items():
         setattr(ticket, field, value)
     db.commit()
     db.refresh(ticket)
+
+    # I only log when fields actually changed - empty PATCH calls should not pollute the audit log.
+    if updates:
+        detail = f"fields={list(updates.keys())}"
+        if "status" in updates and updates["status"] != old_status:
+            detail += f" status={old_status}->{ticket.status}"
+        audit_service.log_action(
+            db,
+            user_id=str(current_user.id),
+            action="ticket_updated",
+            resource="ticket",
+            resource_id=str(ticket_id),
+            detail=detail,
+        )
     return ticket
