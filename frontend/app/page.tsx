@@ -7,10 +7,13 @@ import DeviceCard from '@/components/DeviceCard';
 import AlertBanner from '@/components/AlertBanner';
 import TelemetryChart from '@/components/TelemetryChart';
 
+const NODE_TYPES = ['all', 'esp32', 'stm32', 'pico_w', 'nano'] as const;
+
 export default function DashboardPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [nodeType, setNodeType] = useState<string>('all');
 
   // I poll devices and active alerts every 5 seconds - they change infrequently
   // so polling is fine. Only telemetry gets the real-time WebSocket treatment.
@@ -31,9 +34,31 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const activeNodeType = nodeType === 'all' ? undefined : nodeType;
+
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">PHAEMOS Dashboard</h1>
+      <div className="flex items-centre justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">PHAEMOS Dashboard</h1>
+
+        {/* Node type filter — narrows which readings are fetched for the chart */}
+        <div className="flex items-centre gap-1">
+          {NODE_TYPES.map((nt) => (
+            <button
+              key={nt}
+              type="button"
+              onClick={() => setNodeType(nt)}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colours ${
+                nodeType === nt
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+              }`}
+            >
+              {nt}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {alerts.length > 0 && (
         <div className="space-y-2">
@@ -54,8 +79,8 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* TelemetryChart manages its own time-range fetch - just pass the selected device id. */}
-      {selected && <TelemetryChart deviceId={selected} />}
+      {/* TelemetryChart manages its own fetch - pass device id and optional node type filter. */}
+      {selected && <TelemetryChart deviceId={selected} nodeType={activeNodeType} />}
     </main>
   );
 }
