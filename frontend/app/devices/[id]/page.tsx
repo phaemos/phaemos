@@ -1,35 +1,111 @@
-// I make this a Server Component so the device data can be fetched on the
-// server and the page is SEO-friendly - search crawlers will see the full
-// device name in the heading rather than a client-side loading state.
+'use client';
 
-// TODO: fetch device by ID and render SensorGrid with latest telemetry
+// I convert this to a client component so I can use hooks (useState, useEffect,
+// useTelemetry) to fetch device data and stream live telemetry.
+// In Next.js 15 App Router, params is a Promise even in client components;
+// React.use() unwraps it synchronously within the render so the page can read
+// the dynamic segment without adding an extra async wrapper.
 
-// I use Promise<{ id: string }> here because Next.js 15 changed params to be
-// async - the dynamic segment is now a Promise that must be awaited before
-// reading the id value. Using the old synchronous type causes a build error.
+import { use, useState, useEffect } from 'react';
+import type { Device, Telemetry } from '../../../types/index';
+import api from '../../../lib/api';
+import { useTelemetry } from '../../../hooks/useTelemetry';
+import SensorGrid from '../../../components/dashboard/SensorGrid';
+import TelemetryChart from '../../../components/TelemetryChart';
+import StatusBadge from '../../../components/ui/StatusBadge';
+import LoadingSkeleton from '../../../components/ui/LoadingSkeleton';
+import ErrorToast from '../../../components/ui/ErrorToast';
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function DeviceDetailPage({ params }: PageProps) {
-  const { id } = await params;
+export default function DeviceDetailPage({ params }: PageProps) {
+  const { id } = use(params);
+
+  const [device, setDevice]   = useState<Device | null>(null);
+  const [latest, setLatest]   = useState<Telemetry | null>(null);
+  const [devErr, setDevErr]   = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // I fetch device metadata and the latest single reading in parallel so the
+  // page header and sensor grid populate together rather than sequentially.
+  useEffect(() => {
+    Promise.all([
+      api.get<Device>(`/devices/${id}`),
+      api.get<Telemetry>(`/telemetry/${id}/latest`).catch(() => null),
+    ])
+      .then(([devRes, telRes]) => {
+        setDevice(devRes.data);
+        setLatest(telRes?.data ?? null);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Failed to load device';
+        setDevErr(message);
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  // useTelemetry polls the full history for the chart (last 50 readings, 5s cadence).
+  const { data: history } = useTelemetry(id);
+
+  if (loading) {
+    return (
+      <main className="p-6 max-w-7xl mx-auto">
+        <LoadingSkeleton />
+      </main>
+    );
+  }
+
+  if (!device) {
+    return (
+      <main className="p-6 max-w-7xl mx-auto">
+        {devErr && (
+          <ErrorToast message={devErr} onClose={() => setDevErr(null)} />
+        )}
+        <p className="text-gray-500 text-sm">Device not found.</p>
+      </main>
+    );
+  }
 
   return (
-    <main className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-xl font-semibold text-gray-100 mb-6">
-        Device:{' '}
-        <span className="font-mono text-blue-400">{id}</span>
-      </h1>
+    <main className="p-6 max-w-7xl mx-auto space-y-6">
+      {devErr && (
+        <ErrorToast message={devErr} onClose={() => setDevErr(null)} />
+      )}
 
-      {/* TODO: replace with real device fetch + SensorGrid once the data
-          layer is wired up. Something like:
-          const device = await fetchDeviceById(id);
-          const latest = await fetchLatestTelemetry(id);
-          return <SensorGrid reading={latest} />
-      */}
-      <p className="text-gray-500 text-sm">
-        Device detail view - implementation pending.
-      </p>
+      {/* Device header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-100">{device.name}</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {device.location ?? 'No location'} &middot;{' '}
+            <span className="font-mono text-xs text-gray-500">{device.type ?? 'unknown'}</span>
+          </p>
+          <p className="text-xs text-gray-600 mt-1 font-mono">{id}</p>
+        </div>
+        <StatusBadge
+          status={device.status as 'online' | 'offline' | 'warning' | 'fault'}
+        />
+      </div>
+
+      {/* Latest sensor readings grid */}
+      <section>
+        <h2 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
+          Live Sensor Readings
+        </h2>
+        <SensorGrid reading={latest} />
+      </section>
+
+      {/* Historical telemetry chart */}
+      <section>
+        <h2 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
+          Telemetry History
+        </h2>
+        <div className="rounded-xl border border-gray-700 bg-white/5 p-4">
+          <TelemetryChart readings={history} />
+        </div>
+      </section>
     </main>
   );
 }
