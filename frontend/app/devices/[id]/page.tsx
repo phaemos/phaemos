@@ -61,7 +61,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
     return (
       <main className="p-6 max-w-7xl mx-auto">
         {devErr && (
-          <ErrorToast message={devErr} onClose={() => setDevErr(null)} />
+          <ErrorToast message={devErr} onDismiss={() => setDevErr(null)} />
         )}
         <p className="text-gray-500 text-sm">Device not found.</p>
       </main>
@@ -71,7 +71,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
       {devErr && (
-        <ErrorToast message={devErr} onClose={() => setDevErr(null)} />
+        <ErrorToast message={devErr} onDismiss={() => setDevErr(null)} />
       )}
 
       {/* Device header */}
