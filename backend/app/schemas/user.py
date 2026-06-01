@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 # EmailStr is a Pydantic type that validates the string is a properly-formatted email address.
 from pydantic import BaseModel, EmailStr
@@ -28,7 +29,8 @@ class UserResponse(BaseModel):
     # email stays as plain `str` here because we only need to output it, not re-validate format.
     email: str
     # Role drives authorization checks (e.g. "admin" vs "viewer"); stored as a string for flexibility.
-    role:  str
+    role:       str
+    created_at: datetime | None = None
 
     # Allows Pydantic to convert a SQLAlchemy User ORM object directly into this schema.
     model_config = {"from_attributes": True}
