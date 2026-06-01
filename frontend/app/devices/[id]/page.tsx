@@ -46,8 +46,9 @@ export default function DeviceDetailPage({ params }: PageProps) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // useTelemetry polls the full history for the chart (last 50 readings, 5s cadence).
-  const { data: history } = useTelemetry(id);
+  // I poll the latest reading every 5s so the sensor grid stays live without
+  // a full page refresh. TelemetryChart manages its own time-range fetch.
+  useTelemetry(id, { limit: 1 });
 
   if (loading) {
     return (
@@ -97,14 +98,12 @@ export default function DeviceDetailPage({ params }: PageProps) {
         <SensorGrid reading={latest} />
       </section>
 
-      {/* Historical telemetry chart */}
+      {/* Historical telemetry chart - manages its own time range and polling */}
       <section>
         <h2 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
           Telemetry History
         </h2>
-        <div className="rounded-xl border border-gray-700 bg-white/5 p-4">
-          <TelemetryChart readings={history} />
-        </div>
+        <TelemetryChart deviceId={id} />
       </section>
     </main>
   );
