@@ -14,30 +14,36 @@ export default function DashboardPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [nodeType, setNodeType] = useState<string>('all');
+  // I track whether the user has manually picked a device so polling never
+  // auto-selects the first device and overrides their choice.
+  const [userSelected, setUserSelected] = useState(false);
 
   // I poll devices and active alerts every 5 seconds - they change infrequently
   // so polling is fine. Only telemetry gets the real-time WebSocket treatment.
   useEffect(() => {
     const load = async () => {
-      try {
-        const [devRes, alertRes] = await Promise.all([
-          api.get<Device[]>('/devices'),
-          api.get<Alert[]>('/alerts?resolved=false'),
-        ]);
-        setDevices(devRes.data);
-        setAlerts(alertRes.data);
-        if (devRes.data.length > 0 && !selected) {
-          setSelected(devRes.data[0].id);
-        }
-      } catch {
-        // I swallow fetch errors silently - the page renders empty rather than
-        // crashing into the Next.js error overlay when the backend is unreachable.
+      // I use allSettled so a failing alerts query never blocks device cards from rendering.
+      const [devResult, alertResult] = await Promise.allSettled([
+        api.get<Device[]>('/devices'),
+        api.get<Alert[]>('/alerts?resolved=false'),
+      ]);
+      if (devResult.status === 'fulfilled') {
+        setDevices(devResult.value.data);
+        // I only auto-select the first device on the very first load, never on
+        // subsequent polls - otherwise the selection resets every 5 seconds.
+        setSelected((prev) => {
+          if (prev || userSelected) return prev;
+          return devResult.value.data[0]?.id ?? null;
+        });
+      }
+      if (alertResult.status === 'fulfilled') {
+        setAlerts(alertResult.value.data);
       }
     };
     load();
     const interval = setInterval(load, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [userSelected]);
 
   const activeNodeType = nodeType === 'all' ? undefined : nodeType;
 
@@ -79,7 +85,7 @@ export default function DashboardPage() {
             key={d.id}
             device={d}
             active={selected === d.id}
-            onClick={() => setSelected(d.id)}
+            onClick={() => { setSelected(d.id); setUserSelected(true); }}
           />
         ))}
       </div>
