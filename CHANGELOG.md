@@ -9,6 +9,56 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-06-01
+
+### Added
+- Login page and session guard (backlog - next session)
+- Hardware inventory tracking: hardware/inventory/owned.md and needed.md with full component list
+- README added to every folder and subfolder across the entire repo
+- Pico W schematic placeholder added to hardware/schematics/
+- PostCSS config (postcss.config.js) - was missing, causing Tailwind CSS to not compile
+- alerts.resolved String/Boolean type mismatch fix in routes/alerts.py
+- Dashboard selected-device polling bug fix - user selection no longer resets every 5 seconds
+
+### Changed
+- TelemetryChart refactored: prop changed from readings[] to deviceId, now manages own data fetch
+- Dashboard uses Promise.allSettled so a failing alerts query never blocks device cards
+- layout.tsx: suppressHydrationWarning on html element, proper light/dark body classes
+
+## [2.0.0] - 2026-05-30
+
+### Added
+- Extended telemetry schema with 18 new sensor columns (v2)
+- ESP32 v2 structured firmware: 10 sensor modules, 4 output modules, 3 comms modules
+- STM32 Black Pill firmware (FFT vibration analysis)
+- Arduino Nano firmware (auxiliary sensor node)
+- Raspberry Pi Pico 2W MicroPython firmware (ambient environment node)
+- Backend additions: audit_service, Alembic migrations, ML evaluate skeleton
+- Frontend additions: SensorGrid, TicketTable, polling hooks, UI components
+- Hardware wiring guides for all 4 nodes
+- Sensor reference documentation
+- Deployment guide and checklist
+- VERIFICATION.md tracker
+- JWT auth: get_current_user dependency, /auth/me, /auth/users (admin)
+- GET /audit-logs endpoint (admin, paginated)
+- Audit service calls wired into all mutating routes
+- Alert rules CRUD (GET/PUT/DELETE /alert-rules)
+- AlertRulesPanel admin component
+- TicketForm, UserTable, AuditLog wired to real endpoints
+- Device detail page with SensorGrid, TelemetryChart and Export CSV
+- TelemetryChart: 4 collapsible per-sensor groups, 1h/6h/24h/7d time range picker
+- GET /telemetry/export CSV streaming endpoint
+- Device comparison page /compare with up to 3 side-by-side columns
+- Global nav bar
+- node_type filter on GET /telemetry and dashboard picker buttons
+- firmware_version column on Device model and DeviceCard display
+- Demo mode: POST /demo/start with APScheduler sinusoidal data generation
+- 90-day data retention task via APScheduler cron (02:00 UTC)
+- Dark/light mode toggle with ThemeToggle and localStorage persistence
+- ML evaluate.py fully implemented: load_model, evaluate_precision_recall, plot_anomaly_distribution, generate_report
+- Uptime Kuma setup documentation
+- Docs updated: api-reference, architecture, decisions, schema, VERIFICATION
+
 ### Added
 
 - Repo health files: LICENSE, CHANGELOG, CONTRIBUTING, CODE_OF_CONDUCT and SECURITY
