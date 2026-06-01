@@ -25,9 +25,9 @@ interface PageProps {
 export default function DeviceDetailPage({ params }: PageProps) {
   const { id } = use(params);
 
-  const [device, setDevice]   = useState<Device | null>(null);
-  const [latest, setLatest]   = useState<Telemetry | null>(null);
-  const [devErr, setDevErr]   = useState<string | null>(null);
+  const [device, setDevice] = useState<Device | null>(null);
+  const [latest, setLatest] = useState<Telemetry | null>(null);
+  const [devErr, setDevErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // I fetch device metadata and the latest single reading in parallel so the
@@ -66,7 +66,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         {devErr && (
           <ErrorToast message={devErr} onDismiss={() => setDevErr(null)} />
         )}
-        <p className="text-gray-500 text-sm">Device not found.</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm">Device not found.</p>
       </main>
     );
   }
@@ -80,12 +80,12 @@ export default function DeviceDetailPage({ params }: PageProps) {
       {/* Device header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-100">{device.name}</h1>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{device.name}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {device.location ?? 'No location'} &middot;{' '}
-            <span className="font-mono text-xs text-gray-500">{device.type ?? 'unknown'}</span>
+            <span className="font-mono text-xs text-gray-400 dark:text-gray-500">{device.type ?? 'unknown'}</span>
           </p>
-          <p className="text-xs text-gray-600 mt-1 font-mono">{id}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-600 mt-1 font-mono">{id}</p>
         </div>
         <StatusBadge
           status={device.status as 'online' | 'offline' | 'warning' | 'fault'}
@@ -94,22 +94,22 @@ export default function DeviceDetailPage({ params }: PageProps) {
 
       {/* Latest sensor readings grid */}
       <section>
-        <h2 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
+        <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
           Live Sensor Readings
         </h2>
         <SensorGrid reading={latest} />
       </section>
 
-      {/* Historical telemetry chart - manages its own time range and polling */}
+      {/* Historical telemetry chart */}
       <section>
         <div className="flex items-centre justify-between mb-3">
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             Telemetry History
           </h2>
           <a
             href={`${API_BASE}/api/v1/telemetry/export?device_id=${id}`}
             download
-            className="px-3 py-1 rounded text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colours"
+            className="px-3 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colours"
           >
             Export CSV
           </a>

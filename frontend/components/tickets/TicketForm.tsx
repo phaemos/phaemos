@@ -6,15 +6,16 @@ import ErrorToast from '../ui/ErrorToast';
 
 interface TicketFormProps {
   onSuccess?: () => void;
+  prefill?: { device_id?: string; description?: string; title?: string };
 }
 
-export default function TicketForm({ onSuccess }: TicketFormProps) {
-  const [title, setTitle]           = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority]     = useState('');
-  const [deviceId, setDeviceId]     = useState('');
+export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
+  const [title, setTitle] = useState(prefill?.title ?? '');
+  const [description, setDescription] = useState(prefill?.description ?? '');
+  const [priority, setPriority] = useState('');
+  const [deviceId, setDeviceId] = useState(prefill?.device_id ?? '');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError]           = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,62 +49,50 @@ export default function TicketForm({ onSuccess }: TicketFormProps) {
     }
   }
 
+  const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500';
+  const labelClass = 'block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1';
+
   return (
     <>
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 bg-white/5 border border-gray-700 rounded-xl p-6"
+        className="space-y-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
-        <h2 className="text-base font-semibold text-gray-200">New Ticket</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-200">New Ticket</h2>
 
         <div>
-          <label
-            htmlFor="ticket-title"
-            className="block text-xs font-medium text-gray-400 mb-1"
-          >
-            Title
-          </label>
+          <label htmlFor="ticket-title" className={labelClass}>Title</label>
           <input
             id="ticket-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Short description of the issue"
-            className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={inputClass}
             required
           />
         </div>
 
         <div>
-          <label
-            htmlFor="ticket-description"
-            className="block text-xs font-medium text-gray-400 mb-1"
-          >
-            Description
-          </label>
+          <label htmlFor="ticket-description" className={labelClass}>Description</label>
           <textarea
             id="ticket-description"
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Detailed explanation of the fault or maintenance required"
-            className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className={`${inputClass} resize-none`}
           />
         </div>
 
         <div>
-          <label
-            htmlFor="ticket-priority"
-            className="block text-xs font-medium text-gray-400 mb-1"
-          >
-            Priority
-          </label>
+          <label htmlFor="ticket-priority" className={labelClass}>Priority</label>
           <select
             id="ticket-priority"
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={inputClass}
           >
             <option value="">Select priority</option>
             <option value="low">Low</option>
@@ -114,19 +103,14 @@ export default function TicketForm({ onSuccess }: TicketFormProps) {
         </div>
 
         <div>
-          <label
-            htmlFor="ticket-device-id"
-            className="block text-xs font-medium text-gray-400 mb-1"
-          >
-            Device ID
-          </label>
+          <label htmlFor="ticket-device-id" className={labelClass}>Device ID</label>
           <input
             id="ticket-device-id"
             type="text"
             value={deviceId}
             onChange={(e) => setDeviceId(e.target.value)}
             placeholder="UUID of the associated device (optional)"
-            className="w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            className={`${inputClass} font-mono`}
           />
         </div>
 
