@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -5,11 +7,22 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from app.config import settings
 from app.db import Base, engine
 from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo
+from app.tasks.retention import start_retention_scheduler
 
 # I create all tables on startup - use Alembic migrations for production
 Base.metadata.create_all(bind=engine)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # I start the retention scheduler here rather than at module level so it
+    # does not launch during pytest collection (which imports main).
+    start_retention_scheduler()
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="PHAEMOS API",
     description="Smart Maintenance Platform - telemetry ingestion, alert rules, tickets and ML anomaly detection",
     version="1.0.0",
