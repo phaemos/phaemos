@@ -11,6 +11,7 @@ interface UseTelemetryOptions {
   fromTs?: string;
   toTs?: string;
   limit?: number;
+  nodeType?: string;
 }
 
 interface UseTelemetryResult {
@@ -29,7 +30,7 @@ export function useTelemetry(
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { fromTs, toTs, limit = 50 } = options;
+  const { fromTs, toTs, limit = 50, nodeType } = options;
 
   // I extract the fetch logic into useCallback so the interval handler and the
   // manual refetch both call the exact same function without duplicating code.
@@ -38,6 +39,7 @@ export function useTelemetry(
       const params: Record<string, string | number> = { limit };
       if (fromTs) params.from_ts = fromTs;
       if (toTs) params.to_ts = toTs;
+      if (nodeType) params.node_type = nodeType;
       const response = await api.get<Telemetry[]>(`/telemetry/${deviceId}`, { params });
       setData(response.data);
       setError(null);
@@ -48,7 +50,7 @@ export function useTelemetry(
     } finally {
       setLoading(false);
     }
-  }, [deviceId, fromTs, toTs, limit]);
+  }, [deviceId, fromTs, toTs, limit, nodeType]);
 
   useEffect(() => {
     // I set loading true whenever the deviceId or time range changes so the consumer

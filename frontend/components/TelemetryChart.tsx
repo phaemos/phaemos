@@ -57,6 +57,7 @@ const SENSOR_GROUPS: SensorGroup[] = [
 
 interface Props {
   deviceId: string;
+  nodeType?: string;
 }
 
 function fromTsForRange(range: Range): string {
@@ -68,14 +69,14 @@ function hasData(readings: Telemetry[], keys: (keyof Telemetry)[]): boolean {
   return readings.some((r) => keys.some((k) => r[k] !== null && r[k] !== undefined));
 }
 
-export default function TelemetryChart({ deviceId }: Props) {
+export default function TelemetryChart({ deviceId, nodeType }: Props) {
   const [range, setRange] = useState<Range>('1h');
 
   const fromTs = useMemo(() => fromTsForRange(range), [range]);
 
   // I limit to 500 rows for the historical view — enough to draw smooth lines
   // without saturating the browser paint cycle.
-  const { data: readings, loading } = useTelemetry(deviceId, { fromTs, limit: 500 });
+  const { data: readings, loading } = useTelemetry(deviceId, { fromTs, limit: 500, nodeType });
 
   const chartData = useMemo(
     () =>
