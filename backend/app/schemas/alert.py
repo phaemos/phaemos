@@ -27,6 +27,15 @@ class AlertRuleResponse(AlertRuleCreate):
     model_config = {"from_attributes": True}
 
 
+# --- AlertRuleUpdate ---
+# All fields optional so callers can PATCH any subset without resending unchanged values.
+class AlertRuleUpdate(BaseModel):
+    metric:    str | None = None
+    condition: str | None = None
+    threshold: float | None = None
+    severity:  str | None = None
+
+
 # --- AlertResponse ---
 # Represents a fired alert event (not the rule itself) as stored in the alerts table.
 class AlertResponse(BaseModel):
