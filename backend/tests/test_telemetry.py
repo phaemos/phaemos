@@ -37,23 +37,24 @@ def test_ingest_success(client, device):
     assert "is_anomaly" in body
 
 
-def test_get_telemetry_empty(client, device):
-    res = client.get(f"/api/v1/telemetry/{device.id}")
+def test_get_telemetry_empty(client, device, auth_headers):
+    # GET /telemetry now requires a Bearer token - previously unauthenticated.
+    res = client.get(f"/api/v1/telemetry/{device.id}", headers=auth_headers)
     assert res.status_code == 200
     assert res.json() == []
 
 
-def test_get_latest_not_found(client, device):
-    res = client.get(f"/api/v1/telemetry/{device.id}/latest")
+def test_get_latest_not_found(client, device, auth_headers):
+    res = client.get(f"/api/v1/telemetry/{device.id}/latest", headers=auth_headers)
     assert res.status_code == 404
 
 
-def test_get_latest_after_ingest(client, device):
+def test_get_latest_after_ingest(client, device, auth_headers):
     client.post(
         "/api/v1/telemetry",
         json={"device_id": str(device.id), "temperature": 30.0},
         headers={"X-API-Key": device.api_key},
     )
-    res = client.get(f"/api/v1/telemetry/{device.id}/latest")
+    res = client.get(f"/api/v1/telemetry/{device.id}/latest", headers=auth_headers)
     assert res.status_code == 200
     assert res.json()["temperature"] == 30.0

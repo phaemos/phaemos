@@ -64,6 +64,31 @@ def update_device(device_id: UUID, payload: DeviceUpdate, db: Session = Depends(
     return device
 
 
+@router.post("/{device_id}/rotate-key", response_model=DeviceWithKey)
+def rotate_api_key(
+    device_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # I require auth so only legitimate operators can rotate keys, not
+    # unauthenticated callers who might know a device UUID from other sources.
+    device = db.query(Device).filter(Device.id == device_id).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    device.api_key = secrets.token_urlsafe(32)
+    db.commit()
+    db.refresh(device)
+    audit_service.log_action(
+        db,
+        user_id=str(current_user.id),
+        action="api_key_rotated",
+        resource="device",
+        resource_id=str(device_id),
+        detail=f"name={device.name}",
+    )
+    return device
+
+
 # status_code=204 (No Content) signals success with no response body - standard for DELETE
 @router.delete("/{device_id}", status_code=204)
 def delete_device(
