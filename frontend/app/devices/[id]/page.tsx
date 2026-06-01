@@ -10,6 +10,8 @@ import { use, useState, useEffect } from 'react';
 import type { Device, Telemetry } from '../../../types/index';
 import api from '../../../lib/api';
 import { useTelemetry } from '../../../hooks/useTelemetry';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 import SensorGrid from '../../../components/dashboard/SensorGrid';
 import TelemetryChart from '../../../components/TelemetryChart';
 import StatusBadge from '../../../components/ui/StatusBadge';
@@ -100,9 +102,18 @@ export default function DeviceDetailPage({ params }: PageProps) {
 
       {/* Historical telemetry chart - manages its own time range and polling */}
       <section>
-        <h2 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
-          Telemetry History
-        </h2>
+        <div className="flex items-centre justify-between mb-3">
+          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+            Telemetry History
+          </h2>
+          <a
+            href={`${API_BASE}/api/v1/telemetry/export?device_id=${id}`}
+            download
+            className="px-3 py-1 rounded text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colours"
+          >
+            Export CSV
+          </a>
+        </div>
         <TelemetryChart deviceId={id} />
       </section>
     </main>
