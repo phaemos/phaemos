@@ -96,3 +96,78 @@ Use PostgreSQL locally via Docker Compose from Day 1. Same database in dev and p
 - Dev/prod parity from the start
 - Requires Docker running locally
 - UUID primary keys, `gen_random_uuid()` and `TIMESTAMP` types all behave the same in both environments
+
+---
+
+## 006 - APScheduler (in-process) over Celery for background tasks
+
+**Date:** 2026-06-01
+**Status:** Accepted
+
+**Context:**
+The project needs two background tasks: demo mode telemetry generation (every 5 seconds) and telemetry data retention (daily at 02:00 UTC). Celery would be the production-grade choice but requires a Redis broker and separate worker process.
+
+**Decision:**
+Use APScheduler's BackgroundScheduler running in a daemon thread inside the same FastAPI process. Both tasks use their own SQLAlchemy sessions rather than the request-scoped Depends(get_db) session.
+
+**Consequences:**
+
+- Zero extra infrastructure (no Celery worker, no separate broker config)
+- Tasks are lost if the process crashes mid-run (acceptable for demo and retention)
+- Cannot distribute tasks across workers - one instance runs each job (fine for single-instance Render deployment)
+- Upgrade path: swap to Celery when horizontal scaling or task persistence is required
+
+---
+
+## 007 - StreamingResponse for CSV export (not pre-built file)
+
+**Date:** 2026-06-01
+**Status:** Accepted
+
+**Context:**
+Telemetry exports can be large. Loading all rows into a Python list before sending them would spike memory usage.
+
+**Decision:**
+Use FastAPI's `StreamingResponse` with an `io.StringIO` buffer and Python's `csv` stdlib. Rows are serialised in one pass and the buffer is iterated directly into the HTTP response.
+
+**Consequences:**
+
+- Memory usage is bounded regardless of result set size
+- Buffered in `io.StringIO` rather than streamed row-by-row (acceptable for current scale; could switch to a generator per row for very large exports)
+
+---
+
+## 008 - TelemetryChart owns its own data fetch (not parent-controlled)
+
+**Date:** 2026-06-01
+**Status:** Accepted
+
+**Context:**
+The previous design passed `readings: Telemetry[]` as a prop. The chart now has its own time-range picker (1h/6h/24h/7d) which changes what data is fetched.
+
+**Decision:**
+Pass `deviceId: string` to TelemetryChart and let it own the `useTelemetry` call internally. The parent no longer manages the readings array.
+
+**Consequences:**
+
+- Time-range changes do not require the parent page to re-render
+- The chart can be placed on any page (dashboard, compare, device detail) with one prop
+- Slight duplication: device detail page also calls useTelemetry separately for the live sensor grid
+
+---
+
+## 009 - Tailwind class-based dark mode (not media query)
+
+**Date:** 2026-06-01
+**Status:** Accepted
+
+**Context:**
+The app is dark-only. Adding a light mode toggle was requested. Tailwind supports two dark mode strategies: `media` (follows OS setting) and `class` (controlled by a CSS class on `<html>`).
+
+**Decision:**
+Use `darkMode: 'class'` with a pre-hydration inline script in `<head>` that reads `localStorage` and applies the `dark` class before React mounts. This prevents a flash of the wrong theme.
+
+**Consequences:**
+
+- User preference overrides OS setting (intentional - dashboard use case needs explicit control)
+- Inline script is `dangerouslySetInnerHTML` but is safe here as it contains no user input
