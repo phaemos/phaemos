@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.device import Device
 from app.models.telemetry import Telemetry
+from app.models.user import User
+from app.routes.auth import get_current_user
 from app.schemas.telemetry import TelemetryIngest, TelemetryResponse
 from app.services.ml_service import score_reading
 from app.services.alert_service import evaluate_rules
@@ -78,6 +80,8 @@ def export_telemetry(
     device_id: uuid.UUID,
     from_ts: datetime | None = None,
     to_ts: datetime | None = None,
+    # I require auth here to prevent unauthenticated bulk data export.
+    _user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # I define /export before /{device_id} so FastAPI matches it as a literal
@@ -120,6 +124,7 @@ def get_telemetry(
     from_ts: datetime | None = None,
     to_ts: datetime | None = None,
     node_type: str | None = None,
+    _user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # I use from_ts/to_ts rather than 'from' (reserved keyword) for the query param names.
@@ -139,7 +144,11 @@ def get_telemetry(
 
 
 @router.get("/{device_id}/latest", response_model=TelemetryResponse)
-def get_latest(device_id: uuid.UUID, db: Session = Depends(get_db)):
+def get_latest(
+    device_id: uuid.UUID,
+    _user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     row = (
         db.query(Telemetry)
         .filter(Telemetry.device_id == device_id)

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -8,15 +8,20 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_db
+from app.limiter import limiter
 from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin, UserResponse, TokenResponse
 
-router  = APIRouter()
+router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# I use HTTPBearer so FastAPI auto-generates the "Authorise" button in the OpenAPI UI,
-# making it easier to test protected endpoints without a separate tool.
+# I use HTTPBearer so FastAPI generates the "Authorise" button in the OpenAPI UI.
 _bearer = HTTPBearer()
+
+# I lock accounts for 15 minutes after 5 consecutive failures, matching NIST
+# SP 800-63B guidance on brute-force mitigation.
+_MAX_FAILURES = 5
+_LOCKOUT_MINUTES = 15
 
 
 def hash_password(password: str) -> str:
@@ -28,7 +33,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(data: dict) -> str:
-    # I include user identity, role and a short-lived expiration in the JWT payload.
+    # I include user identity, role and a short-lived expiration in the payload.
     payload = data.copy()
     payload["exp"] = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
@@ -36,21 +41,29 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
+def decode_token(token: str) -> dict:
+    """Decode and validate a JWT, returning the payload or raising HTTPException."""
+    # I expose this as a standalone helper so the WebSocket route can validate
+    # tokens passed as query params without depending on the HTTPBearer scheme.
+    try:
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+        if not payload.get("sub"):
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Could not validate token")
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
-    # I factor this into a reusable dependency so any route can require an authenticated
-    # user without duplicating the JWT decode + DB lookup logic.
-    token = credentials.credentials
-    try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        user_id: str = payload.get("sub")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate token")
-
+    # I factor this into a reusable dependency so any route can require an
+    # authenticated user without duplicating the JWT decode + DB lookup logic.
+    payload = decode_token(credentials.credentials)
+    user_id: str = payload.get("sub")
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
@@ -58,8 +71,8 @@ def get_current_user(
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    # I keep the role guard as a separate dependency so admin-only routes read cleanly:
-    # `Depends(require_admin)` states the intent without embedding an if-block in every handler.
+    # I keep the role guard as a separate dependency so admin-only routes read
+    # cleanly: `Depends(require_admin)` states the intent without an if-block.
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin role required")
     return current_user
@@ -67,13 +80,12 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
-    # I do a basic duplicate check to keep email unique until a proper DB constraint migration is added.
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     user = User(
-        name          = payload.name,
-        email         = payload.email,
-        password_hash = hash_password(payload.password),
+        name=payload.name,
+        email=payload.email,
+        password_hash=hash_password(payload.password),
     )
     db.add(user)
     db.commit()
@@ -82,18 +94,43 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
+    # I look up by email first; if the user does not exist I still run through
+    # the lockout path to avoid leaking whether an email is registered.
     user = db.query(User).filter(User.email == payload.email).first()
+
+    # I check lockout before verifying the password so a locked account cannot
+    # be probed even with the correct credentials.
+    if user and user.locked_until and user.locked_until > datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=429,
+            detail="Account locked due to too many failed attempts. Try again later.",
+        )
+
     if not user or not verify_password(payload.password, user.password_hash):
+        if user:
+            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+            if user.failed_login_attempts >= _MAX_FAILURES:
+                user.locked_until = datetime.now(timezone.utc) + timedelta(
+                    minutes=_LOCKOUT_MINUTES
+                )
+            db.commit()
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Reset failure counter and record the successful login timestamp.
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    user.last_login = datetime.now(timezone.utc)
+    db.commit()
+
     token = create_access_token({"sub": str(user.id), "role": user.role})
     return {"access_token": token, "token_type": "bearer"}
 
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
-    # The get_current_user dependency handles all decoding and DB lookup;
-    # this handler just returns what was resolved.
+    # The get_current_user dependency handles decoding and DB lookup.
     return current_user
 
 
@@ -104,8 +141,8 @@ def list_users(
     _admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    # I name the admin dependency _admin (underscore prefix) to signal it is only used
-    # for its side-effect (role guard), not its return value.
+    # I name the admin dependency _admin (underscore prefix) to signal it is
+    # only used for its side-effect (role guard), not its return value.
     return (
         db.query(User)
         .order_by(User.created_at.desc())
