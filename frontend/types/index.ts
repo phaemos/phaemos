@@ -99,4 +99,5 @@ export interface User {
   name: string | null;
   email: string;
   role: 'admin' | 'technician' | 'viewer';
+  created_at?: string;
 }
