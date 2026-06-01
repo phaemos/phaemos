@@ -15,9 +15,10 @@ class DeviceCreate(BaseModel):
 # --- DeviceUpdate ---
 # All fields are optional so clients can PATCH only the fields they want to change.
 class DeviceUpdate(BaseModel):
-    name:     str | None = None
-    location: str | None = None
-    status:   str | None = None
+    name:             str | None = None
+    location:         str | None = None
+    status:           str | None = None
+    firmware_version: str | None = None
 
 
 # --- DeviceResponse ---
@@ -31,8 +32,9 @@ class DeviceResponse(BaseModel):
     type:       str | None
     status:     str
     # `last_seen` is set by the backend when a device posts telemetry; NULL means never seen.
-    last_seen:  datetime | None
-    created_at: datetime
+    last_seen:        datetime | None
+    firmware_version: str | None = None
+    created_at:       datetime
 
     # `from_attributes=True` tells Pydantic to read fields from ORM object attributes (e.g. SQLAlchemy row),
     # not just from plain dicts — required when returning database model instances directly.
