@@ -43,7 +43,7 @@ export default function AuditLog() {
 
   return (
     <>
-      {error && <ErrorToast message={error} onClose={() => setError(null)} />}
+      {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
       <div className="rounded-xl border border-gray-700 overflow-hidden">
         <table className="w-full text-sm text-gray-300">
           <thead className="bg-gray-800 text-xs text-gray-400 uppercase tracking-wider">

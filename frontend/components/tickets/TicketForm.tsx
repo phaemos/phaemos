@@ -50,7 +50,7 @@ export default function TicketForm({ onSuccess }: TicketFormProps) {
 
   return (
     <>
-      {error && <ErrorToast message={error} onClose={() => setError(null)} />}
+      {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
       <form
         onSubmit={handleSubmit}
         className="space-y-4 bg-white/5 border border-gray-700 rounded-xl p-6"
