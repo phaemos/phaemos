@@ -17,17 +17,42 @@ import TelemetryChart from '../../../components/TelemetryChart';
 import StatusBadge from '../../../components/ui/StatusBadge';
 import LoadingSkeleton from '../../../components/ui/LoadingSkeleton';
 import ErrorToast from '../../../components/ui/ErrorToast';
+import { useToast } from '../../../hooks/useToast';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+interface UserSummary {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+}
+
+function getTokenRole(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default function DeviceDetailPage({ params }: PageProps) {
   const { id } = use(params);
+  const { addToast } = useToast();
 
-  const [device, setDevice] = useState<Device | null>(null);
-  const [devErr, setDevErr] = useState<string | null>(null);
+  const [device, setDevice]   = useState<Device | null>(null);
+  const [devErr, setDevErr]   = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers]     = useState<UserSummary[]>([]);
+  const [savingOwner, setSavingOwner] = useState(false);
+
+  const isAdmin = getTokenRole() === 'admin';
 
   // I fetch only device metadata here - the latest reading comes from the
   // useTelemetry poll below so the sensor grid auto-updates every 5 seconds.
@@ -40,6 +65,28 @@ export default function DeviceDetailPage({ params }: PageProps) {
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  // I fetch the user list once so the owner picker dropdown is populated.
+  // Only admins see this picker so this request is skipped for other roles.
+  useEffect(() => {
+    if (!isAdmin) return;
+    api.get<UserSummary[]>('/auth/users').then((r) => setUsers(r.data));
+  }, [isAdmin]);
+
+  const handleOwnerChange = async (ownerId: string) => {
+    setSavingOwner(true);
+    try {
+      const res = await api.patch<Device>(`/devices/${id}`, {
+        owner_id: ownerId === '' ? null : ownerId,
+      });
+      setDevice(res.data);
+      addToast('success', 'Device owner updated');
+    } catch {
+      addToast('error', 'Failed to update device owner');
+    } finally {
+      setSavingOwner(false);
+    }
+  };
 
   // I poll GET /telemetry/{id}/latest every 5s and pass data[0] to SensorGrid
   // so operators see live readings without a page refresh.
@@ -64,6 +111,8 @@ export default function DeviceDetailPage({ params }: PageProps) {
     );
   }
 
+  const technicians = users.filter((u) => u.role === 'technician');
+
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
       {devErr && (
@@ -84,6 +133,29 @@ export default function DeviceDetailPage({ params }: PageProps) {
           status={device.status as 'online' | 'offline' | 'warning' | 'fault'}
         />
       </div>
+
+      {/* Owner picker - admins only */}
+      {isAdmin && (
+        <section className="card p-4">
+          <label className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500 mb-2 block">
+            Assigned Owner
+          </label>
+          <select
+            aria-label="Device owner"
+            value={device.owner_id ?? ''}
+            onChange={(e) => handleOwnerChange(e.target.value)}
+            disabled={savingOwner}
+            className="w-full max-w-xs px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-sm text-surface-900 dark:text-surface-50 focus:ring-2 focus:ring-brand-500 outline-none disabled:opacity-60"
+          >
+            <option value="">Unassigned</option>
+            {technicians.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name ?? u.email}
+              </option>
+            ))}
+          </select>
+        </section>
+      )}
 
       {/* Latest sensor readings grid */}
       <section>
