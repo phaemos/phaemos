@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.alert import Alert, AlertRule
 from app.models.device import Device
-from app.services import notify_service
+from app.services import notify_service, webhook_service
 
 
 _CONDITIONS = {
@@ -47,6 +47,13 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
                 subject=f"PHAEMOS [{rule.severity.upper()}] {device.name}",
                 body=alert.message,
             )
+            webhook_service.notify_all(db, {
+                "device_name": device.name,
+                "metric":      rule.metric,
+                "value":       value,
+                "threshold":   rule.threshold,
+                "severity":    rule.severity,
+            })
             db.add(alert)
 
     db.commit()
