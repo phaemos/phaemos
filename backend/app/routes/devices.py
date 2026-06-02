@@ -2,7 +2,8 @@ import secrets
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import or_
+from pydantic import BaseModel
+from sqlalchemy import any_, or_
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -22,6 +23,9 @@ router = APIRouter()
 def list_devices(
     skip: int = 0,
     limit: int = 20,
+    search: str | None = None,
+    status: str | None = None,
+    tag: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -33,6 +37,12 @@ def list_devices(
         q = q.filter(
             or_(Device.owner_id == current_user.id, Device.owner_id.is_(None))
         )
+    if search:
+        q = q.filter(Device.name.ilike(f"%{search}%"))
+    if status:
+        q = q.filter(Device.status == status)
+    if tag:
+        q = q.filter(tag == any_(Device.tags))
     return q.offset(skip).limit(limit).all()
 
 
@@ -150,3 +160,68 @@ def delete_device(
         resource_id=str(device_id),
         detail=f"name={device.name}",
     )
+
+
+# ── Tag management ───────────────────────────────────────────────────────────
+
+class TagBody(BaseModel):
+    tag: str
+
+
+@router.post("/{device_id}/tags", response_model=DeviceResponse)
+def add_tag(
+    device_id: UUID,
+    body: TagBody,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    device = db.query(Device).filter(Device.id == device_id).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    if body.tag not in device.tags:
+        device.tags = device.tags + [body.tag]
+        db.commit()
+        db.refresh(device)
+    return device
+
+
+@router.delete("/{device_id}/tags/{tag}", response_model=DeviceResponse)
+def remove_tag(
+    device_id: UUID,
+    tag: str,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    device = db.query(Device).filter(Device.id == device_id).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    device.tags = [t for t in device.tags if t != tag]
+    db.commit()
+    db.refresh(device)
+    return device
+
+
+# ── Batch operations ─────────────────────────────────────────────────────────
+
+class BatchFirmwareUpdate(BaseModel):
+    tag: str
+    version: str
+
+
+@router.post("/batch/firmware-update", status_code=202)
+def batch_firmware_update(
+    body: BatchFirmwareUpdate,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Queue a firmware version flag on all devices with the given tag.
+    Devices pick up the new target version on their next /firmware/latest poll."""
+    updated = (
+        db.query(Device)
+        .filter(body.tag == any_(Device.tags))
+        .all()
+    )
+    for device in updated:
+        device.firmware_version = body.version
+    db.commit()
+    return {"queued": len(updated), "tag": body.tag, "target_version": body.version}
