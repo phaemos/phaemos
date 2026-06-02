@@ -3,7 +3,7 @@
 // I split readings into sensor groups so each chart has a focused y-axis scale
 // instead of cramming incompatible units (Celsius, g-units, mA) onto one axis.
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import {
   LineChart,
   Line,
@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useTelemetry } from '../hooks/useTelemetry';
+import { useWebSocketTelemetry } from '../hooks/useWebSocketTelemetry';
 import type { Telemetry } from '../types/index';
 
 type Range = '1h' | '6h' | '24h' | '7d';
@@ -76,7 +77,28 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
 
   // I limit to 500 rows for the historical view — enough to draw smooth lines
   // without saturating the browser paint cycle.
-  const { data: readings, loading } = useTelemetry(deviceId, { fromTs, limit: 500, nodeType });
+  const { data: polledReadings, loading } = useTelemetry(deviceId, { fromTs, limit: 500, nodeType });
+
+  // I keep WS-pushed readings in a ref to avoid re-renders on every push.
+  // The chart only rebuilds when polledReadings changes (every 5s poll), but
+  // the ref lets me merge live readings in the useMemo below without stale closures.
+  const liveRef = useRef<Telemetry[]>([]);
+
+  const handleWsMessage = useCallback((reading: Telemetry) => {
+    // I cap the live buffer at 50 entries so unbounded device activity does not
+    // grow memory without limit between polling cycles.
+    liveRef.current = [reading, ...liveRef.current].slice(0, 50);
+  }, []);
+
+  useWebSocketTelemetry(deviceId, { onMessage: handleWsMessage });
+
+  // I merge live readings ahead of polled ones; duplicates are filtered by id
+  // so a reading that arrives via WS before the next poll does not appear twice.
+  const readings = useMemo(() => {
+    const seen = new Set(polledReadings.map((r) => r.id));
+    const fresh = liveRef.current.filter((r) => !seen.has(r.id));
+    return [...fresh, ...polledReadings];
+  }, [polledReadings]);
 
   const chartData = useMemo(
     () =>
