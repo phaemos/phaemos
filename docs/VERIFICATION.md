@@ -53,6 +53,11 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] Demo mode (POST /demo/start, POST /demo/stop, APScheduler)
 - [x] 90-day telemetry retention background task (APScheduler cron, daily 02:00 UTC)
 - [x] firmware_version column on Device + exposed in DeviceResponse
+- [x] Security hardening - rate limiting, lockout, WS JWT, telemetry Bearer auth, CORS, API key rotation (PR 74)
+- [x] alert rule evaluation extended to all v2 sensor fields (PR 79)
+- [x] POST /api/v1/ml/retrain - admin only, background task, 1-hour cooldown (PR 80)
+- [x] alerts.resolved ORM column corrected to Boolean (PR 82)
+- [x] GET /devices and GET /tickets pagination via skip/limit (PR 84)
 
 ---
 
@@ -120,7 +125,15 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] Global nav bar added to layout.tsx
 - [x] Dark/light mode toggle (ThemeToggle + localStorage + pre-hydration script)
 - [x] useTickets polling hook
-- [ ] Login page (not yet implemented)
+- [x] Login page /login (JWT + cookie, PR 75)
+- [x] Next.js edge middleware route guard (PR 75)
+- [x] LogoutButton in navbar (PR 75)
+- [x] Full light mode - dark: variants across all components (PR 76)
+- [x] useWebSocketTelemetry hook with exponential backoff reconnect (PR 77)
+- [x] TelemetryChart wired for live WS pushes (PR 77)
+- [x] SensorGrid on device detail page polls every 5s - live updates (PR 81)
+- [x] AlertBanner Create Ticket button with prefilled modal (PR 83)
+- [x] Tickets and Devices pages pagination Prev/Next controls (PR 84)
 
 ---
 
