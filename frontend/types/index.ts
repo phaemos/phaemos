@@ -6,6 +6,8 @@ export interface Device {
   status: 'online' | 'offline' | 'warning' | 'fault';
   last_seen: string | null;
   firmware_version: string | null;
+  tags: string[] | null;
+  owner_id: string | null;
   created_at: string;
 }
 
