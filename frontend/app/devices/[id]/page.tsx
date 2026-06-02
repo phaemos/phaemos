@@ -7,7 +7,7 @@
 // the dynamic segment without adding an extra async wrapper.
 
 import { use, useState, useEffect } from 'react';
-import type { Device, Telemetry } from '../../../types/index';
+import type { Device } from '../../../types/index';
 import api from '../../../lib/api';
 import { useTelemetry } from '../../../hooks/useTelemetry';
 
@@ -26,21 +26,14 @@ export default function DeviceDetailPage({ params }: PageProps) {
   const { id } = use(params);
 
   const [device, setDevice] = useState<Device | null>(null);
-  const [latest, setLatest] = useState<Telemetry | null>(null);
   const [devErr, setDevErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // I fetch device metadata and the latest single reading in parallel so the
-  // page header and sensor grid populate together rather than sequentially.
+  // I fetch only device metadata here - the latest reading comes from the
+  // useTelemetry poll below so the sensor grid auto-updates every 5 seconds.
   useEffect(() => {
-    Promise.all([
-      api.get<Device>(`/devices/${id}`),
-      api.get<Telemetry>(`/telemetry/${id}/latest`).catch(() => null),
-    ])
-      .then(([devRes, telRes]) => {
-        setDevice(devRes.data);
-        setLatest(telRes?.data ?? null);
-      })
+    api.get<Device>(`/devices/${id}`)
+      .then((res) => { setDevice(res.data); })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : 'Failed to load device';
         setDevErr(message);
@@ -48,9 +41,9 @@ export default function DeviceDetailPage({ params }: PageProps) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // I poll the latest reading every 5s so the sensor grid stays live without
-  // a full page refresh. TelemetryChart manages its own time-range fetch.
-  useTelemetry(id, { limit: 1 });
+  // I poll GET /telemetry/{id}/latest every 5s and pass data[0] to SensorGrid
+  // so operators see live readings without a page refresh.
+  const { data: liveReadings } = useTelemetry(id, { limit: 1 }, 5000);
 
   if (loading) {
     return (
@@ -97,7 +90,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
           Live Sensor Readings
         </h2>
-        <SensorGrid reading={latest} />
+        <SensorGrid reading={liveReadings[0] ?? null} />
       </section>
 
       {/* Historical telemetry chart */}
