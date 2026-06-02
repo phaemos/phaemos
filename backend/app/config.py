@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
     # -- Resend email (invitation flow) - graceful no-op when key is placeholder --
     resend_api_key: str = "placeholder"
-    from_email:     str = "noreply@phaemos.io"
+    from_email:     str = "no-reply@phaemos.com"
 
     # -- SMS (Brevo) - graceful no-op when key is empty or placeholder --
     brevo_api_key:   str = ""
