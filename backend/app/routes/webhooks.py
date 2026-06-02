@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
 
@@ -9,6 +9,7 @@ from app.models.user import User
 from app.models.webhook import Webhook
 from app.routes.auth import require_admin
 from app.services import webhook_service
+from app.limiter import limiter
 
 router = APIRouter()
 
@@ -95,7 +96,9 @@ def delete_webhook(
 
 
 @router.post("/webhooks/{webhook_id}/test", status_code=200)
+@limiter.limit("10/minute")
 def test_webhook(
+    request: Request,
     webhook_id: UUID,
     background_tasks: BackgroundTasks,
     _admin: User = Depends(require_admin),
