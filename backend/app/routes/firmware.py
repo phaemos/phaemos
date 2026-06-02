@@ -7,9 +7,11 @@ import hashlib
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Header
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+
+from app.limiter import limiter
 
 from app.config import settings
 from app.db import get_db
@@ -36,7 +38,9 @@ def _firmware_path() -> Path:
 
 
 @router.post("/firmware/upload", status_code=201)
+@limiter.limit("20/hour")
 async def upload_firmware(
+    request: Request,
     version: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),

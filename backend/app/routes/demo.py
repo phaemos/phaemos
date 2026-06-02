@@ -4,8 +4,10 @@ import uuid as uuid_module
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session, sessionmaker
+
+from app.limiter import limiter
 
 from app.db import get_db, engine
 from app.models.device import Device
@@ -64,7 +66,9 @@ def _ingest_demo_reading() -> None:
 
 
 @router.post("/demo/start")
+@limiter.limit("5/minute")
 def start_demo(
+    request: Request,
     db: Session = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
