@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.db import Base, engine
 from app.limiter import limiter
-from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo, webhooks
+from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo, webhooks, maintenance
 from app.tasks.retention import start_retention_scheduler
 
 # I create all tables on startup - use Alembic migrations for production
@@ -59,7 +59,8 @@ app.include_router(ml.router,        prefix="/api/v1/ml",          tags=["ML"])
 app.include_router(firmware.router,  prefix="/api/v1",             tags=["Firmware"])
 app.include_router(audit.router,     prefix="/api/v1",             tags=["Audit"])
 app.include_router(demo.router,      prefix="/api/v1",             tags=["Demo"])
-app.include_router(webhooks.router,  prefix="/api/v1",             tags=["Webhooks"])
+app.include_router(webhooks.router,     prefix="/api/v1",  tags=["Webhooks"])
+app.include_router(maintenance.router,  prefix="/api/v1",  tags=["Maintenance"])
 # I give WebSocket routes a different prefix - no /api/v1 so the WS URL is clean.
 app.include_router(ws.router,        tags=["WebSocket"])
 
