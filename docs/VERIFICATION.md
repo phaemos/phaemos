@@ -58,6 +58,7 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] POST /api/v1/ml/retrain - admin only, background task, 1-hour cooldown (PR 80)
 - [x] alerts.resolved ORM column corrected to Boolean (PR 82)
 - [x] GET /devices and GET /tickets pagination via skip/limit (PR 84)
+- [x] Multi-tenant device ownership - nullable owner_id FK on devices, GET /devices auth-gated with role filter (PR 86)
 
 ---
 
