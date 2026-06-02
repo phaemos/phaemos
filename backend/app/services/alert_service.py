@@ -7,8 +7,9 @@ from sqlalchemy.orm import Session
 
 from app.models.alert import Alert, AlertRule
 from app.models.device import Device
+from app.models.user import User
 from app.routes.maintenance import is_in_maintenance
-from app.services import notify_service, webhook_service
+from app.services import notify_service, sms_service, webhook_service
 
 
 _CONDITIONS = {
@@ -60,6 +61,18 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
                 "threshold":   rule.threshold,
                 "severity":    rule.severity,
             })
+            # I only send SMS for critical alerts - warning/info would generate too much noise
+            # on a paid SMS channel. The owner's phone number is fetched lazily from the DB
+            # so the query only happens when there is actually a critical alert to send.
+            if rule.severity == "critical" and device.owner_id:
+                owner = db.query(User).filter(User.id == device.owner_id).first()
+                sms_service.notify_critical(
+                    phone_number=owner.phone_number if owner else None,
+                    device_name=device.name,
+                    metric=rule.metric,
+                    value=value,
+                    threshold=rule.threshold,
+                )
             db.add(alert)
 
     db.commit()
