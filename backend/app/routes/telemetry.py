@@ -37,15 +37,10 @@ def ingest_telemetry(
 ):
     device = get_device_by_api_key(x_api_key, db)
 
-    # I normalise the payload into a dict reused by ML scoring and persistence.
-    reading = {
-        "temperature": payload.temperature,
-        "humidity": payload.humidity,
-        "vibration_x": payload.vibration_x,
-        "vibration_y": payload.vibration_y,
-        "vibration_z": payload.vibration_z,
-        "light_level": payload.light_level,
-    }
+    # I derive reading from the full payload so alert rules can evaluate any v2
+    # sensor metric, not just the original 6. device_id is excluded because the
+    # device is already resolved to device.id before this point.
+    reading = payload.model_dump(exclude={"device_id"})
 
     # I score first so the row stores both the reading and model decision atomically.
     anomaly_score, is_anomaly = score_reading(reading)
