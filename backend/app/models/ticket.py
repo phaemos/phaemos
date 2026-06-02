@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -17,5 +17,8 @@ class Ticket(Base):
     priority    = Column(String(20))                      # low / medium / high / critical
     assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    created_at  = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at  = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    created_at    = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at    = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    # I keep ticket_number nullable so existing rows remain valid before the
+    # migration adds the SERIAL column; new rows get the sequence value automatically.
+    ticket_number = Column(Integer, nullable=True, unique=True)
