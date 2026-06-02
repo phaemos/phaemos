@@ -226,3 +226,30 @@ Use `skip` and `limit` query params. The frontend uses page state and disables N
 
 - Simpler to implement and reason about
 - Page boundaries can shift if rows are inserted or deleted between requests. Acceptable for a maintenance tool where exact page consistency is not critical
+
+---
+
+## 013 - Self-hosted Docker Compose on a single VPS (not managed cloud services)
+
+**Date:** 2026-06-02
+**Status:** Accepted
+
+**Context:**
+Cloud-managed services (Supabase, Neon, Railway, PlanetScale) were evaluated as replacements for the self-hosted Postgres and Redis containers. The question was whether splitting the stack across multiple managed providers would reduce cost or operational burden.
+
+**Decision:**
+Keep the entire stack (Postgres, Redis, FastAPI, Next.js) in a single Docker Compose deployment on one Hetzner CX21 or DigitalOcean Basic Droplet (~$4-6/month). The GitHub Student Developer Pack provides $200 of DigitalOcean credit, covering approximately 33 months at $6/month - effectively free for the duration of a university degree.
+
+Managed services are not needed because:
+
+- Docker Compose already runs Postgres and Redis with zero extra cost
+- Adding Supabase/Neon would introduce external network latency between services
+- It would split the stack across multiple dashboards and connection strings with no benefit
+- The free tiers of managed services have row/storage limits that would be hit once real device data accumulates
+
+**Consequences:**
+
+- Total production cost: $0/month while Student Pack credit lasts, then ~$6/month
+- Frontend stays on Vercel free tier (separate from the VPS)
+- One `docker compose up -d` on the VPS deploys the full backend stack
+- Upgrade path: if the project scales beyond one box, extract Postgres to a managed service (Neon or Supabase) at that point - the SQLAlchemy ORM means the change is a one-line `DATABASE_URL` swap

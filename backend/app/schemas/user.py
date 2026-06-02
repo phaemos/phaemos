@@ -72,6 +72,7 @@ class UserResponse(BaseModel):
     phone_number:   str | None = None
     oauth_provider: str | None = None
     permissions:    dict[str, Any] | None = None
+    totp_enabled:   bool = False
 
     # Allows Pydantic to convert a SQLAlchemy User ORM object directly into this schema.
     model_config = {"from_attributes": True}
