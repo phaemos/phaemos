@@ -18,9 +18,9 @@ router = APIRouter()
 
 # response_model tells FastAPI which Pydantic schema to use when serialising the return value
 @router.get("", response_model=list[DeviceResponse])
-def list_devices(db: Session = Depends(get_db)):
+def list_devices(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     # .desc() orders newest devices first so the most recently registered appear at the top
-    return db.query(Device).order_by(Device.created_at.desc()).all()
+    return db.query(Device).order_by(Device.created_at.desc()).offset(skip).limit(limit).all()
 
 
 # status_code=201 (Created) is more semantically correct than 200 (OK) for a resource creation endpoint
