@@ -35,29 +35,25 @@ const STATUS_WEIGHT: Record<string, number> = {
 function pillClasses(value: string): string {
   switch (value) {
     case 'open':
-      return 'bg-blue-900/50 text-blue-300 border border-blue-700';
+      return 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700';
     case 'in_progress':
-      return 'bg-amber-900/50 text-amber-300 border border-amber-700';
+      return 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700';
     case 'closed':
-      return 'bg-gray-700 text-gray-400 border border-gray-600';
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600';
     case 'critical':
-      return 'bg-red-900/50 text-red-300 border border-red-700';
+      return 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700';
     case 'high':
-      return 'bg-orange-900/50 text-orange-300 border border-orange-700';
+      return 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700';
     case 'medium':
-      return 'bg-yellow-900/50 text-yellow-300 border border-yellow-700';
+      return 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700';
     case 'low':
-      return 'bg-green-900/50 text-green-300 border border-green-700';
+      return 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700';
     default:
-      return 'bg-gray-700 text-gray-400 border border-gray-600';
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600';
   }
 }
 
-function sortTickets(
-  tickets: Ticket[],
-  key: SortKey,
-  dir: SortDir,
-): Ticket[] {
+function sortTickets(tickets: Ticket[], key: SortKey, dir: SortDir): Ticket[] {
   return [...tickets].sort((a, b) => {
     let cmp = 0;
 
@@ -111,15 +107,15 @@ export default function TicketTable({ tickets, loading }: Props) {
   const arrow = sortDir === 'asc' ? '^' : 'v';
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-700">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
       <table className="w-full text-sm text-left">
-        <thead className="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+        <thead className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
           <tr>
             {COLUMNS.map((col) => (
               <th
                 key={col.key}
                 onClick={() => handleHeaderClick(col.key)}
-                className="px-4 py-3 cursor-pointer select-none whitespace-nowrap hover:text-gray-200 transition-colors"
+                className="px-4 py-3 cursor-pointer select-none whitespace-nowrap hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
               >
                 {col.label}
                 {sortKey === col.key && (
@@ -129,12 +125,12 @@ export default function TicketTable({ tickets, loading }: Props) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-700">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {sorted.length === 0 ? (
             <tr>
               <td
                 colSpan={COLUMNS.length}
-                className="px-4 py-8 text-center text-gray-500"
+                className="px-4 py-8 text-center text-gray-400 dark:text-gray-500"
               >
                 No tickets found.
               </td>
@@ -143,9 +139,9 @@ export default function TicketTable({ tickets, loading }: Props) {
             sorted.map((ticket) => (
               <tr
                 key={ticket.id}
-                className="bg-gray-900 hover:bg-gray-800/60 transition-colors"
+                className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
               >
-                <td className="px-4 py-3 font-medium text-gray-200 max-w-xs truncate">
+                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200 max-w-xs truncate">
                   {ticket.title ?? '-'}
                 </td>
                 <td className="px-4 py-3">
@@ -163,18 +159,18 @@ export default function TicketTable({ tickets, loading }: Props) {
                       {ticket.priority}
                     </span>
                   ) : (
-                    <span className="text-gray-500">-</span>
+                    <span className="text-gray-400 dark:text-gray-500">-</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-gray-400 font-mono text-xs">
+                <td className="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">
                   {ticket.device_id ?? '-'}
                 </td>
-                <td className="px-4 py-3 text-gray-400">
+                <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                   {ticket.assigned_to ?? (
-                    <span className="text-gray-600 italic">Unassigned</span>
+                    <span className="text-gray-300 dark:text-gray-600 italic">Unassigned</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                <td className="px-4 py-3 text-gray-400 dark:text-gray-500 whitespace-nowrap">
                   {formatDate(ticket.created_at)}
                 </td>
               </tr>

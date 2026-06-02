@@ -21,18 +21,18 @@ export default function DeviceCard({ device, active, onClick }: Props) {
       onClick={onClick}
       className={`text-left rounded-lg border p-4 transition-colors ${
         active
-          ? 'border-blue-500 bg-blue-950/30'
-          : 'border-gray-800 hover:border-gray-600'
+          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+          : 'border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600'
       }`}
     >
       <div className="flex items-center gap-2 mb-1">
         <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-        <span className="font-semibold text-sm">{device.name}</span>
+        <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">{device.name}</span>
       </div>
-      <p className="text-xs text-gray-400">{device.location ?? 'No location'}</p>
-      <p className="text-xs text-gray-500 mt-1">{cfg.label}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{device.location ?? 'No location'}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{cfg.label}</p>
       {device.firmware_version && (
-        <p className="text-xs text-gray-600 mt-1 font-mono">fw {device.firmware_version}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-600 mt-1 font-mono">fw {device.firmware_version}</p>
       )}
     </button>
   );

@@ -18,7 +18,7 @@ export default function LoadingSkeleton({ rows = 3, className = '' }: Props) {
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          className={`h-4 rounded bg-gray-700 animate-pulse ${ROW_WIDTHS[i % ROW_WIDTHS.length]}`}
+          className={`h-4 rounded bg-gray-200 dark:bg-gray-700 animate-pulse ${ROW_WIDTHS[i % ROW_WIDTHS.length]}`}
         />
       ))}
     </div>
