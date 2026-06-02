@@ -1,32 +1,113 @@
+from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+import joblib
+import numpy as np
+import pandas as pd
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from sklearn.ensemble import IsolationForest
 from sqlalchemy.orm import Session
 
-from app.db import get_db
+from app.db import get_db, SessionLocal
 from app.models.telemetry import Telemetry
 from app.schemas.telemetry import TelemetryIngest, TelemetryResponse
-# score_reading is the ML service function that runs the Isolation Forest model on a single reading
-from app.services.ml_service import score_reading
+from app.routes.auth import require_admin
+from app.services import audit_service
+from app.services.ml_service import reload_model, MODEL_PATH, ANOMALY_THRESHOLD, FEATURE_COLS
 
 router = APIRouter()
+
+# 1-hour cooldown enforced in memory so rapid re-submissions do not thrash training.
+_last_retrain: datetime | None = None
+_COOLDOWN = timedelta(hours=1)
+
+# Number of most-recent telemetry rows to train on.
+_RETRAIN_ROWS = 10_000
+
+
+def _do_retrain(user_id: str) -> None:
+    """Background task - runs after the 202 response is sent."""
+    db = SessionLocal()
+    try:
+        rows = (
+            db.query(Telemetry)
+            .order_by(Telemetry.recorded_at.desc())
+            .limit(_RETRAIN_ROWS)
+            .all()
+        )
+
+        if not rows:
+            audit_service.log_action(
+                db, user_id, "retrain", "ml_model", "model",
+                "Retrain skipped - no telemetry rows in database",
+            )
+            return
+
+        # I build a DataFrame from the 6 features the live scorer uses so training
+        # and inference operate on an identical feature vector.
+        data = {col: [getattr(r, col) for r in rows] for col in FEATURE_COLS}
+        df = pd.DataFrame(data).fillna(0.0)
+
+        X = df.values
+        n_samples = len(X)
+
+        model = IsolationForest(
+            n_estimators=200,
+            contamination=0.05,
+            random_state=42,
+        )
+        model.fit(X)
+
+        joblib.dump(model, MODEL_PATH)
+        reload_model()
+
+        # I compute n_anomalies on training data as a rough quality indicator rather
+        # than precision/recall, which requires labels we do not have.
+        raw_scores = model.score_samples(X)
+        normalised = np.clip(1 - (raw_scores + 0.5), 0.0, 1.0)
+        n_anomalies = int((normalised >= ANOMALY_THRESHOLD).sum())
+
+        audit_service.log_action(
+            db, user_id, "retrain", "ml_model", "model",
+            f"Retrained on {n_samples} rows. "
+            f"Training anomalies detected: {n_anomalies} "
+            f"({100 * n_anomalies / n_samples:.1f}%).",
+        )
+    except Exception as exc:  # noqa: BLE001
+        audit_service.log_action(
+            db, user_id, "retrain_error", "ml_model", "model",
+            f"Retrain failed: {exc}",
+        )
+    finally:
+        db.close()
+
+
+@router.post("/retrain", status_code=202)
+def retrain(
+    background_tasks: BackgroundTasks,
+    admin=Depends(require_admin),
+):
+    global _last_retrain
+    now = datetime.now(timezone.utc)
+
+    if _last_retrain and (now - _last_retrain) < _COOLDOWN:
+        remaining = int((_last_retrain + _COOLDOWN - now).total_seconds() // 60)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Retrain cooldown active. Try again in {remaining} minutes.",
+        )
+
+    _last_retrain = now
+    background_tasks.add_task(_do_retrain, str(admin.id))
+    return {"detail": "Retrain started. Model will be updated in the background."}
 
 
 # No response_model here because the return shape is simple and defined inline as a plain dict
 @router.post("/score")
 def score(payload: TelemetryIngest):
-    # Build an explicit dict so the ML service receives only the sensor fields it expects
-    reading = {
-        "temperature": payload.temperature,
-        "humidity":    payload.humidity,
-        "vibration_x": payload.vibration_x,
-        "vibration_y": payload.vibration_y,
-        "vibration_z": payload.vibration_z,
-        "light_level": payload.light_level,
-    }
-    # Tuple unpacking — score_reading returns two values and we capture each in its own variable
+    from app.services.ml_service import score_reading
+    reading = payload.model_dump(exclude={"device_id"})
     anomaly_score, is_anomaly = score_reading(reading)
-    # FastAPI automatically serialises a plain dict to a JSON response body
     return {"anomaly_score": anomaly_score, "is_anomaly": is_anomaly}
 
 
@@ -35,11 +116,8 @@ def score(payload: TelemetryIngest):
 def anomaly_history(device_id: UUID, limit: int = 100, db: Session = Depends(get_db)):
     return (
         db.query(Telemetry)
-        # Passing `Telemetry.is_anomaly` as a filter condition works because SQLAlchemy treats a boolean
-        # column directly as a WHERE is_anomaly = TRUE clause
         .filter(Telemetry.device_id == device_id, Telemetry.is_anomaly)
         .order_by(Telemetry.recorded_at.desc())
-        # .limit() is translated to a SQL LIMIT clause, keeping query performance predictable
         .limit(limit)
         .all()
     )
