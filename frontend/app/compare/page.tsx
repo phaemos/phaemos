@@ -35,7 +35,7 @@ export default function ComparePage() {
   if (loading) {
     return (
       <main className="p-6 max-w-7xl mx-auto">
-        <p className="text-gray-400 dark:text-gray-500 text-sm">Loading devices...</p>
+        <p className="text-surface-400 dark:text-surface-600 text-sm">Loading devices...</p>
       </main>
     );
   }
@@ -43,8 +43,8 @@ export default function ComparePage() {
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Device Comparison</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <h1 className="text-xl font-semibold text-surface-900 dark:text-surface-50">Device Comparison</h1>
+        <p className="text-sm text-surface-600 dark:text-surface-400 mt-1">
           Select up to {MAX_COMPARE} devices to compare their telemetry side by side.
         </p>
       </div>
@@ -61,10 +61,10 @@ export default function ComparePage() {
               disabled={disabled}
               className={`flex items-centre gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colours ${
                 active
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200'
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10 text-primary-700 dark:text-primary-200'
                   : disabled
-                  ? 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/20 text-gray-400 cursor-not-allowed'
-                  : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-gray-100'
+                  ? 'border-surface-200 dark:border-surface-800 bg-surface-50 dark:bg-surface-900/20 text-surface-400 cursor-not-allowed'
+                  : 'border-surface-200 dark:border-surface-800 bg-surface-50 dark:bg-surface-900/40 text-surface-800 dark:text-surface-400 hover:border-surface-400 dark:hover:border-surface-400 hover:text-surface-900 dark:hover:text-surface-50'
               }`}
             >
               <StatusBadge status={d.status as 'online' | 'offline' | 'warning' | 'fault'} />
@@ -75,7 +75,7 @@ export default function ComparePage() {
       </div>
 
       {selected.length === 0 && (
-        <p className="text-gray-400 dark:text-gray-500 text-sm">No devices selected. Pick one above to start comparing.</p>
+        <p className="text-surface-400 dark:text-surface-600 text-sm">No devices selected. Pick one above to start comparing.</p>
       )}
 
       {selected.length > 0 && (
@@ -89,8 +89,8 @@ export default function ComparePage() {
               <div key={deviceId} className="space-y-3">
                 <div className="flex items-centre justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{device?.name ?? deviceId}</h2>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{device?.location ?? 'No location'}</p>
+                    <h2 className="text-sm font-semibold text-surface-800 dark:text-surface-200">{device?.name ?? deviceId}</h2>
+                    <p className="text-xs text-surface-400 dark:text-surface-600">{device?.location ?? 'No location'}</p>
                   </div>
                   <StatusBadge status={(device?.status ?? 'offline') as 'online' | 'offline' | 'warning' | 'fault'} />
                 </div>

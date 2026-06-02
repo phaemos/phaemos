@@ -28,9 +28,9 @@ export default function UserTable() {
   return (
     <>
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <table className="w-full text-sm text-gray-700 dark:text-gray-300">
-          <thead className="bg-gray-100 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      <div className="rounded-xl border border-surface-200 dark:border-surface-800 overflow-hidden">
+        <table className="w-full text-sm text-surface-800 dark:text-surface-200">
+          <thead className="bg-surface-100 dark:bg-surface-800 text-xs text-surface-600 dark:text-surface-400 uppercase tracking-wider">
             <tr>
               <th className="px-4 py-3 text-left">Name</th>
               <th className="px-4 py-3 text-left">Email</th>
@@ -38,34 +38,34 @@ export default function UserTable() {
               <th className="px-4 py-3 text-left">Created</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-surface-400 dark:text-surface-600">
                   No users found
                 </td>
               </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">
+                <tr key={u.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colours">
+                  <td className="px-4 py-3 font-medium text-surface-800 dark:text-surface-200">
                     {u.name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.email}</td>
+                  <td className="px-4 py-3 text-surface-600 dark:text-surface-400">{u.email}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                         u.role === 'admin'
-                          ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300'
+                          ? 'bg-brand-50 dark:bg-brand-600/20 text-brand-600 dark:text-brand-400'
                           : u.role === 'technician'
-                          ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300'
-                          : 'bg-gray-100 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400'
+                          ? 'bg-primary-100 dark:bg-primary-600/20 text-primary-600 dark:text-primary-400'
+                          : 'bg-surface-100 dark:bg-surface-600/20 text-surface-600 dark:text-surface-400'
                       }`}
                     >
                       {u.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-surface-400 dark:text-surface-600 text-xs">
                     {new Date(u.created_at ?? '').toLocaleDateString('en-GB', {
                       day: '2-digit',
                       month: 'short',
