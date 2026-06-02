@@ -9,7 +9,7 @@ from app.db import get_db
 from app.models.device import Device
 # DeviceWithKey is a separate schema that includes the api_key field - we only expose it at registration time
 from app.schemas.device import DeviceCreate, DeviceUpdate, DeviceResponse, DeviceWithKey
-from app.routes.auth import get_current_user
+from app.routes.auth import get_current_user, require_admin
 from app.models.user import User
 from app.services import audit_service
 
@@ -38,7 +38,11 @@ def list_devices(
 
 # status_code=201 (Created) is more semantically correct than 200 (OK) for a resource creation endpoint
 @router.post("", response_model=DeviceWithKey, status_code=201)
-def register_device(payload: DeviceCreate, db: Session = Depends(get_db)):
+def register_device(
+    payload: DeviceCreate,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
     # API key is generated once at registration and used by the device for ingest auth.
     # token_urlsafe(32) produces a 43-character URL-safe random string - cryptographically secure
     api_key = secrets.token_urlsafe(32)
@@ -53,21 +57,42 @@ def register_device(payload: DeviceCreate, db: Session = Depends(get_db)):
 
 # UUID in the path is automatically validated and parsed by FastAPI - a non-UUID value returns 422
 @router.get("/{device_id}", response_model=DeviceResponse)
-def get_device(device_id: UUID, db: Session = Depends(get_db)):
+def get_device(
+    device_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     # .first() returns None if no row matches, avoiding an exception from .one()
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
         # Raising HTTPException short-circuits the function and sends a JSON error response to the client
         raise HTTPException(status_code=404, detail="Device not found")
+    if (
+        current_user.role == "technician"
+        and device.owner_id is not None
+        and device.owner_id != current_user.id
+    ):
+        raise HTTPException(status_code=403, detail="Access denied")
     return device
 
 
 # PATCH is used instead of PUT because we only update the fields that are sent, not the whole resource
 @router.patch("/{device_id}", response_model=DeviceResponse)
-def update_device(device_id: UUID, payload: DeviceUpdate, db: Session = Depends(get_db)):
+def update_device(
+    device_id: UUID,
+    payload: DeviceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
+    if (
+        current_user.role == "technician"
+        and device.owner_id is not None
+        and device.owner_id != current_user.id
+    ):
+        raise HTTPException(status_code=403, detail="Access denied")
     # exclude_none=True skips fields the client didn't send, so we only overwrite what was explicitly provided
     for field, value in payload.model_dump(exclude_none=True).items():
         # setattr dynamically sets device.<field> = value without needing to name each field explicitly

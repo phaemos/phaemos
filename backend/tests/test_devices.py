@@ -139,3 +139,53 @@ def test_owner_id_returned_in_response(client, admin_user, owned_device, technic
         d for d in resp.json() if d["id"] == str(owned_device.id)
     )
     assert device_data["owner_id"] == str(technician.id)
+
+
+def test_register_device_requires_admin(client, technician, admin_user):
+    payload = {"name": "New Device", "type": "esp32", "location": "Lab"}
+    # unauthenticated
+    assert client.post("/api/v1/devices", json=payload).status_code == 403
+    # technician
+    assert client.post(
+        "/api/v1/devices", json=payload, headers=_token_for(technician, "technician")
+    ).status_code == 403
+    # admin
+    assert client.post(
+        "/api/v1/devices", json=payload, headers=_token_for(admin_user, "admin")
+    ).status_code == 201
+
+
+def test_get_device_requires_auth(client, unowned_device):
+    resp = client.get(f"/api/v1/devices/{unowned_device.id}")
+    assert resp.status_code == 403
+
+
+def test_technician_cannot_get_others_device(
+    client, technician, other_technician_device
+):
+    resp = client.get(
+        f"/api/v1/devices/{other_technician_device.id}",
+        headers=_token_for(technician, "technician"),
+    )
+    assert resp.status_code == 403
+
+
+def test_technician_can_patch_own_device(client, technician, owned_device):
+    resp = client.patch(
+        f"/api/v1/devices/{owned_device.id}",
+        json={"location": "Updated Lab"},
+        headers=_token_for(technician, "technician"),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["location"] == "Updated Lab"
+
+
+def test_technician_cannot_patch_others_device(
+    client, technician, other_technician_device
+):
+    resp = client.patch(
+        f"/api/v1/devices/{other_technician_device.id}",
+        json={"location": "Hacked"},
+        headers=_token_for(technician, "technician"),
+    )
+    assert resp.status_code == 403

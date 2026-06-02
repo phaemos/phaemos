@@ -20,6 +20,7 @@ def list_tickets(
     skip: int = 0,
     limit: int = 20,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # Assign the query to a variable so we can optionally chain filters before executing it
     q = db.query(Ticket)
@@ -58,7 +59,11 @@ def create_ticket(
 
 
 @router.get("/{ticket_id}", response_model=TicketResponse)
-def get_ticket(ticket_id: UUID, db: Session = Depends(get_db)):
+def get_ticket(
+    ticket_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     # .first() is safe here - returns None instead of raising an exception when no row is found
     ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
     if not ticket:

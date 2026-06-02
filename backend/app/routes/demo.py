@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.db import get_db, engine
 from app.models.device import Device
 from app.models.telemetry import Telemetry
+from app.models.user import User
+from app.routes.auth import require_admin
 
 router = APIRouter()
 
@@ -62,7 +64,10 @@ def _ingest_demo_reading() -> None:
 
 
 @router.post("/demo/start")
-def start_demo(db: Session = Depends(get_db)):
+def start_demo(
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
     global _demo_device_id, _tick
 
     # I reuse an existing Demo Node rather than creating duplicates on repeated calls.
@@ -94,7 +99,7 @@ def start_demo(db: Session = Depends(get_db)):
 
 
 @router.post("/demo/stop")
-def stop_demo():
+def stop_demo(_admin: User = Depends(require_admin)):
     global _demo_device_id
     if _scheduler.running and _scheduler.get_job("demo_ingest"):
         _scheduler.remove_job("demo_ingest")
