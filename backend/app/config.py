@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     alert_email_to: str = ""  # recipient address for alert emails
 
+    # -- SMS (Brevo) - graceful no-op when key is empty or placeholder --
+    brevo_api_key:   str = ""
+    brevo_sms_sender: str = "PHAEMOS"  # max 11 chars, no spaces
+
     # -- OTA firmware --
     firmware_storage_path: str = "./firmware_uploads"
 
