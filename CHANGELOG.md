@@ -9,6 +9,29 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-06-02
+
+### Added
+
+- WebSocket reconnect with exponential backoff (1/2/4/8/16s, max 5 attempts). No retry on close code 1008 to prevent token-expiry loop (PR 77)
+- `useWebSocketTelemetry` hook; `TelemetryChart` now merges live WS pushes with 5s polling and deduplicates by id (PR 77)
+- `POST /api/v1/ml/retrain` - admin-only endpoint; fits IsolationForest on last 10,000 rows, dumps model.pkl and reloads in-memory model; 1-hour cooldown; logs outcome to audit log (PR 80)
+- `FEATURE_COLS` constant and `reload_model()` in `ml_service.py` so scoring and retraining use the same feature vector (PR 80)
+- SensorGrid on device detail page polls `GET /telemetry/{id}/latest` every 5s via `useTelemetry` - live sensor values without a page refresh (PR 81)
+- AlertBanner now has a Create Ticket button that opens a modal with TicketForm prefilled from alert context (device_id, title, severity/timestamp in description) (PR 83)
+- Pagination on `GET /tickets` and `GET /devices` - `skip`/`limit` query params (default 0/20) (PR 84)
+- Prev/Next pagination controls on Tickets and Devices frontend pages (PR 84)
+- `docs/security.md` - 18-measure security table (PR 85)
+- `Makefile` - make dev, make test, make lint, make build, make migrate, make seed (PR 85)
+- `SUPPORT.md` - self-help resources and common issues (PR 85)
+- Three new ADRs in `docs/decisions.md`: WS JWT via query param (010), ML retrain as background task (011), skip/limit pagination (012) (PR 85)
+
+### Fixed
+
+- `alerts.resolved` ORM column changed from `Column(String)` to `Column(Boolean)`. `str(resolved)` cast removed from list-alerts filter - DB schema was already BOOLEAN so no migration required (PR 82)
+- Alert rule evaluation now receives all v2 sensor fields. The ingest route previously built `reading` from 6 hardcoded fields; rules on `gas_level`, `shaft_rpm` etc. would never fire (PR 79)
+- `/ml/score` endpoint fixed to use `payload.model_dump()` instead of same 6-field hardcoded dict (PR 80)
+
 ## [2.1.0] - 2026-06-01
 
 ### Added

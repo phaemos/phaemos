@@ -81,6 +81,8 @@ List all registered devices.
 
 **Auth:** Bearer JWT
 
+**Query params:** `skip` (default 0), `limit` (default 20)
+
 ---
 
 ### POST /devices
@@ -181,6 +183,8 @@ List all tickets. Technicians see only tickets assigned to them.
 
 **Auth:** Bearer JWT
 
+**Query params:** `skip` (default 0), `limit` (default 20), `status` (optional: open, in_progress, closed)
+
 ---
 
 ### POST /tickets
@@ -269,7 +273,45 @@ Returns the currently authenticated user's profile.
 
 ---
 
+## WebSocket
+
+### WS /ws/telemetry/{device_id}
+
+Receive live telemetry pushes for a single device without polling.
+
+**Auth:** `?token=<jwt>` query parameter (Bearer token passed as query string because the WebSocket handshake cannot carry custom headers)
+
+**Close codes:**
+
+- `1008` - auth failure (invalid or missing token). The frontend must not retry on 1008 to avoid an infinite loop on an expired token.
+
+**Messages:** Server pushes the same JSON shape as `TelemetryResponse` whenever a new reading is ingested via `POST /telemetry`.
+
+---
+
 ## ML
+
+### POST /ml/retrain
+
+Trigger a background retrain of the Isolation Forest model on the last 10,000 telemetry rows. Returns immediately with 202; the task runs asynchronously.
+
+**Auth:** Bearer JWT (Admin only)
+
+**Response 202:**
+
+```json
+{ "detail": "Retrain started. Model will be updated in the background." }
+```
+
+**Response 429 (cooldown active):**
+
+```json
+{ "detail": "Retrain cooldown active. Try again in 47 minutes." }
+```
+
+The 1-hour cooldown is enforced in memory and resets on container restart.
+
+---
 
 ### POST /ml/score
 
