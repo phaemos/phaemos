@@ -23,6 +23,7 @@ class DeviceUpdate(BaseModel):
     status:           str | None = None
     firmware_version: str | None = None
     owner_id:         UUID | None = None
+    tags:             list[str] | None = None
 
 
 # --- DeviceResponse ---
@@ -40,6 +41,7 @@ class DeviceResponse(BaseModel):
     firmware_version: str | None = None
     created_at:       datetime
     owner_id:         UUID | None = None
+    tags:             list[str] = []
 
     # `from_attributes=True` tells Pydantic to read fields from ORM object attributes (e.g. SQLAlchemy row),
     # not just from plain dicts — required when returning database model instances directly.
