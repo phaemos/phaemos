@@ -2,10 +2,11 @@
 
 ## Entity Relationship Summary
 
-```
+```text
 users
   |-- tickets (assigned_to, created_by)
   |-- audit_logs
+  |-- devices (owner_id - nullable)
 
 devices
   |-- telemetry
@@ -26,15 +27,16 @@ alerts
 
 ```sql
 CREATE TABLE devices (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        VARCHAR(100) NOT NULL,
-  location    VARCHAR(100),
-  type        VARCHAR(50),        -- 'esp32', 'arduino', 'stm32'
-  api_key     VARCHAR(255) UNIQUE NOT NULL,
-  status            VARCHAR(20) DEFAULT 'offline', -- online/offline/warning/fault
-  firmware_version  VARCHAR(50),   -- set when device downloads or reports its OTA version
-  last_seen         TIMESTAMP,
-  created_at        TIMESTAMP DEFAULT NOW()
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name             VARCHAR(100) NOT NULL,
+  location         VARCHAR(100),
+  type             VARCHAR(50),        -- 'esp32', 'arduino', 'stm32'
+  api_key          VARCHAR(255) UNIQUE NOT NULL,
+  status           VARCHAR(20) DEFAULT 'offline', -- online/offline/warning/fault
+  firmware_version VARCHAR(50),
+  last_seen        TIMESTAMP WITH TIME ZONE,
+  created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  owner_id         UUID REFERENCES users(id) ON DELETE SET NULL -- nullable; NULL = shared/unassigned
 );
 ```
 
@@ -109,12 +111,15 @@ CREATE TABLE tickets (
 
 ```sql
 CREATE TABLE users (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          VARCHAR(100),
-  email         VARCHAR(150) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  role          VARCHAR(20) DEFAULT 'viewer',  -- admin/technician/viewer
-  created_at    TIMESTAMP DEFAULT NOW()
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name                   VARCHAR(100),
+  email                  VARCHAR(150) UNIQUE NOT NULL,
+  password_hash          VARCHAR(255) NOT NULL,
+  role                   VARCHAR(20) DEFAULT 'viewer',  -- admin/technician/viewer
+  created_at             TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_login             TIMESTAMP WITH TIME ZONE,
+  failed_login_attempts  INTEGER NOT NULL DEFAULT 0,    -- brute-force lockout counter (migration 002)
+  locked_until           TIMESTAMP WITH TIME ZONE       -- NULL = not locked (migration 002)
 );
 ```
 

@@ -71,7 +71,13 @@ Suggested tagline: **Reveal before failure.**
 
 ```bash
 cp .env.example .env
-docker-compose up --build
+make dev
+```
+
+Or without Make:
+
+```bash
+docker compose up --build
 ```
 
 Frontend: http://localhost:3000
@@ -138,15 +144,19 @@ phaemos/
 ├── frontend/
 │   ├── app/                Next.js App Router pages
 │   ├── components/         Dashboard, tickets, admin, UI primitives
-│   ├── hooks/              useTelemetry, useAlerts polling hooks
+│   ├── hooks/              useTelemetry, useAlerts, useWebSocketTelemetry
 │   └── lib/                Axios API client, utility functions
 ├── hardware/
 │   ├── schematics/         Proteus schematic placeholders (Phase 2)
 │   ├── wiring/             Pin connection tables for all 4 nodes
 │   └── pcb/                PCB design guide for Proteus ARES (Phase 3)
-├── docs/                   Architecture, API reference, sensor reference, deployment
+├── docs/                   Architecture, API reference, sensor reference, security, deployment
 ├── monitoring/             Grafana + Prometheus overlay
+├── Makefile                make dev / test / lint / build / migrate / seed
 ├── docker-compose.yml
+├── CHANGELOG.md
+├── SUPPORT.md
+├── SECURITY.md
 ├── .env.example
 └── README.md
 ```
@@ -157,11 +167,14 @@ phaemos/
 - [Database Schema](docs/schema.md)
 - [API Reference](docs/api-reference.md)
 - [Sensor Reference](docs/sensor_reference.md)
+- [Security Controls](docs/security.md)
 - [Deployment Guide](docs/deployment.md)
 - [Deployment Checklist](docs/deployment-checklist.md)
 - [12-Week Plan](docs/week_by_week.md)
 - [Decision Log](docs/decisions.md)
 - [Verification Tracker](docs/VERIFICATION.md)
+- [Support](SUPPORT.md)
+- [Changelog](CHANGELOG.md)
 
 ## Deployment Checklist
 
