@@ -16,7 +16,7 @@ from app.config import settings
 from app.db import get_db
 from app.limiter import limiter
 from app.models.user import User
-from app.schemas.user import UserRegister, UserLogin, UserResponse, TokenResponse
+from app.schemas.user import UserRegister, UserLogin, UserResponse, TokenResponse, UserUpdate, ChangePassword
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -187,6 +187,86 @@ def logout(response: Response):
         httponly=True,
         max_age=0,
         path="/api/v1/auth/refresh",
+    )
+
+
+# ── Profile management ────────────────────────────────────────────────────────
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    payload: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if payload.email and payload.email != current_user.email:
+        if db.query(User).filter(User.email == payload.email).first():
+            raise HTTPException(status_code=400, detail="Email already registered")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/change-password", status_code=204)
+def change_password(
+    payload: ChangePassword,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.password_hash or not verify_password(payload.old_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+
+
+@router.delete("/me", status_code=204)
+def delete_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    response: Response = None,
+):
+    # I anonymise tickets rather than delete them so the audit trail stays intact
+    # but the personal data (user identity) is removed to satisfy GDPR erasure.
+    from app.models.ticket import Ticket
+    db.query(Ticket).filter(Ticket.created_by == current_user.id).update({"created_by": None})
+    db.delete(current_user)
+    db.commit()
+    if response:
+        response.set_cookie(key="refresh_token", value="", httponly=True, max_age=0, path="/api/v1/auth/refresh")
+
+
+@router.get("/me/export")
+def export_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from fastapi.responses import JSONResponse as _JSONResponse
+    from app.models.ticket import Ticket
+    from app.models.device import Device
+    tickets = db.query(Ticket).filter(Ticket.created_by == current_user.id).all()
+    devices = db.query(Device).filter(Device.owner_id == current_user.id).all()
+    bundle = {
+        "profile": {
+            "id": str(current_user.id),
+            "name": current_user.name,
+            "email": current_user.email,
+            "phone_number": current_user.phone_number,
+            "role": current_user.role,
+            "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        },
+        "tickets": [
+            {"id": str(t.id), "title": t.title, "status": t.status, "created_at": t.created_at.isoformat() if t.created_at else None}
+            for t in tickets
+        ],
+        "devices": [
+            {"id": str(d.id), "name": d.name, "type": d.type}
+            for d in devices
+        ],
+    }
+    return _JSONResponse(
+        content=bundle,
+        headers={"Content-Disposition": "attachment; filename=phaemos-data-export.json"},
     )
 
 
