@@ -25,7 +25,7 @@ export default function TicketsPage() {
 
   return (
     <main className="p-6 max-w-5xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Maintenance Tickets</h1>
+      <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-50">Maintenance Tickets</h1>
       <TicketForm onSuccess={() => load(page)} />
       <TicketTableComponent tickets={tickets} loading={loading} />
 
@@ -34,16 +34,16 @@ export default function TicketsPage() {
           type="button"
           disabled={page === 1}
           onClick={() => setPage((p) => p - 1)}
-          className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colours duration-150 disabled:opacity-40"
         >
           Previous
         </button>
-        <span className="text-sm text-gray-500 dark:text-gray-400">Page {page}</span>
+        <span className="text-sm text-surface-600 dark:text-surface-400">Page {page}</span>
         <button
           type="button"
           disabled={tickets.length < PAGE_SIZE}
           onClick={() => setPage((p) => p + 1)}
-          className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colours duration-150 disabled:opacity-40"
         >
           Next
         </button>

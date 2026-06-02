@@ -61,8 +61,8 @@ export default function DashboardPage() {
               onClick={() => setNodeType(nt)}
               className={`px-3 py-1 rounded text-xs font-medium transition-colours ${
                 nodeType === nt
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200'
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-800 dark:hover:text-surface-200'
               }`}
             >
               {nt}

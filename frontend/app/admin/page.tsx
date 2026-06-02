@@ -6,9 +6,9 @@ import UserTable from '@/components/admin/UserTable';
 import AuditLog from '@/components/admin/AuditLog';
 import AlertRulesPanel from '@/components/admin/AlertRulesPanel';
 
-const sectionClass = 'rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4';
-const inputClass = 'w-full rounded bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500';
-const labelClass = 'block text-sm text-gray-600 dark:text-gray-300 mb-1';
+const sectionClass = 'rounded-lg border border-surface-200 dark:border-surface-800 p-4 space-y-4';
+const inputClass = 'w-full rounded bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 px-3 py-2 text-sm text-surface-900 dark:text-surface-50 focus:outline-none focus:border-primary-500';
+const labelClass = 'block text-sm text-surface-600 dark:text-surface-400 mb-1';
 
 export default function AdminPage() {
   const [fwVersion, setFwVersion] = useState('');
@@ -49,22 +49,22 @@ export default function AdminPage() {
 
   return (
     <main className="p-6 max-w-5xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Admin Panel</h1>
+      <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-50">Admin Panel</h1>
 
       <section className={sectionClass}>
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">User Management</h2>
+        <h2 className="text-lg font-semibold text-surface-800 dark:text-surface-200">User Management</h2>
         <UserTable />
       </section>
 
       <section className={sectionClass}>
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Alert Rules</h2>
+        <h2 className="text-lg font-semibold text-surface-800 dark:text-surface-200">Alert Rules</h2>
         <AlertRulesPanel />
       </section>
 
       <section className={sectionClass}>
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">OTA Firmware Update</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+          <h2 className="text-lg font-semibold text-surface-800 dark:text-surface-200">OTA Firmware Update</h2>
+          <p className="text-surface-600 dark:text-surface-400 text-sm mt-1">
             Upload a compiled .bin file. Connected ESP32 devices will check for
             an update on next boot and flash automatically if the version is newer.
           </p>
@@ -92,7 +92,7 @@ export default function AdminPage() {
               accept=".bin"
               title="Select a compiled ESP32 .bin firmware file"
               onChange={(e) => setFwFile(e.target.files?.[0] ?? null)}
-              className="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-200 hover:file:bg-gray-300 dark:hover:file:bg-gray-600"
+              className="w-full text-sm text-surface-600 dark:text-surface-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-surface-200 dark:file:bg-surface-800 file:text-surface-800 dark:file:text-surface-200 hover:file:bg-surface-200 dark:hover:file:bg-surface-800"
             />
           </div>
 
@@ -100,19 +100,19 @@ export default function AdminPage() {
             type="button"
             onClick={handleFirmwareUpload}
             disabled={uploading}
-            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm font-medium text-white"
+            className="bg-brand-600 hover:bg-brand-700 active:scale-95 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50"
           >
             {uploading ? 'Uploading...' : 'Upload Firmware'}
           </button>
 
           {fwStatus && (
-            <p className="text-sm text-gray-600 dark:text-gray-300">{fwStatus}</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">{fwStatus}</p>
           )}
         </div>
       </section>
 
       <section className={sectionClass}>
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Audit Log</h2>
+        <h2 className="text-lg font-semibold text-surface-800 dark:text-surface-200">Audit Log</h2>
         <AuditLog />
       </section>
     </main>
