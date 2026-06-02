@@ -32,6 +32,31 @@ class UserLogin(BaseModel):
     password: str
 
 
+# --- UserUpdate ---
+# Fields the user may update on their own profile; all optional for partial updates.
+class UserUpdate(BaseModel):
+    name:         str | None = None
+    email:        EmailStr | None = None
+    phone_number: str | None = None
+
+
+# --- ChangePassword ---
+class ChangePassword(BaseModel):
+    old_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
+
+
 # --- UserResponse ---
 # What the API sends back after login or profile fetch — notably, password is NOT included.
 class UserResponse(BaseModel):
@@ -41,8 +66,10 @@ class UserResponse(BaseModel):
     # email stays as plain `str` here because we only need to output it, not re-validate format.
     email: str
     # Role drives authorization checks (e.g. "admin" vs "viewer"); stored as a string for flexibility.
-    role:       str
-    created_at: datetime | None = None
+    role:           str
+    created_at:     datetime | None = None
+    phone_number:   str | None = None
+    oauth_provider: str | None = None
 
     # Allows Pydantic to convert a SQLAlchemy User ORM object directly into this schema.
     model_config = {"from_attributes": True}
