@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, DateTime, Integer, func
+from sqlalchemy import Boolean, Column, String, DateTime, Integer, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -14,9 +14,10 @@ class User(Base):
     name = Column(String(100))
     # unique=True enforces that no two accounts can share the same email at the DB level
     email = Column(String(150), unique=True, nullable=False)
-    # The plain-text password is never stored — only its bcrypt hash,
-    # so a DB leak doesn't expose real passwords
-    password_hash = Column(String(255), nullable=False)
+    # The plain-text password is never stored - only its bcrypt hash,
+    # so a DB leak doesn't expose real passwords. Nullable to support
+    # OAuth users who authenticate via Google/GitHub and have no password.
+    password_hash = Column(String(255), nullable=True)
     # Default is "viewer" for security: a newly created or compromised account gets
     # the least privilege; only admins can elevate a role to technician or admin
     role = Column(String(20), default="viewer")  # admin / technician / viewer
@@ -26,3 +27,14 @@ class User(Base):
     # and prevent brute-force attacks without rate-limiting every single request.
     failed_login_attempts = Column(Integer, nullable=False, default=0, server_default="0")
     locked_until = Column(DateTime(timezone=True), nullable=True)
+
+    # OAuth - set when a user signs in via Google or GitHub instead of a password
+    oauth_provider = Column(String(50), nullable=True)   # "google" | "github" | None
+    oauth_id       = Column(String(200), nullable=True)  # provider's user sub/id
+
+    # Profile - phone number for SMS alert delivery (Step 20g)
+    phone_number = Column(String(30), nullable=True)
+
+    # TOTP 2FA - secret stored encrypted-at-rest by the DB; flag tracks enrolment state
+    totp_secret  = Column(String(64), nullable=True)
+    totp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
