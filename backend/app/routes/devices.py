@@ -2,6 +2,7 @@ import secrets
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -18,9 +19,21 @@ router = APIRouter()
 
 # response_model tells FastAPI which Pydantic schema to use when serialising the return value
 @router.get("", response_model=list[DeviceResponse])
-def list_devices(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
-    # .desc() orders newest devices first so the most recently registered appear at the top
-    return db.query(Device).order_by(Device.created_at.desc()).offset(skip).limit(limit).all()
+def list_devices(
+    skip: int = 0,
+    limit: int = 20,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    q = db.query(Device).order_by(Device.created_at.desc())
+    # I apply ownership filtering here rather than in a middleware so the logic
+    # is explicit and easy to audit: admins and viewers see everything; technicians
+    # see only their own devices plus unowned (shared) devices.
+    if current_user.role == "technician":
+        q = q.filter(
+            or_(Device.owner_id == current_user.id, Device.owner_id.is_(None))
+        )
+    return q.offset(skip).limit(limit).all()
 
 
 # status_code=201 (Created) is more semantically correct than 200 (OK) for a resource creation endpoint
