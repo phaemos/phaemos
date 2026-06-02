@@ -37,6 +37,30 @@ def test_ingest_success(client, device):
     assert "is_anomaly" in body
 
 
+def test_ingest_v2_sensors_stored(client, device, auth_headers):
+    # All v2 sensor fields must reach the DB - previously only 6 fields were
+    # forwarded into the reading dict and the rest were silently dropped.
+    res = client.post(
+        "/api/v1/telemetry",
+        json={
+            "device_id": str(device.id),
+            "gas_level": 412.0,
+            "shaft_rpm": 1500.0,
+            "ir_temperature": 38.5,
+            "moisture_level": 0.12,
+            "sound_level": 65.0,
+        },
+        headers={"X-API-Key": device.api_key},
+    )
+    assert res.status_code == 201
+    body = res.json()
+    assert body["gas_level"] == 412.0
+    assert body["shaft_rpm"] == 1500.0
+    assert body["ir_temperature"] == 38.5
+    assert body["moisture_level"] == 0.12
+    assert body["sound_level"] == 65.0
+
+
 def test_get_telemetry_empty(client, device, auth_headers):
     # GET /telemetry now requires a Bearer token - previously unauthenticated.
     res = client.get(f"/api/v1/telemetry/{device.id}", headers=auth_headers)
