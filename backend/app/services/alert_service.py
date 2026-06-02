@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.alert import Alert, AlertRule
 from app.models.device import Device
+from app.routes.maintenance import is_in_maintenance
 from app.services import notify_service, webhook_service
 
 
@@ -23,6 +24,11 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
         .filter(AlertRule.device_id == device.id)
         .all()
     )
+
+    # I skip all alert processing while the device is in an active maintenance window
+    # so planned downtime does not generate noise that technicians would have to dismiss.
+    if is_in_maintenance(db, device.id):
+        return
 
     for rule in rules:
         value = reading.get(rule.metric)
