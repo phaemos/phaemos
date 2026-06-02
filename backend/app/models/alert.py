@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey, func
+from sqlalchemy import Boolean, Column, String, Float, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -32,9 +32,7 @@ class Alert(Base):
     # No length limit on String here — alert messages can be arbitrarily long
     message      = Column(String)
     severity     = Column(String(20))
-    # Note: this column is typed String but defaults to False (a boolean) — the stored value
-    # will be the string "False"; a Boolean column would be cleaner, but this is the current design
-    resolved     = Column(String, default=False)
+    resolved     = Column(Boolean, default=False)
     # server_default timestamps when the alert was first raised, using the DB clock
     triggered_at = Column(DateTime(timezone=True), server_default=func.now())
     # nullable=True because the alert hasn't been resolved yet when the row is first inserted
