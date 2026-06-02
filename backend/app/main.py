@@ -10,6 +10,7 @@ from app.config import settings
 from app.db import Base, engine
 from app.limiter import limiter
 from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo, webhooks
+from app.routes.health import router as health_router, public_router as health_public_router
 from app.tasks.retention import start_retention_scheduler
 
 # I create all tables on startup - use Alembic migrations for production
@@ -59,7 +60,10 @@ app.include_router(ml.router,        prefix="/api/v1/ml",          tags=["ML"])
 app.include_router(firmware.router,  prefix="/api/v1",             tags=["Firmware"])
 app.include_router(audit.router,     prefix="/api/v1",             tags=["Audit"])
 app.include_router(demo.router,      prefix="/api/v1",             tags=["Demo"])
-app.include_router(webhooks.router,  prefix="/api/v1",             tags=["Webhooks"])
+app.include_router(webhooks.router,     prefix="/api/v1",  tags=["Webhooks"])
+# health_router has auth-protected fleet stats; health_public_router has the no-auth /status check
+app.include_router(health_router,       prefix="/api/v1",  tags=["Health"])
+app.include_router(health_public_router,                   tags=["Health"])
 # I give WebSocket routes a different prefix - no /api/v1 so the WS URL is clean.
 app.include_router(ws.router,        tags=["WebSocket"])
 
