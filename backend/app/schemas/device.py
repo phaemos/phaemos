@@ -22,6 +22,7 @@ class DeviceUpdate(BaseModel):
     location:         str | None = None
     status:           str | None = None
     firmware_version: str | None = None
+    owner_id:         UUID | None = None
 
 
 # --- DeviceResponse ---

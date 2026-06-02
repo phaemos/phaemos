@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_db
-from app.routes.auth import get_current_user
+from app.routes.auth import require_admin
 from app.models.user import User
 from app.services import audit_service
 
@@ -40,7 +40,7 @@ async def upload_firmware(
     version: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _admin: User = Depends(require_admin),
 ):
     # Reject non-.bin files as a first-pass guard (server-side validation).
     if not file.filename or not file.filename.endswith(".bin"):
@@ -68,7 +68,7 @@ async def upload_firmware(
 
     audit_service.log_action(
         db,
-        user_id=str(current_user.id),
+        user_id=str(_admin.id),
         action="firmware_uploaded",
         resource="firmware",
         resource_id=version,
