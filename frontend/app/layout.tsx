@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import ThemeToggle from '@/components/ui/ThemeToggle';
-import LogoutButton from '@/components/ui/LogoutButton';
+import Sidebar from '@/components/Sidebar';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -25,19 +23,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen transition-colours duration-200">
-        <nav className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-6 py-3 flex items-centre gap-6 text-sm">
-          <span className="font-bold tracking-tight mr-2">PHAEMOS</span>
-          <Link href="/"        className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours">Dashboard</Link>
-          <Link href="/compare" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours">Compare</Link>
-          <Link href="/alerts"  className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours">Alerts</Link>
-          <Link href="/tickets" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours">Tickets</Link>
-          <Link href="/devices" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours">Devices</Link>
-          <Link href="/admin"   className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours ml-auto">Admin</Link>
-          <ThemeToggle />
-          <LogoutButton />
-        </nav>
-        {children}
+      <body className="bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-50 min-h-screen">
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto">{children}</main>
+        </div>
       </body>
     </html>
   );

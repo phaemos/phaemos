@@ -9,9 +9,9 @@ interface Props {
 }
 
 const severityStyle: Record<string, string> = {
-  info: 'bg-blue-50 dark:bg-blue-950/50 border-blue-400 dark:border-blue-500 text-blue-700 dark:text-blue-300',
-  warning: 'bg-yellow-50 dark:bg-yellow-950/50 border-yellow-400 dark:border-yellow-500 text-yellow-700 dark:text-yellow-300',
-  critical: 'bg-red-50 dark:bg-red-950/50 border-red-400 dark:border-red-500 text-red-700 dark:text-red-300',
+  info: 'bg-primary-50 dark:bg-primary-500/20 border-primary-500 dark:border-primary-500 text-primary-700 dark:text-primary-300',
+  warning: 'bg-warning-50 dark:bg-warning-500/20 border-warning-500 dark:border-warning-500 text-warning-600 dark:text-warning-300',
+  critical: 'bg-critical-50 dark:bg-critical-500/20 border-critical-500 dark:border-critical-500 text-critical-600 dark:text-critical-300',
 };
 
 export default function AlertBanner({ alert }: Props) {
