@@ -3,4 +3,4 @@ Disallow: /api/
 Disallow: /admin
 Allow: /
 
-Sitemap: https://phaemos.io/sitemap.xml
+Sitemap: https://phaemos.com/sitemap.xml

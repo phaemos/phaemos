@@ -3,6 +3,7 @@ import Sidebar from '@/components/Sidebar';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import ToastContainer from '@/components/ui/Toast';
 import { ToastProvider } from '@/hooks/useToast';
+import CookieBanner from '@/components/CookieBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
           </div>
           <ToastContainer />
+          <CookieBanner />
         </ToastProvider>
       </body>
     </html>
