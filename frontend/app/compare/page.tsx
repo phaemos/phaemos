@@ -12,9 +12,9 @@ import StatusBadge from '@/components/ui/StatusBadge';
 const MAX_COMPARE = 3;
 
 export default function ComparePage() {
-  const [devices, setDevices]   = useState<Device[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get<Device[]>('/devices')
@@ -35,7 +35,7 @@ export default function ComparePage() {
   if (loading) {
     return (
       <main className="p-6 max-w-7xl mx-auto">
-        <p className="text-gray-500 text-sm">Loading devices...</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm">Loading devices...</p>
       </main>
     );
   }
@@ -43,13 +43,12 @@ export default function ComparePage() {
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-100">Device Comparison</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Device Comparison</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Select up to {MAX_COMPARE} devices to compare their telemetry side by side.
         </p>
       </div>
 
-      {/* Device picker */}
       <div className="flex flex-wrap gap-2">
         {devices.map((d) => {
           const active = selected.includes(d.id);
@@ -62,10 +61,10 @@ export default function ComparePage() {
               disabled={disabled}
               className={`flex items-centre gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colours ${
                 active
-                  ? 'border-blue-500 bg-blue-900/30 text-blue-200'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200'
                   : disabled
-                  ? 'border-gray-800 bg-gray-900/20 text-gray-600 cursor-not-allowed'
-                  : 'border-gray-700 bg-gray-900/40 text-gray-300 hover:border-gray-500 hover:text-gray-100'
+                  ? 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/20 text-gray-400 cursor-not-allowed'
+                  : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <StatusBadge status={d.status as 'online' | 'offline' | 'warning' | 'fault'} />
@@ -76,10 +75,9 @@ export default function ComparePage() {
       </div>
 
       {selected.length === 0 && (
-        <p className="text-gray-500 text-sm">No devices selected. Pick one above to start comparing.</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm">No devices selected. Pick one above to start comparing.</p>
       )}
 
-      {/* Side-by-side comparison columns */}
       {selected.length > 0 && (
         <div
           className="grid gap-6"
@@ -91,8 +89,8 @@ export default function ComparePage() {
               <div key={deviceId} className="space-y-3">
                 <div className="flex items-centre justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-200">{device?.name ?? deviceId}</h2>
-                    <p className="text-xs text-gray-500">{device?.location ?? 'No location'}</p>
+                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{device?.name ?? deviceId}</h2>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{device?.location ?? 'No location'}</p>
                   </div>
                   <StatusBadge status={(device?.status ?? 'offline') as 'online' | 'offline' | 'warning' | 'fault'} />
                 </div>

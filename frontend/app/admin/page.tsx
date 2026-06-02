@@ -6,6 +6,10 @@ import UserTable from '@/components/admin/UserTable';
 import AuditLog from '@/components/admin/AuditLog';
 import AlertRulesPanel from '@/components/admin/AlertRulesPanel';
 
+const sectionClass = 'rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4';
+const inputClass = 'w-full rounded bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500';
+const labelClass = 'block text-sm text-gray-600 dark:text-gray-300 mb-1';
+
 export default function AdminPage() {
   const [fwVersion, setFwVersion] = useState('');
   const [fwFile, setFwFile] = useState<File | null>(null);
@@ -45,25 +49,22 @@ export default function AdminPage() {
 
   return (
     <main className="p-6 max-w-5xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Admin Panel</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Admin Panel</h1>
 
-      {/* User management */}
-      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
-        <h2 className="text-lg font-semibold">User Management</h2>
+      <section className={sectionClass}>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">User Management</h2>
         <UserTable />
       </section>
 
-      {/* Alert rules */}
-      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
-        <h2 className="text-lg font-semibold">Alert Rules</h2>
+      <section className={sectionClass}>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Alert Rules</h2>
         <AlertRulesPanel />
       </section>
 
-      {/* OTA Firmware Upload */}
-      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
+      <section className={sectionClass}>
         <div>
-          <h2 className="text-lg font-semibold">OTA Firmware Update</h2>
-          <p className="text-gray-400 text-sm">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">OTA Firmware Update</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             Upload a compiled .bin file. Connected ESP32 devices will check for
             an update on next boot and flash automatically if the version is newer.
           </p>
@@ -71,18 +72,18 @@ export default function AdminPage() {
 
         <div className="space-y-3 max-w-md">
           <div>
-            <label className="block text-sm text-gray-300 mb-1">Version string</label>
+            <label className={labelClass}>Version string</label>
             <input
               type="text"
               placeholder="e.g. 1.1.0"
               value={fwVersion}
               onChange={(e) => setFwVersion(e.target.value)}
-              className="w-full rounded bg-gray-900 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+              className={inputClass}
             />
           </div>
 
           <div>
-            <label htmlFor="fw-file" className="block text-sm text-gray-300 mb-1">
+            <label htmlFor="fw-file" className={labelClass}>
               Firmware file (.bin)
             </label>
             <input
@@ -91,7 +92,7 @@ export default function AdminPage() {
               accept=".bin"
               title="Select a compiled ESP32 .bin firmware file"
               onChange={(e) => setFwFile(e.target.files?.[0] ?? null)}
-              className="w-full text-sm text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
+              className="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-200 dark:file:bg-gray-700 file:text-gray-700 dark:file:text-gray-200 hover:file:bg-gray-300 dark:hover:file:bg-gray-600"
             />
           </div>
 
@@ -99,20 +100,19 @@ export default function AdminPage() {
             type="button"
             onClick={handleFirmwareUpload}
             disabled={uploading}
-            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm font-medium text-white"
           >
             {uploading ? 'Uploading...' : 'Upload Firmware'}
           </button>
 
           {fwStatus && (
-            <p className="text-sm text-gray-300">{fwStatus}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{fwStatus}</p>
           )}
         </div>
       </section>
 
-      {/* Audit log */}
-      <section className="rounded-lg border border-gray-800 p-4 space-y-4">
-        <h2 className="text-lg font-semibold">Audit Log</h2>
+      <section className={sectionClass}>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Audit Log</h2>
         <AuditLog />
       </section>
     </main>
