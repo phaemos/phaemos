@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -38,6 +39,15 @@ def create_access_token(data: dict) -> str:
     payload["exp"] = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
     )
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
+
+
+def create_refresh_token(data: dict) -> str:
+    # I add type="refresh" so the /refresh endpoint can reject access tokens
+    # presented in place of refresh tokens.
+    payload = data.copy()
+    payload["type"] = "refresh"
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(days=7)
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
@@ -125,13 +135,54 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
     db.commit()
 
     token = create_access_token({"sub": str(user.id), "role": user.role})
-    return {"access_token": token, "token_type": "bearer"}
+    refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
+    response = JSONResponse(content={"access_token": token, "token_type": "bearer"})
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh,
+        httponly=True,
+        secure=settings.environment != "development",
+        samesite="lax",
+        max_age=7 * 24 * 3600,
+        path="/api/v1/auth/refresh",
+    )
+    return response
 
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
     # The get_current_user dependency handles decoding and DB lookup.
     return current_user
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh(
+    refresh_token: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token missing")
+    payload = decode_token(refresh_token)
+    if payload.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Invalid token type")
+    user = db.query(User).filter(User.id == payload.get("sub")).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@router.post("/logout", status_code=204)
+def logout(response: Response):
+    # I expire the cookie by setting max_age=0 rather than deleting it so the
+    # browser clears it immediately without needing a separate DELETE request.
+    response.set_cookie(
+        key="refresh_token",
+        value="",
+        httponly=True,
+        max_age=0,
+        path="/api/v1/auth/refresh",
+    )
 
 
 @router.get("/users", response_model=list[UserResponse])
