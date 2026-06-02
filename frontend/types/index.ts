@@ -85,6 +85,7 @@ export interface Alert {
 
 export interface Ticket {
   id: string;
+  ticket_number: number | null;
   device_id: string | null;
   alert_id: string | null;
   title: string | null;
