@@ -14,8 +14,13 @@ interface Props {
   loading: boolean;
 }
 
-type SortKey = 'title' | 'status' | 'priority' | 'device_id' | 'assigned_to' | 'created_at';
+type SortKey = 'ticket_number' | 'title' | 'status' | 'priority' | 'device_id' | 'assigned_to' | 'created_at';
 type SortDir = 'asc' | 'desc';
+
+function formatTicketNumber(n: number | null): string {
+  if (n == null) return '-';
+  return `PHM-${n.toString().padStart(4, '0')}`;
+}
 
 // I define priority weight so sorting by priority produces a meaningful
 // ordering (critical first) rather than alphabetical.
@@ -57,7 +62,9 @@ function sortTickets(tickets: Ticket[], key: SortKey, dir: SortDir): Ticket[] {
   return [...tickets].sort((a, b) => {
     let cmp = 0;
 
-    if (key === 'priority') {
+    if (key === 'ticket_number') {
+      cmp = (a.ticket_number ?? 0) - (b.ticket_number ?? 0);
+    } else if (key === 'priority') {
       const wa = PRIORITY_WEIGHT[a.priority ?? ''] ?? 99;
       const wb = PRIORITY_WEIGHT[b.priority ?? ''] ?? 99;
       cmp = wa - wb;
@@ -78,6 +85,7 @@ function sortTickets(tickets: Ticket[], key: SortKey, dir: SortDir): Ticket[] {
 }
 
 const COLUMNS: { key: SortKey; label: string }[] = [
+  { key: 'ticket_number', label: '#' },
   { key: 'title', label: 'Title' },
   { key: 'status', label: 'Status' },
   { key: 'priority', label: 'Priority' },
@@ -141,6 +149,9 @@ export default function TicketTable({ tickets, loading }: Props) {
                 key={ticket.id}
                 className="bg-white dark:bg-surface-900 hover:bg-surface-50 dark:hover:bg-surface-800/60 transition-colours"
               >
+                <td className="px-4 py-3 font-mono text-xs text-surface-500 dark:text-surface-400 whitespace-nowrap">
+                  {formatTicketNumber(ticket.ticket_number)}
+                </td>
                 <td className="px-4 py-3 font-medium text-surface-800 dark:text-surface-200 max-w-xs truncate">
                   {ticket.title ?? '-'}
                 </td>
