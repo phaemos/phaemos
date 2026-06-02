@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:3000"
     environment: str = "development"
 
+    # -- OAuth providers --
+    google_client_id:     str = ""
+    google_client_secret: str = ""
+    google_redirect_uri:  str = "http://localhost:8000/api/v1/auth/google/callback"
+    github_client_id:     str = ""
+    github_client_secret: str = ""
+    github_redirect_uri:  str = "http://localhost:8000/api/v1/auth/github/callback"
+
     # -- Notifications --
     discord_webhook_url: str = ""  # leave empty to disable Discord alerts
     smtp_host: str = ""
