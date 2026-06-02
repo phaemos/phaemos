@@ -32,7 +32,7 @@ export default function ErrorToast({
   return (
     <div
       role="alert"
-      className="fixed bottom-4 right-4 z-50 flex items-start gap-3 rounded-lg bg-red-600 px-4 py-3 text-white shadow-lg max-w-sm"
+      className="fixed bottom-4 right-4 z-50 flex items-start gap-3 rounded-lg bg-critical-600 px-4 py-3 text-white shadow-lg max-w-sm"
     >
       <p className="flex-1 text-sm leading-snug">{message}</p>
       <button

@@ -49,17 +49,17 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
     }
   }
 
-  const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500';
-  const labelClass = 'block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1';
+  const inputClass = 'w-full rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 px-3 py-2 text-sm text-surface-900 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-600 focus:outline-none focus:ring-2 focus:ring-brand-500';
+  const labelClass = 'block text-xs font-medium text-surface-600 dark:text-surface-400 mb-1';
 
   return (
     <>
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl p-6"
+        className="space-y-4 bg-surface-50 dark:bg-white/5 border border-surface-200 dark:border-surface-800 rounded-xl p-6"
       >
-        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-200">New Ticket</h2>
+        <h2 className="text-base font-semibold text-surface-900 dark:text-surface-200">New Ticket</h2>
 
         <div>
           <label htmlFor="ticket-title" className={labelClass}>Title</label>
@@ -117,7 +117,7 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? 'Submitting...' : 'Submit Ticket'}
         </button>
