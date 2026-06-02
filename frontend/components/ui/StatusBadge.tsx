@@ -13,18 +13,18 @@ const statusConfig: Record<
   { bg: string; dot: string; label: string }
 > = {
   online: {
-    bg: 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 border border-green-400 dark:border-green-700',
-    dot: 'bg-green-500 dark:bg-green-400',
+    bg: 'bg-success-50 dark:bg-success-600/20 text-success-600 dark:text-success-500 border border-success-50 dark:border-success-600/30',
+    dot: 'bg-success-500 dark:bg-success-500',
     label: 'Online',
   },
   normal: {
-    bg: 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 border border-green-400 dark:border-green-700',
-    dot: 'bg-green-500 dark:bg-green-400',
+    bg: 'bg-success-50 dark:bg-success-600/20 text-success-600 dark:text-success-500 border border-success-50 dark:border-success-600/30',
+    dot: 'bg-success-500 dark:bg-success-500',
     label: 'Normal',
   },
   offline: {
-    bg: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600',
-    dot: 'bg-gray-400',
+    bg: 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400 border border-surface-200 dark:border-surface-700',
+    dot: 'bg-surface-400',
     label: 'Offline',
   },
   warning: {
@@ -33,13 +33,13 @@ const statusConfig: Record<
     label: 'Warning',
   },
   fault: {
-    bg: 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-400 dark:border-red-700',
-    dot: 'bg-red-500 dark:bg-red-400',
+    bg: 'bg-critical-50 dark:bg-critical-600/20 text-critical-600 dark:text-critical-400 border border-critical-50 dark:border-critical-600/30',
+    dot: 'bg-critical-500 dark:bg-critical-400',
     label: 'Fault',
   },
   anomaly: {
-    bg: 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-400 dark:border-red-700',
-    dot: 'bg-red-500 dark:bg-red-400',
+    bg: 'bg-critical-50 dark:bg-critical-600/20 text-critical-600 dark:text-critical-400 border border-critical-50 dark:border-critical-600/30',
+    dot: 'bg-critical-500 dark:bg-critical-400',
     label: 'Anomaly',
   },
 };
