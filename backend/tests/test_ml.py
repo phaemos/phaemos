@@ -34,33 +34,33 @@ def test_retrain_accepted_then_cooldown(client, auth_headers):
     ml_module._last_retrain = None
 
 
-def test_score_without_model(client):
+def test_score_without_model(client, auth_headers):
     # Without a trained model file, score_reading() returns 0.0 / False as a
     # safe pass-through so the system works before ML training is done.
     res = client.post("/api/v1/ml/score", json={
         "device_id": "00000000-0000-0000-0000-000000000000",
         "temperature": 22.5,
         "humidity": 50.0,
-    })
+    }, headers=auth_headers)
     assert res.status_code == 200
     body = res.json()
     assert body["anomaly_score"] == 0.0
     assert body["is_anomaly"] is False
 
 
-def test_score_response_schema(client):
+def test_score_response_schema(client, auth_headers):
     res = client.post("/api/v1/ml/score", json={
         "device_id": "00000000-0000-0000-0000-000000000000",
         "temperature": 99.9,
         "vibration_x": 50.0,
-    })
+    }, headers=auth_headers)
     assert res.status_code == 200
     body = res.json()
     assert isinstance(body["anomaly_score"], float)
     assert isinstance(body["is_anomaly"], bool)
 
 
-def test_anomaly_history_empty(client, device):
-    res = client.get(f"/api/v1/ml/anomalies/{device.id}")
+def test_anomaly_history_empty(client, device, auth_headers):
+    res = client.get(f"/api/v1/ml/anomalies/{device.id}", headers=auth_headers)
     assert res.status_code == 200
     assert res.json() == []

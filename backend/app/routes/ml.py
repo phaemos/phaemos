@@ -10,8 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db, SessionLocal
 from app.models.telemetry import Telemetry
+from app.models.user import User
 from app.schemas.telemetry import TelemetryIngest, TelemetryResponse
-from app.routes.auth import require_admin
+from app.routes.auth import get_current_user, require_admin
 from app.services import audit_service
 from app.services.ml_service import reload_model, MODEL_PATH, ANOMALY_THRESHOLD, FEATURE_COLS
 
@@ -104,7 +105,10 @@ def retrain(
 
 # No response_model here because the return shape is simple and defined inline as a plain dict
 @router.post("/score")
-def score(payload: TelemetryIngest):
+def score(
+    payload: TelemetryIngest,
+    current_user: User = Depends(get_current_user),
+):
     from app.services.ml_service import score_reading
     reading = payload.model_dump(exclude={"device_id"})
     anomaly_score, is_anomaly = score_reading(reading)
@@ -113,7 +117,12 @@ def score(payload: TelemetryIngest):
 
 # `limit` is an optional query parameter with a default of 100 to prevent unbounded result sets
 @router.get("/anomalies/{device_id}", response_model=list[TelemetryResponse])
-def anomaly_history(device_id: UUID, limit: int = 100, db: Session = Depends(get_db)):
+def anomaly_history(
+    device_id: UUID,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     return (
         db.query(Telemetry)
         .filter(Telemetry.device_id == device_id, Telemetry.is_anomaly)
