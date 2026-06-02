@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     alert_email_to: str = ""  # recipient address for alert emails
 
+    # -- Resend email (invitation flow) - graceful no-op when key is placeholder --
+    resend_api_key: str = "placeholder"
+    from_email:     str = "noreply@phaemos.io"
+
     # -- SMS (Brevo) - graceful no-op when key is empty or placeholder --
     brevo_api_key:   str = ""
     brevo_sms_sender: str = "PHAEMOS"  # max 11 chars, no spaces
