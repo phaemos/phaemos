@@ -6,6 +6,7 @@ import type { Device, Alert } from '@/types';
 import DeviceCard from '@/components/DeviceCard';
 import AlertBanner from '@/components/AlertBanner';
 import TelemetryChart from '@/components/TelemetryChart';
+import HealthSummary from '@/components/dashboard/HealthSummary';
 
 const NODE_TYPES = ['all', 'esp32', 'stm32', 'pico_w', 'nano'] as const;
 
@@ -70,6 +71,8 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+
+      <HealthSummary />
 
       {alerts.length > 0 && (
         <div className="space-y-2">
