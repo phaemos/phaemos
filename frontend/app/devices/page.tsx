@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import type { Device } from '@/types';
 
+const PAGE_SIZE = 20;
+
 export default function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>([]);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    api.get<Device[]>('/devices').then((r) => setDevices(r.data));
-  }, []);
+    api
+      .get<Device[]>('/devices', { params: { skip: (page - 1) * PAGE_SIZE, limit: PAGE_SIZE } })
+      .then((r) => setDevices(r.data));
+  }, [page]);
 
   const statusDot: Record<string, string> = {
     online: 'bg-green-500',
@@ -38,6 +43,26 @@ export default function DevicesPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <button
+          type="button"
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+          className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Page {page}</span>
+        <button
+          type="button"
+          disabled={devices.length < PAGE_SIZE}
+          onClick={() => setPage((p) => p + 1)}
+          className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          Next
+        </button>
       </div>
     </main>
   );

@@ -15,14 +15,19 @@ router = APIRouter()
 
 # `status: str | None = None` becomes an optional query parameter, e.g. GET /tickets?status=open
 @router.get("", response_model=list[TicketResponse])
-def list_tickets(status: str | None = None, db: Session = Depends(get_db)):
+def list_tickets(
+    status: str | None = None,
+    skip: int = 0,
+    limit: int = 20,
+    db: Session = Depends(get_db),
+):
     # Assign the query to a variable so we can optionally chain filters before executing it
     q = db.query(Ticket)
     # A truthy check on `status` also correctly skips the filter when an empty string is passed
     if status:
         q = q.filter(Ticket.status == status)
     # Show newest tickets first - important for maintenance workflows where recent issues take priority
-    return q.order_by(Ticket.created_at.desc()).all()
+    return q.order_by(Ticket.created_at.desc()).offset(skip).limit(limit).all()
 
 
 @router.post("", response_model=TicketResponse, status_code=201)
