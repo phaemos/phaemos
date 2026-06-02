@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  *:focus-visible {
+    outline: none;
+    ring: 2px solid #6366f1;
+    ring-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .card {
+    @apply rounded-xl border border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900 shadow-sm transition-shadow duration-200 hover:shadow-md;
+  }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.6; }
+}
+
+.animate-fadeInUp  { animation: fadeInUp 200ms ease-out both; }
+.animate-statusPulse { animation: statusPulse 2s ease-in-out infinite; }
