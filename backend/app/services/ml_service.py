@@ -16,6 +16,8 @@ import numpy as np
 MODEL_PATH      = os.path.join(os.path.dirname(__file__), "../../ml/model.pkl")
 # I classify a reading as anomalous when its normalised score reaches this threshold
 ANOMALY_THRESHOLD = 0.7
+# I keep FEATURE_COLS here so both scoring and retraining use the identical feature vector.
+FEATURE_COLS = ["temperature", "humidity", "vibration_x", "vibration_y", "vibration_z", "light_level"]
 
 # I start with None and populate on first use - lazy loading avoids disk I/O at import time
 _model = None
@@ -41,16 +43,9 @@ def score_reading(reading: dict) -> tuple[float, bool]:
         # I return a safe pass-through when the model has not been trained yet
         return 0.0, False
 
-    # I build a 2-D array with shape (1, 6) - scikit-learn always expects samples x features
-    features = np.array([[
-        # I use `.get() or 0.0` to handle both missing keys and None values
-        reading.get("temperature")   or 0.0,
-        reading.get("humidity")      or 0.0,
-        reading.get("vibration_x")   or 0.0,
-        reading.get("vibration_y")   or 0.0,
-        reading.get("vibration_z")   or 0.0,
-        reading.get("light_level")   or 0.0,
-    ]])
+    # I build a 2-D array with shape (1, n_features) - scikit-learn always expects samples x features.
+    # I use FEATURE_COLS so this vector stays identical to what retraining produces.
+    features = np.array([[reading.get(col) or 0.0 for col in FEATURE_COLS]])
 
     # I call score_samples which returns a raw score - more negative means more anomalous
     raw_score  = _model.score_samples(features)[0]
@@ -62,3 +57,11 @@ def score_reading(reading: dict) -> tuple[float, bool]:
 
     # I round to 4 decimal places to keep API responses clean without losing meaningful precision
     return round(normalised, 4), is_anomaly
+
+
+def reload_model() -> None:
+    """Force a fresh load of model.pkl from disk. Called after retraining."""
+    global _model
+    # I reset to None first so _load_model re-reads the file even if one was already loaded.
+    _model = None
+    _load_model()
