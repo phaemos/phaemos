@@ -58,12 +58,28 @@ export function useTelemetry(
     setLoading(true);
     fetchTelemetry();
 
-    const intervalId = setInterval(fetchTelemetry, intervalMs);
+    // I hold a reference to the interval in a closure variable so the visibility
+    // handler can clear and restart it without touching React state.
+    let intervalId: ReturnType<typeof setInterval> | null = setInterval(fetchTelemetry, intervalMs);
 
-    // I clear the interval on cleanup to prevent stale closures from updating
-    // state after the component that owns this hook has unmounted.
+    // I pause polling while the tab is hidden and restart it the moment the tab
+    // becomes visible again so background tabs don't burn API quota and battery.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        if (intervalId !== null) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      } else {
+        fetchTelemetry();
+        intervalId = setInterval(fetchTelemetry, intervalMs);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
-      clearInterval(intervalId);
+      if (intervalId !== null) clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [deviceId, intervalMs, fetchTelemetry]);
 
