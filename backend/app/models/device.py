@@ -1,6 +1,6 @@
 import uuid
 # Column and the type classes (String, DateTime, etc.) describe the shape of each DB column
-from sqlalchemy import Column, String, DateTime, func
+from sqlalchemy import Column, ForeignKey, String, DateTime, func
 # UUID is imported from the PostgreSQL dialect because it's a Postgres-specific column type
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -29,3 +29,6 @@ class Device(Base):
     # server_default=func.now() lets the database set the timestamp, which is more reliable
     # than relying on application-side time (avoids clock-skew issues between app and DB servers)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # I keep owner_id nullable so existing unowned devices are valid and technicians
+    # can see them (unowned = shared/unassigned, not hidden).
+    owner_id   = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)

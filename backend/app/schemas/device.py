@@ -10,6 +10,9 @@ class DeviceCreate(BaseModel):
     # `str | None = None` means the field is optional: the client can omit it entirely.
     location: str | None = None
     type:     str | None = None   # esp32, arduino, stm32
+    # I allow owner_id at creation time so an admin can assign a device to a technician
+    # in a single request rather than needing a follow-up PATCH.
+    owner_id: UUID | None = None
 
 
 # --- DeviceUpdate ---
@@ -35,6 +38,7 @@ class DeviceResponse(BaseModel):
     last_seen:        datetime | None
     firmware_version: str | None = None
     created_at:       datetime
+    owner_id:         UUID | None = None
 
     # `from_attributes=True` tells Pydantic to read fields from ORM object attributes (e.g. SQLAlchemy row),
     # not just from plain dicts — required when returning database model instances directly.
