@@ -29,7 +29,8 @@ class TicketResponse(BaseModel):
     priority:    str | None
     assigned_to: UUID | None
     created_by:  UUID | None
-    created_at:  datetime
-    updated_at:  datetime
+    created_at:    datetime
+    updated_at:    datetime
+    ticket_number: int | None = None
 
     model_config = {"from_attributes": True}
