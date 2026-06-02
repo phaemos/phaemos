@@ -26,6 +26,10 @@ Include:
 You will receive a response within 72 hours. Once the issue is confirmed and a
 fix is prepared, a public disclosure will be made alongside the patched release.
 
+## Implemented Security Controls
+
+See [docs/security.md](docs/security.md) for the full table of 18 implemented security measures, including JWT auth, rate limiting, brute-force lockout, WebSocket auth, CORS configuration and audit logging.
+
 ## Scope
 
 This policy covers the backend API, frontend application and firmware code
