@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://phaemos.io';
+const BASE_URL = 'https://phaemos.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

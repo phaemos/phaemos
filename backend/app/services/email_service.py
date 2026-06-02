@@ -44,6 +44,7 @@ def send_invite(to_email: str, invite_link: str, role: str) -> None:
     try:
         resend.Emails.send({
             "from": settings.from_email,
+            "reply_to": "support@phaemos.com",
             "to": [to_email],
             "subject": "You have been invited to PHAEMOS",
             "html": html_body,
