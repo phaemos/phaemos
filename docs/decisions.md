@@ -171,3 +171,58 @@ Use `darkMode: 'class'` with a pre-hydration inline script in `<head>` that read
 
 - User preference overrides OS setting (intentional - dashboard use case needs explicit control)
 - Inline script is `dangerouslySetInnerHTML` but is safe here as it contains no user input
+
+---
+
+## 010 - WebSocket JWT auth via query parameter (not header)
+
+**Date:** 2026-06-01
+**Status:** Accepted
+
+**Context:**
+The telemetry WebSocket endpoint needed authentication. The WebSocket handshake is a plain HTTP upgrade request, but browser WebSocket APIs do not allow setting custom headers (unlike fetch/XHR).
+
+**Decision:**
+Pass the JWT as a `?token=` query parameter. The server validates the token before calling `websocket.accept()` and closes with code 1008 (Policy Violation) on auth failure. The client must not retry on 1008 to avoid looping forever on an expired token.
+
+**Consequences:**
+
+- Token appears in server access logs. Acceptable for an internal maintenance tool where logs are admin-only
+- The alternative (httpOnly cookie) does not work for cross-origin WebSocket connections in all browsers
+
+---
+
+## 011 - ML retrain as in-process background task (not a queue worker)
+
+**Date:** 2026-06-02
+**Status:** Accepted
+
+**Context:**
+The ML retrain endpoint needs to fit an IsolationForest on up to 10,000 rows. This takes a few seconds - too long to block the HTTP response. Several options exist: a Celery/RQ task queue, a subprocess, or FastAPI's built-in BackgroundTasks.
+
+**Decision:**
+Use FastAPI BackgroundTasks. The task runs in the same process after the 202 response is sent. A 1-hour in-memory cooldown prevents concurrent runs. The model is written to disk and the in-memory reference reloaded atomically via reload_model().
+
+**Consequences:**
+
+- No extra infrastructure (no Redis queue, no Celery worker). Acceptable for a single-worker deployment
+- If the process dies mid-retrain, the old model.pkl remains intact so scoring continues with the previous model
+- The cooldown resets on restart - this is acceptable; an admin can immediately trigger a retrain after a restart
+
+---
+
+## 012 - Pagination via skip/limit (not cursor-based)
+
+**Date:** 2026-06-02
+**Status:** Accepted
+
+**Context:**
+Tickets and devices pages needed pagination to avoid loading unbounded result sets. Two common approaches: offset/limit (simple) and cursor-based (consistent across concurrent mutations).
+
+**Decision:**
+Use `skip` and `limit` query params. The frontend uses page state and disables Next when fewer than `PAGE_SIZE` rows are returned, signalling the last page.
+
+**Consequences:**
+
+- Simpler to implement and reason about
+- Page boundaries can shift if rows are inserted or deleted between requests. Acceptable for a maintenance tool where exact page consistency is not critical
