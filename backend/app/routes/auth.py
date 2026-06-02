@@ -2,10 +2,11 @@ import base64
 import io
 from datetime import datetime, timedelta, timezone
 
+import httpx
 import pyotp
 import qrcode
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -189,6 +190,8 @@ def logout(response: Response):
     )
 
 
+# ── 2FA / TOTP ────────────────────────────────────────────────────────────────
+
 @router.post("/2fa/enable")
 def totp_enable(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # I generate a fresh secret each time so a half-completed enrolment can be
@@ -239,8 +242,7 @@ def totp_verify(
         raise HTTPException(status_code=401, detail="Invalid TOTP code")
     token = create_access_token({"sub": str(user.id), "role": user.role})
     refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
-    response_data = {"access_token": token, "token_type": "bearer"}
-    resp = JSONResponse(content=response_data)
+    resp = JSONResponse(content={"access_token": token, "token_type": "bearer"})
     resp.set_cookie(
         key="refresh_token",
         value=refresh,
@@ -268,6 +270,157 @@ def totp_disable(
     db.commit()
     return {"detail": "2FA disabled"}
 
+
+# ── OAuth ─────────────────────────────────────────────────────────────────────
+
+def _oauth_upsert(db: Session, email: str, name: str, provider: str, provider_id: str) -> User:
+    """Find or create a user from an OAuth callback. Returns the user record."""
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        # I update the provider fields on each login so a user who previously
+        # signed up with a password and later uses Google gets the link recorded.
+        user.oauth_provider = provider
+        user.oauth_id = provider_id
+    else:
+        user = User(
+            name=name,
+            email=email,
+            password_hash=None,
+            oauth_provider=provider,
+            oauth_id=provider_id,
+        )
+        db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def _oauth_redirect(user: User, frontend_url: str) -> RedirectResponse:
+    """Issue tokens and redirect the browser back to the frontend."""
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
+    url = f"{frontend_url}?token={token}"
+    response = RedirectResponse(url=url)
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh,
+        httponly=True,
+        secure=False,  # set True in production via env guard
+        samesite="lax",
+        max_age=7 * 24 * 3600,
+        path="/api/v1/auth/refresh",
+    )
+    return response
+
+
+@router.get("/google")
+def google_login():
+    # I build the authorization URL manually rather than using authlib's
+    # session helper so this works in a stateless FastAPI environment without
+    # a server-side session store.
+    if not settings.google_client_id:
+        raise HTTPException(status_code=501, detail="Google OAuth not configured")
+    params = (
+        f"client_id={settings.google_client_id}"
+        f"&redirect_uri={settings.google_redirect_uri}"
+        "&response_type=code"
+        "&scope=openid%20email%20profile"
+        "&access_type=offline"
+    )
+    return RedirectResponse(url=f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
+
+
+@router.get("/google/callback")
+async def google_callback(code: str, db: Session = Depends(get_db)):
+    if not settings.google_client_id:
+        raise HTTPException(status_code=501, detail="Google OAuth not configured")
+    async with httpx.AsyncClient() as client:
+        token_res = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": code,
+                "client_id": settings.google_client_id,
+                "client_secret": settings.google_client_secret,
+                "redirect_uri": settings.google_redirect_uri,
+                "grant_type": "authorization_code",
+            },
+        )
+    token_data = token_res.json()
+    if "error" in token_data:
+        raise HTTPException(status_code=400, detail=token_data.get("error_description", "OAuth error"))
+
+    async with httpx.AsyncClient() as client:
+        profile_res = await client.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={"Authorization": f"Bearer {token_data['access_token']}"},
+        )
+    profile = profile_res.json()
+    user = _oauth_upsert(db, profile["email"], profile.get("name", ""), "google", profile["sub"])
+    frontend = settings.allowed_origins.split(",")[0].strip()
+    return _oauth_redirect(user, f"{frontend}/dashboard")
+
+
+@router.get("/github")
+def github_login():
+    if not settings.github_client_id:
+        raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
+    params = (
+        f"client_id={settings.github_client_id}"
+        f"&redirect_uri={settings.github_redirect_uri}"
+        "&scope=user:email"
+    )
+    return RedirectResponse(url=f"https://github.com/login/oauth/authorize?{params}")
+
+
+@router.get("/github/callback")
+async def github_callback(code: str, db: Session = Depends(get_db)):
+    if not settings.github_client_id:
+        raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
+    async with httpx.AsyncClient() as client:
+        token_res = await client.post(
+            "https://github.com/login/oauth/access_token",
+            json={
+                "client_id": settings.github_client_id,
+                "client_secret": settings.github_client_secret,
+                "code": code,
+                "redirect_uri": settings.github_redirect_uri,
+            },
+            headers={"Accept": "application/json"},
+        )
+    token_data = token_res.json()
+    if "error" in token_data:
+        raise HTTPException(status_code=400, detail=token_data.get("error_description", "OAuth error"))
+
+    access_token = token_data["access_token"]
+    async with httpx.AsyncClient() as client:
+        profile_res = await client.get(
+            "https://api.github.com/user",
+            headers={"Authorization": f"Bearer {access_token}", "Accept": "application/vnd.github+json"},
+        )
+        emails_res = await client.get(
+            "https://api.github.com/user/emails",
+            headers={"Authorization": f"Bearer {access_token}", "Accept": "application/vnd.github+json"},
+        )
+    profile = profile_res.json()
+    emails = emails_res.json()
+    primary_email = next(
+        (e["email"] for e in emails if e.get("primary") and e.get("verified")),
+        profile.get("email"),
+    )
+    if not primary_email:
+        raise HTTPException(status_code=400, detail="Could not retrieve verified email from GitHub")
+    user = _oauth_upsert(db, primary_email, profile.get("name") or profile.get("login", ""), "github", str(profile["id"]))
+    frontend = settings.allowed_origins.split(",")[0].strip()
+    return _oauth_redirect(user, f"{frontend}/dashboard")
+
+
+# TODO Step 20b: implement Apple OAuth when Apple Developer Programme enrolled
+@router.get("/apple")
+def apple_login():
+    raise HTTPException(status_code=501, detail="Apple OAuth coming soon")
+
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
 
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
