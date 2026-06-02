@@ -53,3 +53,42 @@ def test_login_unknown_email(client):
         "password": "anything",
     })
     assert res.status_code == 401
+
+
+def test_refresh_token_flow(client):
+    client.post("/api/v1/auth/register", json={
+        "name": "Eve",
+        "email": "eve@example.com",
+        "password": "Secret123!",
+    })
+    login_res = client.post("/api/v1/auth/login", json={
+        "email": "eve@example.com",
+        "password": "Secret123!",
+    })
+    assert login_res.status_code == 200
+    # The refresh token is delivered as an httpOnly cookie.
+    assert "refresh_token" in login_res.cookies
+
+    # Use the cookie to obtain a new access token.
+    refresh_res = client.post(
+        "/api/v1/auth/refresh",
+        cookies={"refresh_token": login_res.cookies["refresh_token"]},
+    )
+    assert refresh_res.status_code == 200
+    body = refresh_res.json()
+    assert "access_token" in body
+    assert body["token_type"] == "bearer"
+
+
+def test_logout_clears_cookie(client):
+    client.post("/api/v1/auth/register", json={
+        "name": "Frank",
+        "email": "frank@example.com",
+        "password": "Secret123!",
+    })
+    client.post("/api/v1/auth/login", json={
+        "email": "frank@example.com",
+        "password": "Secret123!",
+    })
+    res = client.post("/api/v1/auth/logout")
+    assert res.status_code == 204
