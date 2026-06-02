@@ -18,7 +18,11 @@ from app.config import settings
 from app.db import get_db
 from app.limiter import limiter
 from app.models.user import User
-from app.schemas.user import UserRegister, UserLogin, UserResponse, TokenResponse, UserUpdate, ChangePassword
+from app.schemas.user import (
+    UserRegister, UserLogin, UserResponse, TokenResponse,
+    UserUpdate, ChangePassword, InviteCreate, AcceptInvite,
+)
+from app.services import email_service
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -535,6 +539,77 @@ def set_user_permissions(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     user.permissions = body
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+# ── Invitation flow ───────────────────────────────────────────────────────────
+
+def _create_invite_token(email: str, role: str) -> str:
+    # I embed the role in the invite token so the accept endpoint can pre-assign
+    # it without a second DB lookup or a separate parameter in the accept form.
+    payload = {
+        "sub":  email,
+        "role": role,
+        "type": "invite",
+        "exp":  datetime.now(timezone.utc) + timedelta(hours=48),
+    }
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
+
+
+@router.post("/invite", status_code=201)
+def invite_user(
+    payload: InviteCreate,
+    request: Request,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if db.query(User).filter(User.email == payload.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    token = _create_invite_token(payload.email, payload.role)
+    # I build the accept link using the request base URL so it works in both
+    # local dev and production without hard-coding a domain.
+    frontend_base = str(request.base_url).rstrip("/").replace(":8000", ":3000")
+    invite_link = f"{frontend_base}/accept-invite?token={token}"
+    email_service.send_invite(payload.email, invite_link, payload.role)
+    return {"detail": "Invitation sent", "invite_link": invite_link}
+
+
+@router.get("/accept-invite/{token}")
+def get_invite_info(token: str):
+    # I validate the token here so the frontend can show a friendly error
+    # (expired, invalid) before the user fills in their name and password.
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired invite token")
+    if payload.get("type") != "invite":
+        raise HTTPException(status_code=400, detail="Invalid token type")
+    return {"email": payload.get("sub"), "role": payload.get("role")}
+
+
+@router.post("/accept-invite", response_model=UserResponse, status_code=201)
+def accept_invite(payload: AcceptInvite, db: Session = Depends(get_db)):
+    try:
+        token_data = jwt.decode(
+            payload.token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired invite token")
+    if token_data.get("type") != "invite":
+        raise HTTPException(status_code=400, detail="Invalid token type")
+    email = token_data.get("sub")
+    role  = token_data.get("role", "viewer")
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(status_code=400, detail="Account already exists")
+    user = User(
+        name=payload.name,
+        email=email,
+        password_hash=hash_password(payload.password),
+        role=role,
+    )
+    db.add(user)
     db.commit()
     db.refresh(user)
     return user
