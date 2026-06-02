@@ -16,8 +16,9 @@ class Settings(BaseSettings):
     secret_key: str
     # I use HS256 (HMAC-SHA256) as the signing algorithm to create and verify JWT tokens
     algorithm: str = "HS256"
-    # I control how many minutes before a JWT access token expires and the user must log in again
-    access_token_expire_minutes: int = 60
+    # I shorten access tokens to 15 minutes so a stolen token has minimal blast radius;
+    # the refresh token (7-day httpOnly cookie) handles silent renewal.
+    access_token_expire_minutes: int = 15
     # I accept a comma-separated list of frontend URLs allowed to call this API via CORS
     allowed_origins: str = "http://localhost:3000"
     environment: str = "development"
