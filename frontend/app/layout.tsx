@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import LogoutButton from '@/components/ui/LogoutButton';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/devices" className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours">Devices</Link>
           <Link href="/admin"   className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colours ml-auto">Admin</Link>
           <ThemeToggle />
+          <LogoutButton />
         </nav>
         {children}
       </body>
