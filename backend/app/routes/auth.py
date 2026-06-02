@@ -100,7 +100,8 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
-def register(payload: UserRegister, db: Session = Depends(get_db)):
+@limiter.limit("10/hour")
+def register(request: Request, payload: UserRegister, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     user = User(
@@ -167,7 +168,9 @@ def me(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@limiter.limit("30/minute")
 def refresh(
+    request: Request,
     refresh_token: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
 ):
@@ -215,7 +218,9 @@ def update_me(
 
 
 @router.post("/change-password", status_code=204)
+@limiter.limit("10/minute")
 def change_password(
+    request: Request,
     payload: ChangePassword,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -227,7 +232,9 @@ def change_password(
 
 
 @router.delete("/me", status_code=204)
+@limiter.limit("5/hour")
 def delete_me(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     response: Response = None,
@@ -314,7 +321,9 @@ def totp_confirm(
 
 
 @router.post("/2fa/verify", response_model=TokenResponse)
+@limiter.limit("10/minute")
 def totp_verify(
+    request: Request,
     code: str,
     user_id: str,
     db: Session = Depends(get_db),
@@ -559,6 +568,7 @@ def _create_invite_token(email: str, role: str) -> str:
 
 
 @router.post("/invite", status_code=201)
+@limiter.limit("10/hour")
 def invite_user(
     payload: InviteCreate,
     request: Request,
@@ -577,7 +587,8 @@ def invite_user(
 
 
 @router.get("/accept-invite/{token}")
-def get_invite_info(token: str):
+@limiter.limit("20/minute")
+def get_invite_info(request: Request, token: str):
     # I validate the token here so the frontend can show a friendly error
     # (expired, invalid) before the user fills in their name and password.
     try:
@@ -590,7 +601,8 @@ def get_invite_info(token: str):
 
 
 @router.post("/accept-invite", response_model=UserResponse, status_code=201)
-def accept_invite(payload: AcceptInvite, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def accept_invite(request: Request, payload: AcceptInvite, db: Session = Depends(get_db)):
     try:
         token_data = jwt.decode(
             payload.token, settings.secret_key, algorithms=[settings.algorithm]
