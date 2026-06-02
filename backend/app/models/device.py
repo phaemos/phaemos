@@ -2,7 +2,7 @@ import uuid
 # Column and the type classes (String, DateTime, etc.) describe the shape of each DB column
 from sqlalchemy import Column, ForeignKey, String, DateTime, func
 # UUID is imported from the PostgreSQL dialect because it's a Postgres-specific column type
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 
 from app.db import Base
 
@@ -32,3 +32,6 @@ class Device(Base):
     # I keep owner_id nullable so existing unowned devices are valid and technicians
     # can see them (unowned = shared/unassigned, not hidden).
     owner_id   = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    # I use a PostgreSQL ARRAY column rather than a join table because the tag set is
+    # small and querying with `tag = ANY(tags)` is fast with a GIN index at this scale.
+    tags       = Column(ARRAY(String), server_default="{}", nullable=False)
