@@ -1,6 +1,8 @@
 import base64
 import io
+import uuid
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import httpx
 import pyotp
@@ -518,3 +520,21 @@ def list_users(
         .limit(limit)
         .all()
     )
+
+
+@router.patch("/users/{user_id}/permissions", response_model=UserResponse)
+def set_user_permissions(
+    user_id: uuid.UUID,
+    body: dict[str, Any] | None,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    # I replace the entire permissions dict atomically to avoid partial-update races.
+    # Passing null clears all overrides and reverts the user to role defaults.
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.permissions = body
+    db.commit()
+    db.refresh(user)
+    return user
