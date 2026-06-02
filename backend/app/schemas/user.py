@@ -83,3 +83,29 @@ class TokenResponse(BaseModel):
     access_token: str
     # Hardcoded default of "bearer" matches the OAuth 2.0 spec — clients expect exactly this string.
     token_type:   str = "bearer"
+
+
+# --- InviteCreate ---
+# Body for POST /auth/invite (admin creates an invite for a new user).
+class InviteCreate(BaseModel):
+    email: EmailStr
+    role:  str = "viewer"  # default to least privilege
+
+
+# --- AcceptInvite ---
+# Body for POST /auth/accept-invite (invitee sets their password to activate the account).
+class AcceptInvite(BaseModel):
+    token:    str
+    name:     str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
