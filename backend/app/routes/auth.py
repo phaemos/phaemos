@@ -1,5 +1,9 @@
+import base64
+import io
 from datetime import datetime, timedelta, timezone
 
+import pyotp
+import qrcode
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -183,6 +187,86 @@ def logout(response: Response):
         max_age=0,
         path="/api/v1/auth/refresh",
     )
+
+
+@router.post("/2fa/enable")
+def totp_enable(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # I generate a fresh secret each time so a half-completed enrolment can be
+    # restarted without the old unconfirmed secret persisting.
+    secret = pyotp.random_base32()
+    current_user.totp_secret = secret
+    current_user.totp_enabled = False  # not active until confirmed
+    db.commit()
+
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        name=current_user.email,
+        issuer_name="PHAEMOS",
+    )
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+    return {"qr_code": qr_b64, "secret": secret}
+
+
+@router.post("/2fa/confirm")
+def totp_confirm(
+    code: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.totp_secret:
+        raise HTTPException(status_code=400, detail="Call /2fa/enable first")
+    if not pyotp.TOTP(current_user.totp_secret).verify(code):
+        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+    current_user.totp_enabled = True
+    db.commit()
+    return {"detail": "2FA enabled"}
+
+
+@router.post("/2fa/verify", response_model=TokenResponse)
+def totp_verify(
+    code: str,
+    user_id: str,
+    db: Session = Depends(get_db),
+):
+    # I accept user_id as a query param rather than a JWT so this endpoint works
+    # before a full access token is issued - it is the second step of login.
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.totp_enabled or not user.totp_secret:
+        raise HTTPException(status_code=400, detail="2FA not enabled for this user")
+    if not pyotp.TOTP(user.totp_secret).verify(code):
+        raise HTTPException(status_code=401, detail="Invalid TOTP code")
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
+    response_data = {"access_token": token, "token_type": "bearer"}
+    resp = JSONResponse(content=response_data)
+    resp.set_cookie(
+        key="refresh_token",
+        value=refresh,
+        httponly=True,
+        secure=settings.environment != "development",
+        samesite="lax",
+        max_age=7 * 24 * 3600,
+        path="/api/v1/auth/refresh",
+    )
+    return resp
+
+
+@router.post("/2fa/disable")
+def totp_disable(
+    code: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.totp_enabled or not current_user.totp_secret:
+        raise HTTPException(status_code=400, detail="2FA is not enabled")
+    if not pyotp.TOTP(current_user.totp_secret).verify(code):
+        raise HTTPException(status_code=401, detail="Invalid TOTP code")
+    current_user.totp_enabled = False
+    current_user.totp_secret = None
+    db.commit()
+    return {"detail": "2FA disabled"}
 
 
 @router.get("/users", response_model=list[UserResponse])
