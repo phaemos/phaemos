@@ -142,7 +142,7 @@ export default function SensorGrid({ reading }: Props) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 11 }).map((_, i) => (
-          <div key={i} className="bg-white/5 rounded-xl p-4 border border-gray-700">
+          <div key={i} className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
             <LoadingSkeleton rows={3} />
           </div>
         ))}
@@ -157,15 +157,15 @@ export default function SensorGrid({ reading }: Props) {
       {categories.map((cat) => (
         <div
           key={cat.title}
-          className="bg-white/5 rounded-xl p-4 border border-gray-700"
+          className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
         >
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
             {cat.title}
           </h3>
           <dl className="space-y-1.5">
             {cat.fields.map((field) => (
               <div key={field.label} className="flex justify-between items-center">
-                <dt className="text-xs text-gray-500">{field.label}</dt>
+                <dt className="text-xs text-gray-400 dark:text-gray-500">{field.label}</dt>
                 <dd>
                   {field.alert ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-900/60 text-red-300 border border-red-700">
@@ -173,7 +173,7 @@ export default function SensorGrid({ reading }: Props) {
                       {field.value}
                     </span>
                   ) : (
-                    <span className="text-xs font-mono text-gray-200">
+                    <span className="text-xs font-mono text-gray-800 dark:text-gray-200">
                       {field.value}
                     </span>
                   )}

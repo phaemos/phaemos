@@ -108,19 +108,19 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
             className={`px-3 py-1 rounded text-xs font-medium transition-colours ${
               range === value
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
           >
             {label}
           </button>
         ))}
         {loading && (
-          <span className="ml-3 text-xs text-gray-500 animate-pulse">Loading...</span>
+          <span className="ml-3 text-xs text-gray-400 dark:text-gray-500 animate-pulse">Loading...</span>
         )}
       </div>
 
       {visibleGroups.length === 0 && !loading && (
-        <p className="text-sm text-gray-500 py-8 text-centre">
+        <p className="text-sm text-gray-400 dark:text-gray-500 py-8 text-centre">
           No telemetry in this time range.
         </p>
       )}
@@ -141,16 +141,16 @@ function SensorGroupChart({ group, data }: GroupChartProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="rounded-xl border border-gray-700 bg-gray-900/40 overflow-hidden">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 overflow-hidden">
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}
-        className="w-full flex items-centre justify-between px-4 py-2.5 text-left hover:bg-white/5 transition-colours"
+        className="w-full flex items-centre justify-between px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colours"
       >
-        <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
           {group.label}
         </span>
-        <span className="text-gray-500 text-xs">{collapsed ? '+' : '-'}</span>
+        <span className="text-gray-400 dark:text-gray-500 text-xs">{collapsed ? '+' : '-'}</span>
       </button>
 
       {!collapsed && (
