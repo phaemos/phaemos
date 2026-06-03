@@ -1,6 +1,7 @@
 # PHAEMOS
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+[![Discussions](https://img.shields.io/github/discussions/zaccesss/phaemos)](https://github.com/zaccesss/phaemos/discussions)
 
 Smart Maintenance Platform - collects real-time sensor data from ESP32/Arduino/STM32 hardware nodes, displays a live dashboard, fires alerts when readings exceed thresholds and uses machine learning to predict faults before they happen.
 
@@ -271,9 +272,12 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 
 Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branch naming convention, commit format, code standards and PR checklist before opening a pull request.
 
-## Contact and Support
+## Community
 
-Open an [issue](https://github.com/zaccesss/phaemos/issues) for bug reports and feature requests.
+- [GitHub Discussions](https://github.com/zaccesss/phaemos/discussions) - questions, ideas and show-and-tell
+- [GitHub Issues](https://github.com/zaccesss/phaemos/issues) - bug reports and feature requests
+
+## Contact and Support
 
 For general enquiries use the [contact form](https://phaemos.com/contact) or email [contact@phaemos.com](mailto:contact@phaemos.com). For user support email [support@phaemos.com](mailto:support@phaemos.com).
 

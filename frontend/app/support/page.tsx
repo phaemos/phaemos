@@ -46,6 +46,19 @@ export default function SupportPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
           <a
+            href="https://github.com/zaccesss/phaemos/discussions"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl border border-surface-200 dark:border-surface-800 p-4 hover:border-primary-500 transition-colors space-y-1"
+          >
+            <p className="font-semibold text-surface-900 dark:text-surface-50">GitHub Discussions</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">
+              Questions, ideas and show-and-tell. Best place to ask if you are unsure
+              whether something is a bug.
+            </p>
+          </a>
+
+          <a
             href="https://github.com/zaccesss/phaemos/issues"
             target="_blank"
             rel="noopener noreferrer"
