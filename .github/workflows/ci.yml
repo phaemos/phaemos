@@ -59,23 +59,6 @@ jobs:
     permissions:
       contents: read
 
-    # Spin up a real PostgreSQL instance — the models use PostgreSQL UUID types
-    # that are incompatible with SQLite, so we can't mock the database.
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: phaemos_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -84,6 +67,27 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
+
+      # I pull the image explicitly so transient Docker Hub timeouts can be retried.
+      # Service containers start before any steps and cannot be retried on failure.
+      - name: Pull PostgreSQL image
+        run: |
+          for i in 1 2 3 4 5; do
+            docker pull postgres:15 && break
+            echo "Pull attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=password \
+            -e POSTGRES_DB=phaemos_test \
+            -p 5432:5432 \
+            postgres:15
+          until docker exec postgres pg_isready -U postgres; do sleep 1; done
 
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
