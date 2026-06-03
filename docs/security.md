@@ -2,14 +2,14 @@
 
 Full record of security controls implemented in PHAEMOS. Updated after every session that adds or changes a security-relevant feature.
 
-Last updated: 2026-06-02
+Last updated: 2026-06-03
 
 ---
 
 ## Summary Table
 
 | # | Measure | Layer | Status | PR |
-|---|---------|-------|--------|-----|
+| - | ------- | ----- | ------ | -- |
 | 1 | JWT authentication (HS256, 24h expiry) | Backend | Done | PR 55 |
 | 2 | Bcrypt password hashing (passlib) | Backend | Done | PR 55 |
 | 3 | Role-based access control (admin / technician / viewer) | Backend | Done | PR 55 |
@@ -28,6 +28,15 @@ Last updated: 2026-06-02
 | 16 | Next.js edge middleware route guard (all routes require valid token cookie) | Frontend | Done | PR 75 |
 | 17 | JWT stored in httpOnly-style cookie for middleware + localStorage for API | Frontend | Done | PR 75 |
 | 18 | WS client skips retry on close 1008 - prevents token-expiry loop | Frontend | Done | PR 77 |
+| 19 | Refresh token - 7-day httpOnly cookie, separate `type:"refresh"` JWT claim, 15-min access tokens | Backend | Done | PR 89 |
+| 20 | 2FA / TOTP - optional per-user enrolment, pyotp validation, QR code flow, confirm before activation | Backend | Done | PR 93 |
+| 21 | OAuth (Google + GitHub) - authlib OAuth2, users matched by email to prevent duplicate accounts | Backend | Done | PR 92 |
+| 22 | Rate limiting - slowapi per-IP on login (5/min), register (10/hr), password change (5/hr), contact (3/hr), ML retrain | Backend | Done | PR 99 |
+| 23 | Rate limiting proxy headers - X-Real-IP from Nginx used as key, not request.client.host | Backend | Done | PR 135 |
+| 24 | Security headers - X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy: camera=(), microphone=(), geolocation=() | Frontend | Done | PR 103 |
+| 25 | Cookie consent - GDPR-compliant banner, GA4 loads only after accept, consent stored in localStorage | Frontend | Done | PR 114 |
+| 26 | GDPR - DELETE /auth/me anonymises tickets and wipes personal data; GET /auth/me/export returns full JSON bundle | Backend | Done | PR 94 |
+| 27 | Input validation - Pydantic Field(max_length=...) on all string inputs in device, ticket and webhook schemas prevents storage exhaustion | Backend | Done | PR 135 |
 
 ---
 

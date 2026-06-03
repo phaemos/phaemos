@@ -1,5 +1,5 @@
 """
-Notification Service — sends Discord webhook and email alerts when a
+Notification Service - sends Discord webhook and email alerts when a
 critical or warning alert is triggered. Both channels fail gracefully
 so a broken webhook never crashes the telemetry ingest flow.
 """
@@ -14,7 +14,7 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Only notify for these severities — info would cause alert fatigue.
+# Only notify for these severities - info would cause alert fatigue.
 _NOTIFY_SEVERITIES = {"critical", "warning"}
 
 
@@ -25,7 +25,7 @@ def send_discord_alert(message: str, severity: str) -> None:
     if severity not in _NOTIFY_SEVERITIES:
         return
 
-    # Discord embeds use colour codes — red for critical, yellow for warning.
+    # Discord embeds use colour codes - red for critical, yellow for warning.
     colour = 0xFF0000 if severity == "critical" else 0xFFA500
     payload = {
         "embeds": [{
@@ -35,7 +35,7 @@ def send_discord_alert(message: str, severity: str) -> None:
         }]
     }
     try:
-        # Use a short timeout — notification failure must not block the request.
+        # Use a short timeout - notification failure must not block the request.
         with httpx.Client(timeout=5) as client:
             res = client.post(settings.discord_webhook_url, json=payload)
             res.raise_for_status()

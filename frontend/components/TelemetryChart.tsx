@@ -75,7 +75,7 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
 
   const fromTs = useMemo(() => fromTsForRange(range), [range]);
 
-  // I limit to 500 rows for the historical view — enough to draw smooth lines
+  // I limit to 500 rows for the historical view - enough to draw smooth lines
   // without saturating the browser paint cycle.
   const { data: polledReadings, loading } = useTelemetry(deviceId, { fromTs, limit: 500, nodeType });
 

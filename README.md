@@ -197,11 +197,7 @@ See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS se
 
 ## Milestone Plan
 
-| Phase | Weeks | Focus                                                 |
-| ----- | ----- | ----------------------------------------------------- |
-| 1     | 1-4   | Hardware firmware + telemetry ingest + live dashboard |
-| 2     | 5-8   | Alert rules + JWT auth + ticket system + audit logs   |
-| 3     | 9-12  | ML anomaly detection + maintenance recommendations    |
+See [docs/week_by_week.md](docs/week_by_week.md) for the full development timeline.
 
 ## Hardware
 
@@ -260,9 +256,9 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :----------------------------------------------------------------: | :----------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: |
 |                                   **Docker**                                    |                                   **GitHub**                                    |                             **Vercel**                             |                           **DigitalOcean**                               |                                             **Git**                                              |
 
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" /> |
-| :------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :-------------------------------------------------------------------: |
-|                                               **Arduino**                                                |                                            **C**                                             |                                   **STM32**                                    |                               **ESP32**                               |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" alt="Arduino" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" alt="C" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" width="60" alt="C++" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" width="60" alt="Shell/Bash" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" alt="STM32" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" alt="ESP32" /> |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **Arduino** | **C** | **C++** | **Shell/Bash** | **STM32** | **ESP32** |
 
 </div>
 

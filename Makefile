@@ -1,4 +1,4 @@
-.PHONY: dev test lint migrate build
+.PHONY: dev test lint migrate build docs docs-build
 
 # Start the full local stack (db, redis, backend in Docker; frontend with hot reload)
 dev:
@@ -25,6 +25,14 @@ migrate:
 # Build the Next.js frontend for production
 build:
 	cd frontend && npm run build
+
+# Serve the MkDocs documentation site locally with hot reload
+docs:
+	pip install -r requirements-docs.txt -q && mkdocs serve
+
+# Build the MkDocs site into site/ (output is gitignored; Vercel runs this at deploy time)
+docs-build:
+	pip install -r requirements-docs.txt -q && mkdocs build
 
 # Seed the database with demo data (useful after docker compose down wipes the volume)
 seed:

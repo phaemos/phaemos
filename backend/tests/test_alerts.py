@@ -32,7 +32,7 @@ def test_create_alert_rule(client, device, admin_user):
 def test_resolve_alert(client, device, db, auth_headers):
     from app.models.alert import Alert
 
-    # Insert alert directly — tests the resolve endpoint in isolation from the
+    # Insert alert directly - tests the resolve endpoint in isolation from the
     # alert rule evaluation path.
     alert = Alert(
         device_id=device.id,
@@ -47,7 +47,7 @@ def test_resolve_alert(client, device, db, auth_headers):
     # to record the actor in the audit log.
     res = client.patch(f"/api/v1/alerts/{alert.id}/resolve", headers=auth_headers)
     assert res.status_code == 200
-    # Use truthy check — the resolved column is String type (pre-existing quirk)
+    # Use truthy check - the resolved column is String type (pre-existing quirk)
     # so it may come back as True (bool) or "True" (str).
     assert res.json()["resolved"]
 
