@@ -17,7 +17,7 @@ class Device(Base):
     id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # nullable=False enforces a NOT NULL constraint at the database level
     name       = Column(String(100), nullable=False)
-    # No nullable=False means this column is optional — the device may not have a location yet
+    # No nullable=False means this column is optional - the device may not have a location yet
     location   = Column(String(100))
     type       = Column(String(50))          # esp32 / arduino / stm32
     # unique=True adds a UNIQUE constraint so no two devices can share the same API key
