@@ -41,6 +41,15 @@ export default function DeviceCard({ device, active, onClick }: Props) {
       {device.firmware_version && (
         <p className="text-xs text-surface-400 dark:text-surface-600 mt-1 font-mono">fw {device.firmware_version}</p>
       )}
+      {device.tags && device.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {device.tags.map((tag) => (
+            <span key={tag} className="bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 text-xs px-2 py-0.5 rounded-full">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
     </button>
   );
 }
