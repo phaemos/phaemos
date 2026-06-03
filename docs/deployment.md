@@ -1,149 +1,265 @@
 # Deployment Guide
 
-This guide covers deploying Phaemos to Render (backend), Vercel (frontend), and via Docker for self-hosted setups.
+This guide covers the full production deployment of Phaemos:
+
+- Backend (FastAPI + PostgreSQL + Redis) on a DigitalOcean VPS via Docker Compose
+- Frontend (Next.js) on Vercel
+- Documentation site (MkDocs) on Vercel
+- Status page on Instatus
 
 ---
 
-## Section 1: Backend on Render
+## Prerequisites
 
-Render is the recommended platform for the Phaemos backend. It provides managed PostgreSQL, automatic deploys, and a free tier suitable for development.
+### DigitalOcean credit (GitHub Student Pack)
 
-### Steps
-
-1. Go to [render.com](https://render.com) and sign in with your GitHub account.
-2. Click **New** -> **Web Service** and connect your GitHub repository.
-3. Set the **Root Directory** to `backend/`.
-4. Set the **Runtime** to Python 3.
-5. Set the **Build Command** to:
-   ```
-   pip install -r requirements.txt
-   ```
-6. Set the **Start Command** to:
-   ```
-   uvicorn app.main:app --host 0.0.0.0 --port $PORT
-   ```
-7. Under **Environment Variables**, add all variables from `backend/.env.example`. At minimum:
-   - `DATABASE_URL` - will be set automatically when you attach a Render Postgres database
-   - `SECRET_KEY` - a long random string for JWT signing
-   - `ALGORITHM` - `HS256`
-   - `ACCESS_TOKEN_EXPIRE_MINUTES` - `30`
-   - `REDIS_URL` - set after adding a Redis instance
-   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` - optional, for email alerts
-   - `DISCORD_WEBHOOK_URL` - optional, for Discord alerts
-8. Click **Add Database** -> **PostgreSQL** to create a managed Postgres instance. Render will automatically inject `DATABASE_URL` into your environment.
-9. After the first deploy completes, open the Render Shell for your service and run migrations:
-   ```
-   psql $DATABASE_URL < migrations/001_initial_schema.sql
-   ```
-10. Your backend URL will be `https://your-service-name.onrender.com`. The health endpoint is `GET /health`.
+The GitHub Student Developer Pack provides $200 of DigitalOcean credit, covering approximately 33 months at the $6/month Basic Droplet price. Apply at [education.github.com/pack](https://education.github.com/pack) with a verified `.edu` email. Credit is applied automatically once approved.
 
 ---
 
-## Section 2: Frontend on Vercel
+## Section 1: DigitalOcean VPS setup
 
-Vercel is the recommended platform for the Next.js frontend.
+### Create the droplet
 
-### Steps
+1. Sign in to [cloud.digitalocean.com](https://cloud.digitalocean.com).
+2. Click **Create** -> **Droplets**.
+3. Choose the following:
+   - **Region:** closest to your expected users (e.g. London or Amsterdam for EU)
+   - **Image:** Ubuntu 24.04 LTS
+   - **Size:** Basic, 1 vCPU / 1 GB RAM / 25 GB SSD (~$6/month, covered by Student Pack)
+   - **Authentication:** SSH key (paste your public key from `~/.ssh/id_rsa.pub`)
+4. Click **Create Droplet**. Note the assigned IP address.
 
-1. Go to [vercel.com](https://vercel.com) and sign in with your GitHub account.
-2. Click **Add New Project** and import your GitHub repository.
-3. Set the **Framework Preset** to **Next.js** (Vercel usually detects this automatically).
-4. Set the **Root Directory** to `frontend/`.
-5. Under **Environment Variables**, add:
-   - `NEXT_PUBLIC_API_URL` - set this to your Render backend URL, for example `https://phaemos-backend.onrender.com`
-6. Click **Deploy**.
-7. Vercel will build and deploy the frontend. Your frontend URL will be `https://your-project.vercel.app`.
-
-For a custom domain, go to **Project Settings** -> **Domains** in the Vercel dashboard and add your domain.
-
----
-
-## Section 3: Docker (Self-Hosted)
-
-For running Phaemos on your own server or locally without cloud services, use Docker Compose.
-
-### Start all services
+### First SSH login and hardening
 
 ```bash
-docker-compose up -d
+ssh root@YOUR_DROPLET_IP
 ```
 
-This starts:
-- `backend` - FastAPI application on port 8000
-- `postgres` - PostgreSQL database on port 5432
-- `redis` - Redis cache on port 6379
-- `frontend` - Next.js application on port 3000
+```bash
+# Update packages
+apt update && apt upgrade -y
+
+# Create a non-root user
+adduser phaemos
+usermod -aG sudo phaemos
+
+# Copy SSH key to the new user
+rsync --archive --chown=phaemos:phaemos ~/.ssh /home/phaemos
+
+# Disable root SSH login
+sed -i 's/^PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+systemctl reload sshd
+```
+
+Reconnect as the `phaemos` user for all subsequent steps.
+
+### Install Docker and Docker Compose
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker phaemos
+# Log out and back in for the group change to take effect
+```
+
+### Install Nginx and Certbot
+
+```bash
+sudo apt install -y nginx certbot python3-certbot-nginx
+```
+
+---
+
+## Section 2: Deploy the backend
+
+### Clone the repo
+
+```bash
+cd /home/phaemos
+git clone https://github.com/zaccesss/phaemos.git
+cd phaemos
+```
+
+### Create the backend environment file
+
+```bash
+cp backend/.env.example backend/.env
+nano backend/.env
+```
+
+At minimum, set:
+
+```env
+DATABASE_URL=postgresql://phaemos:CHANGE_ME@postgres:5432/phaemos
+REDIS_URL=redis://redis:6379/0
+SECRET_KEY=<generate with: openssl rand -hex 32>
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+ALLOWED_ORIGINS=https://phaemos.com
+ENVIRONMENT=production
+```
+
+All other variables (SMTP, Resend, Brevo, Turnstile, etc.) are optional - the app starts without them and the relevant features degrade gracefully.
+
+### Start the stack
+
+```bash
+docker compose up -d
+```
+
+This starts four containers: `backend` (port 8000), `postgres` (port 5432), `redis` (port 6379), and `frontend` (port 3000). In production, only Nginx faces the internet - the container ports are not exposed publicly.
 
 ### Run database migrations
 
-After the first start, run migrations inside the backend container:
-
 ```bash
-docker-compose exec backend psql $DATABASE_URL < migrations/001_initial_schema.sql
+docker compose exec backend bash -c "
+  for f in /app/migrations/*.sql; do psql \$DATABASE_URL < \$f; done
+"
 ```
 
-Or using the Postgres container directly:
+### Verify the backend is running
 
 ```bash
-docker-compose exec postgres psql -U postgres -d phaemos < migrations/001_initial_schema.sql
-```
-
-### Check logs
-
-To tail logs for the backend service:
-
-```bash
-docker-compose logs -f backend
-```
-
-To tail all services:
-
-```bash
-docker-compose logs -f
-```
-
-### Stop all services
-
-```bash
-docker-compose down
-```
-
-To also remove database volumes (destroys all data):
-
-```bash
-docker-compose down -v
+curl http://localhost:8000/health
+# Expected: {"status":"ok","service":"PHAEMOS API","environment":"production",...}
 ```
 
 ---
 
-## Section 4: Updating After a New PR Merges to Main
+## Section 3: Nginx reverse proxy and SSL
 
-### Render (backend)
+### Create the Nginx config for api.phaemos.com
 
-Render can be configured to automatically deploy whenever a push is made to the `main` branch. To enable this:
+```nginx
+# /etc/nginx/sites-available/phaemos
+server {
+    listen 80;
+    server_name api.phaemos.com;
 
-1. Go to your Web Service in the Render dashboard.
-2. Under **Settings** -> **Build and Deploy**, enable **Auto-Deploy**.
-3. Select the branch as `main`.
-
-After each automatic deploy, check the deploy logs in the Render dashboard to confirm the build succeeded. If the PR includes database schema changes, you must manually run the new migration SQL file in the Render shell:
-
-```bash
-psql $DATABASE_URL < migrations/002_your_migration.sql
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
 
-Render does not run migrations automatically.
+```bash
+sudo ln -s /etc/nginx/sites-available/phaemos /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
 
-### Vercel (frontend)
+### Issue SSL certificate
 
-Vercel automatically deploys on every push to `main` with no additional configuration required. The deploy status appears in the Vercel dashboard and as a commit status check in GitHub.
+```bash
+sudo certbot --nginx -d api.phaemos.com
+```
 
-### Database migrations
+Certbot patches the Nginx config automatically to redirect HTTP to HTTPS and renew the certificate. Auto-renewal is enabled by default via a systemd timer - verify with `systemctl list-timers | grep certbot`.
 
-Schema migrations are not applied automatically on either Render or Vercel. After any PR that modifies `migrations/*.sql`:
+---
 
-1. Connect to the Render shell for the backend service.
-2. Run the new migration file: `psql $DATABASE_URL < migrations/NNN_description.sql`
-3. Verify the migration succeeded by checking the table structure.
+## Section 4: DNS records
 
-Keep migration files numbered sequentially (`001_`, `002_`, ...) and never modify an already-deployed migration file. Always write new migration files for schema changes.
+Add these records in your DNS provider (Cloudflare or DigitalOcean DNS):
+
+| Name | Type | Value | Notes |
+| --- | --- | --- | --- |
+| `@` | A | `YOUR_DROPLET_IP` | Root domain - Vercel handles this via its own A records |
+| `api` | A | `YOUR_DROPLET_IP` | Points to the VPS |
+| `docs` | CNAME | `cname.vercel-dns.com` | Vercel docs project |
+| `status` | CNAME | `<from Instatus dashboard>` | Instatus status page |
+
+For `phaemos.com` itself (the Next.js app), follow the custom domain steps in Section 5 below - Vercel provides its own A and CNAME records.
+
+---
+
+## Section 5: Vercel - frontend (phaemos.com)
+
+1. Go to [vercel.com](https://vercel.com) and sign in with GitHub.
+2. Click **Add New Project** and import the `zaccesss/phaemos` repo.
+3. Set **Root Directory** to `frontend/`.
+4. Set **Framework Preset** to **Next.js** (auto-detected).
+5. Under **Environment Variables**, add every variable from `frontend/.env.example`. At minimum:
+   - `NEXT_PUBLIC_API_URL` = `https://api.phaemos.com`
+   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = from Cloudflare Turnstile dashboard
+   - `TURNSTILE_SECRET_KEY` = from Cloudflare Turnstile dashboard
+   - `CONTACT_EMAIL_TO` = `contact@phaemos.com`
+   - `NEXT_PUBLIC_GA_ID` = from Google Analytics (optional)
+6. Click **Deploy**.
+7. Under **Project Settings** -> **Domains**, add `phaemos.com` and `www.phaemos.com`. Follow Vercel's DNS instructions.
+
+---
+
+## Section 6: Vercel - documentation site (docs.phaemos.com)
+
+1. In the same Vercel account, click **Add New Project** and import `zaccesss/phaemos` again (a second project).
+2. Set **Root Directory** to `.` (the repo root, not `frontend/`).
+3. Set **Framework Preset** to **Other**.
+4. Set **Build Command** to:
+
+   ```bash
+   pip install -r requirements-docs.txt && mkdocs build
+   ```
+
+5. Set **Output Directory** to `site`.
+6. Click **Deploy**.
+7. Under **Project Settings** -> **Domains**, add `docs.phaemos.com`.
+
+---
+
+## Section 7: Instatus - status page (status.phaemos.com)
+
+1. Create a free account at [instatus.com](https://instatus.com).
+2. Create a new status page named **Phaemos Status**.
+3. Add two components:
+   - **Platform** - monitors `https://phaemos.com` (HTTP, 60s interval)
+   - **API** - monitors `https://api.phaemos.com/health`, keyword match `ok` (HTTP, 60s interval)
+4. Under **Settings** -> **Domain**, add `status.phaemos.com` as the custom domain.
+5. Instatus provides a CNAME target - add it to your DNS as a `status CNAME <instatus-target>` record.
+6. Enable email and/or Slack notifications for incidents.
+
+---
+
+## Section 8: Updating after a PR merges to main
+
+### Backend (VPS)
+
+```bash
+cd /home/phaemos/phaemos
+git pull origin main
+docker compose up -d --build backend
+```
+
+If the PR includes a new migration file, run it after pulling:
+
+```bash
+docker compose exec backend psql $DATABASE_URL < migrations/NNN_description.sql
+```
+
+### Frontend (Vercel)
+
+Vercel deploys automatically on every push to `main`. No manual step needed. Monitor the deploy in the Vercel dashboard.
+
+### Docs (Vercel)
+
+The docs Vercel project also deploys automatically on every push to `main`. No manual step needed.
+
+---
+
+## Section 9: Rollback
+
+### Backend
+
+```bash
+cd /home/phaemos/phaemos
+git log --oneline -10   # find the last known good commit hash
+git checkout <commit>
+docker compose up -d --build backend
+```
+
+### Frontend / docs
+
+Use the Vercel dashboard -> **Deployments** -> select the previous deployment -> **Promote to Production**.

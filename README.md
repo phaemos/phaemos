@@ -21,7 +21,6 @@ Suggested tagline: **Reveal before failure.**
       <a href="#quickstart">Quickstart</a> •
       <a href="#project-structure">Project Structure</a> •
       <a href="#docs">Docs</a> •
-      <a href="#deployment-checklist">Deployment Checklist</a> •
       <a href="#release-flow">Release Flow</a> •
       <a href="#milestone-plan">Milestone Plan</a> •
       <a href="#hardware">Hardware</a> •
@@ -178,35 +177,22 @@ phaemos/
 - [Support](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
 
-## Deployment Checklist
-
-Use the production checklist before each release:
-
-- [Render + Vercel Deployment Checklist](docs/deployment-checklist.md)
-
 ## Release Flow
 
 PHAEMOS uses tag-based releases with changelog validation.
 
-1. Update `CHANGELOG.md` with a new version section in this format:
-   `## [X.Y.Z] - DD-MM-YYYY`
-1. Commit and merge to `main`.
-1. Create and push the tag:
+1. Update `CHANGELOG.md` with a new version section: `## [X.Y.Z] - DD-MM-YYYY`
+2. Commit and merge to `main`.
+3. Create and push the tag:
 
 ```bash
 git tag vX.Y.Z
 git push origin vX.Y.Z
 ```
 
-1. GitHub Actions `Release` workflow validates the changelog entry and creates
-   the GitHub release.
+1. The GitHub Actions `Release` workflow validates the changelog entry and creates the GitHub release.
 
-### Security Note for Frontend Dependencies
-
-Frontend dependencies have been upgraded to `next@15.5.15` and
-`postcss@8.5.10`. If `npm audit` still reports the transitive PostCSS advisory,
-track updates in the Next.js release line and apply them as soon as an upstream
-fix is published.
+See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS setup guide, and [docs/deployment-checklist.md](docs/deployment-checklist.md) for the pre-release checklist.
 
 ## Milestone Plan
 
@@ -255,7 +241,7 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 | Hardware | ESP32, STM32 Black Pill F411CEU6, Arduino Nano, Raspberry Pi Pico 2W |
 | Containers | Docker + Docker Compose |
 | Monitoring | Prometheus + Grafana |
-| Deployment | Vercel (frontend), Render (backend + DB) |
+| Deployment | Vercel (frontend + docs), DigitalOcean VPS (backend + DB) |
 
 ## Languages & Tools Used
 
@@ -269,9 +255,9 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
 |                                   **Python**                                    |                             **FastAPI**                             |                                                 **PostgreSQL**                                                 |                                              **Redis**                                               |                                             **Scikit-Learn**                                             |
 
-| <img src="https://techstack-generator.vercel.app/docker-icon.svg" width="60" /> | <img src="https://techstack-generator.vercel.app/github-icon.svg" width="60" /> | <img src="https://cdn.simpleicons.org/vercel/000000" width="60" /> | <img src="https://cdn.simpleicons.org/render/46E3B7" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="60" /> |
-| :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :----------------------------------------------------------------: | :----------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: |
-|                                   **Docker**                                    |                                   **GitHub**                                    |                             **Vercel**                             |                             **Render**                             |                                             **Git**                                              |
+| <img src="https://techstack-generator.vercel.app/docker-icon.svg" width="60" alt="Docker" /> | <img src="https://techstack-generator.vercel.app/github-icon.svg" width="60" alt="GitHub" /> | <img src="https://cdn.simpleicons.org/vercel/000000" width="60" alt="Vercel" /> | <img src="https://cdn.simpleicons.org/digitalocean/0080FF" width="60" alt="DigitalOcean" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="60" alt="Git" /> |
+| :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :----------------------------------------------------------------: | :----------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: |
+|                                   **Docker**                                    |                                   **GitHub**                                    |                             **Vercel**                             |                           **DigitalOcean**                               |                                             **Git**                                              |
 
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" /> |
 | :------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :-------------------------------------------------------------------: |
