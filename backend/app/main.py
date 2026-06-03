@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.db import Base, engine
 from app.limiter import limiter
-from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo, webhooks, maintenance
+from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmware, audit, demo, webhooks, maintenance, contact
 from app.routes.health import router as health_router, public_router as health_public_router
 from app.tasks.retention import start_retention_scheduler
 
@@ -62,6 +62,7 @@ app.include_router(audit.router,     prefix="/api/v1",             tags=["Audit"
 app.include_router(demo.router,      prefix="/api/v1",             tags=["Demo"])
 app.include_router(webhooks.router,     prefix="/api/v1",  tags=["Webhooks"])
 app.include_router(maintenance.router,  prefix="/api/v1",  tags=["Maintenance"])
+app.include_router(contact.router,      prefix="/api/v1",  tags=["Contact"])
 # health_router has auth-protected fleet stats; health_public_router has the no-auth /status check
 app.include_router(health_router,       prefix="/api/v1",  tags=["Health"])
 app.include_router(health_public_router,                   tags=["Health"])

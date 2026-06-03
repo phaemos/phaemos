@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.2",
     "@vercel/analytics": "^2.0.1",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",

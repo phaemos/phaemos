@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     brevo_api_key:   str = ""
     brevo_sms_sender: str = "PHAEMOS"  # max 11 chars, no spaces
 
+    # -- Cloudflare Turnstile (contact form) --
+    turnstile_secret_key: str = ""
+    contact_email_to: str = "contact@phaemos.com"
+
     # -- OTA firmware --
     firmware_storage_path: str = "./firmware_uploads"
 

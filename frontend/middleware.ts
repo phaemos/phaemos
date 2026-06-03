@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   '/security',
   '/faq',
   '/support',
+  '/contact',
 ];
 
 export function middleware(request: NextRequest) {
