@@ -40,6 +40,7 @@ nav:
     - Architecture: architecture.md
     - Deployment: deployment.md
     - Deployment Checklist: deployment-checklist.md
+    - Scalability: scalability.md
   - Reference:
     - API Reference: api-reference.md
     - Sensor Reference: sensor_reference.md
