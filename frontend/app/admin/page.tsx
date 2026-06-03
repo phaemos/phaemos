@@ -6,6 +6,7 @@ import UserTable from '@/components/admin/UserTable';
 import AuditLog from '@/components/admin/AuditLog';
 import AlertRulesPanel from '@/components/admin/AlertRulesPanel';
 import WebhooksPanel from '@/components/admin/WebhooksPanel';
+import MaintenanceWindowsPanel from '@/components/admin/MaintenanceWindowsPanel';
 
 const sectionClass = 'rounded-lg border border-surface-200 dark:border-surface-800 p-4 space-y-4';
 const inputClass = 'w-full rounded bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 px-3 py-2 text-sm text-surface-900 dark:text-surface-50 focus:outline-none focus:border-primary-500';
@@ -110,6 +111,11 @@ export default function AdminPage() {
             <p className="text-sm text-surface-600 dark:text-surface-400">{fwStatus}</p>
           )}
         </div>
+      </section>
+
+      <section className={sectionClass}>
+        <h2 className="text-lg font-semibold text-surface-800 dark:text-surface-200">Maintenance Windows</h2>
+        <MaintenanceWindowsPanel />
       </section>
 
       <section className={sectionClass}>

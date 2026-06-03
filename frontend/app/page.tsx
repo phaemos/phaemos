@@ -7,6 +7,7 @@ import DeviceCard from '@/components/DeviceCard';
 import AlertBanner from '@/components/AlertBanner';
 import TelemetryChart from '@/components/TelemetryChart';
 import HealthSummary from '@/components/dashboard/HealthSummary';
+import MaintenanceBanner from '@/components/dashboard/MaintenanceBanner';
 
 const NODE_TYPES = ['all', 'esp32', 'stm32', 'pico_w', 'nano'] as const;
 
@@ -72,6 +73,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <MaintenanceBanner />
       <HealthSummary />
 
       {alerts.length > 0 && (
