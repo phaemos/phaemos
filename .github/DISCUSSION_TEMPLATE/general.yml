@@ -1,0 +1,22 @@
+title: "[Question] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask anything about PHAEMOS - setup help, usage questions, architecture curiosity.
+        For bugs, please use the [Issues tracker](https://github.com/zaccesss/phaemos/issues) instead.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What would you like to know?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context (optional)
+      description: What are you trying to accomplish? Any relevant config, firmware type, or deployment setup?
