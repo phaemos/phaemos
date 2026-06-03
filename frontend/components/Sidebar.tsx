@@ -73,11 +73,14 @@ export default function Sidebar() {
           <LogoutButton />
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-surface-400 dark:text-surface-600">
-          <Link href="/about"   className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">About</Link>
-          <Link href="/blog"    className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Blog</Link>
-          <Link href="/privacy" className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Privacy</Link>
-          <Link href="/terms"   className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Terms</Link>
-          <Link href="/status"  className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Status</Link>
+          <Link href="/about"    className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">About</Link>
+          <Link href="/blog"     className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Blog</Link>
+          <Link href="/privacy"  className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Privacy</Link>
+          <Link href="/terms"    className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Terms</Link>
+          <Link href="/security" className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Security</Link>
+          <Link href="/faq"      className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">FAQ</Link>
+          <Link href="/support"  className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Support</Link>
+          <Link href="/status"   className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Status</Link>
         </div>
       </div>
     </aside>
