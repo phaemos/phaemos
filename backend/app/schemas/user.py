@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 # --- UserRegister ---
-# Payload for POST /auth/register; password is stored hashed — never plain-text in the DB.
+# Payload for POST /auth/register; password is stored hashed - never plain-text in the DB.
 class UserRegister(BaseModel):
     name:     str
     email:    EmailStr
@@ -59,7 +59,7 @@ class ChangePassword(BaseModel):
 
 
 # --- UserResponse ---
-# What the API sends back after login or profile fetch — notably, password is NOT included.
+# What the API sends back after login or profile fetch - notably, password is NOT included.
 class UserResponse(BaseModel):
     id:    UUID
     # name can be NULL if the user registered without providing one (e.g. via OAuth).
@@ -82,7 +82,7 @@ class UserResponse(BaseModel):
 # Returned after a successful login; the client stores access_token and sends it in the Authorization header.
 class TokenResponse(BaseModel):
     access_token: str
-    # Hardcoded default of "bearer" matches the OAuth 2.0 spec — clients expect exactly this string.
+    # Hardcoded default of "bearer" matches the OAuth 2.0 spec - clients expect exactly this string.
     token_type:   str = "bearer"
 
 
