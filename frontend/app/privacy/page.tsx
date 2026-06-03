@@ -53,10 +53,10 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-semibold">5. Your rights (UK GDPR)</h2>
         <p>You have the right to:</p>
         <ul className="list-disc list-inside space-y-1 text-surface-600 dark:text-surface-400">
-          <li><strong>Access</strong> — download a copy of all data we hold about you from your <a href="/profile" className="text-primary-400 hover:underline">profile page</a>.</li>
-          <li><strong>Erasure</strong> — delete your account and all associated personal data from your profile page. Ticket audit records are anonymised, not deleted.</li>
-          <li><strong>Rectification</strong> — update your name, email and phone number from your profile page.</li>
-          <li><strong>Portability</strong> — export your data as a JSON file from your profile page.</li>
+          <li><strong>Access</strong> - download a copy of all data we hold about you from your <a href="/profile" className="text-primary-400 hover:underline">profile page</a>.</li>
+          <li><strong>Erasure</strong> - delete your account and all associated personal data from your profile page. Ticket audit records are anonymised, not deleted.</li>
+          <li><strong>Rectification</strong> - update your name, email and phone number from your profile page.</li>
+          <li><strong>Portability</strong> - export your data as a JSON file from your profile page.</li>
         </ul>
       </section>
 

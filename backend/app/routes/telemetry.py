@@ -62,7 +62,7 @@ def ingest_telemetry(
     # I evaluate alert rules after persistence so alerts reference committed state.
     evaluate_rules(device, reading, db)
 
-    # Serialize before scheduling — the DB session closes after this function returns.
+    # Serialize before scheduling - the DB session closes after this function returns.
     row_json = TelemetryResponse.model_validate(row).model_dump_json()
     # Push to any WebSocket clients watching this device (runs after response is sent).
     background_tasks.add_task(ws_manager.broadcast, str(device.id), row_json)
@@ -88,7 +88,7 @@ def export_telemetry(
         q = q.filter(Telemetry.recorded_at <= to_ts)
     rows = q.order_by(Telemetry.recorded_at.asc()).all()
 
-    # I stream the CSV without loading all rows into a Python list at once —
+    # I stream the CSV without loading all rows into a Python list at once -
     # io.StringIO acts as an in-memory buffer that csv.writer can write into.
     buf = io.StringIO()
     writer = csv.writer(buf)

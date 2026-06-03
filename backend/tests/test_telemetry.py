@@ -1,5 +1,5 @@
 def test_ingest_missing_api_key(client, device):
-    # X-API-Key is a required header — omitting it returns 422 (validation error).
+    # X-API-Key is a required header - omitting it returns 422 (validation error).
     res = client.post(
         "/api/v1/telemetry",
         json={"device_id": str(device.id), "temperature": 22.5},

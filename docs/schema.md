@@ -36,7 +36,8 @@ CREATE TABLE devices (
   firmware_version VARCHAR(50),
   last_seen        TIMESTAMP WITH TIME ZONE,
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  owner_id         UUID REFERENCES users(id) ON DELETE SET NULL -- nullable; NULL = shared/unassigned
+  owner_id         UUID REFERENCES users(id) ON DELETE SET NULL, -- nullable; NULL = shared/unassigned (migration 003)
+  tags             TEXT[] NOT NULL DEFAULT '{}'                  -- device tags for grouping and batch OTA (migration 008)
 );
 ```
 
@@ -94,6 +95,7 @@ CREATE TABLE alerts (
 ```sql
 CREATE TABLE tickets (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_number SERIAL NOT NULL,               -- auto-incrementing human-readable ID (PHM-0001 format) (migration 004)
   device_id     UUID REFERENCES devices(id),
   alert_id      UUID REFERENCES alerts(id),
   title         VARCHAR(200),
@@ -115,11 +117,18 @@ CREATE TABLE users (
   name                   VARCHAR(100),
   email                  VARCHAR(150) UNIQUE NOT NULL,
   password_hash          VARCHAR(255) NOT NULL,
-  role                   VARCHAR(20) DEFAULT 'viewer',  -- admin/technician/viewer
+  role                   VARCHAR(20) DEFAULT 'viewer',       -- admin/technician/viewer
   created_at             TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   last_login             TIMESTAMP WITH TIME ZONE,
-  failed_login_attempts  INTEGER NOT NULL DEFAULT 0,    -- brute-force lockout counter (migration 002)
-  locked_until           TIMESTAMP WITH TIME ZONE       -- NULL = not locked (migration 002)
+  failed_login_attempts  INTEGER NOT NULL DEFAULT 0,         -- brute-force lockout counter (migration 002)
+  locked_until           TIMESTAMP WITH TIME ZONE,           -- NULL = not locked (migration 002)
+  -- OAuth + 2FA + RBAC columns (migration 005, 009)
+  oauth_provider         VARCHAR(50),                        -- 'google' or 'github', NULL for password accounts
+  oauth_id               VARCHAR(200),                       -- provider user ID
+  phone_number           VARCHAR(20),                        -- optional, used for SMS alerts
+  totp_secret            VARCHAR(100),                       -- TOTP shared secret (set when 2FA enabled)
+  totp_enabled           BOOLEAN NOT NULL DEFAULT FALSE,     -- whether 2FA is active for this user
+  permissions            JSONB NOT NULL DEFAULT '{}'         -- per-user permission overrides (migration 009)
 );
 ```
 
@@ -135,6 +144,67 @@ CREATE TABLE audit_logs (
   created_at TIMESTAMP DEFAULT NOW()
 );
 ```
+
+### webhooks
+
+Added in migration 006 (PR 95).
+
+```sql
+CREATE TABLE webhooks (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       VARCHAR(200) NOT NULL,
+  url        TEXT NOT NULL,
+  enabled    BOOLEAN NOT NULL DEFAULT TRUE,
+  template   TEXT,                              -- optional Jinja2-style template; NULL = default payload
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### maintenance_windows
+
+Added in migration 007 (PR 97).
+
+```sql
+CREATE TABLE maintenance_windows (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  device_id       UUID REFERENCES devices(id) ON DELETE CASCADE, -- NULL = fleet-wide window
+  label           VARCHAR(200) NOT NULL,
+  start_at        TIMESTAMP WITH TIME ZONE NOT NULL,
+  end_at          TIMESTAMP WITH TIME ZONE NOT NULL,
+  suppress_alerts BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+---
+
+## Entity Relationship (updated)
+
+```text
+users
+  |-- tickets (assigned_to, created_by)
+  |-- audit_logs
+  |-- devices (owner_id - nullable)
+  |-- maintenance_windows (created_by)
+
+devices
+  |-- telemetry
+  |-- alert_rules
+  |-- alerts
+  |-- tickets
+  |-- maintenance_windows (device_id - nullable, NULL = fleet-wide)
+
+alert_rules
+  |-- alerts
+
+alerts
+  |-- tickets
+
+webhooks  (standalone - fired on alert creation)
+```
+
+---
 
 ## Notes
 

@@ -1,6 +1,6 @@
 import os
 
-# Must set env vars before importing any app module — pydantic-settings reads
+# Must set env vars before importing any app module - pydantic-settings reads
 # them at class definition time (when Settings() is instantiated on import).
 os.environ.setdefault("DATABASE_URL", "postgresql://postgres:password@localhost:5432/phaemos_test")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
@@ -57,7 +57,7 @@ def setup_database():
 
 @pytest.fixture
 def db(setup_database):
-    # Each test gets its own transaction rolled back on teardown — fast isolation
+    # Each test gets its own transaction rolled back on teardown - fast isolation
     # without re-creating the schema between tests.
     connection = _engine.connect()
     transaction = connection.begin()
@@ -81,7 +81,7 @@ def client(db):
 
 @pytest.fixture
 def device(db):
-    # A real Device row with a valid API key — used by telemetry ingest tests.
+    # A real Device row with a valid API key - used by telemetry ingest tests.
     dev = Device(
         name="Test ESP32",
         location="Lab",

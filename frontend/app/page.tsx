@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <div className="flex items-centre justify-between">
         <h1 className="text-2xl font-bold tracking-tight">PHAEMOS Dashboard</h1>
 
-        {/* Node type filter — narrows which readings are fetched for the chart */}
+        {/* Node type filter - narrows which readings are fetched for the chart */}
         <div className="flex items-centre gap-1">
           {NODE_TYPES.map((nt) => (
             <button
