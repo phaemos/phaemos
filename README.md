@@ -281,6 +281,10 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 
 ---
 
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branch naming convention, commit format, code standards and PR checklist before opening a pull request.
+
 ## Contact and Support
 
 Open an [issue](https://github.com/zaccesss/phaemos/issues) for bug reports and feature requests.
