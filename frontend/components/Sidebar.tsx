@@ -80,6 +80,7 @@ export default function Sidebar() {
           <Link href="/security" className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Security</Link>
           <Link href="/faq"      className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">FAQ</Link>
           <Link href="/support"  className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Support</Link>
+          <Link href="/contact"  className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Contact</Link>
           <Link href="/status"   className="hover:text-surface-600 dark:hover:text-surface-400 transition-colours">Status</Link>
         </div>
       </div>

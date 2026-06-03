@@ -69,6 +69,16 @@ export default function SupportPage() {
           </a>
 
           <Link
+            href="/contact"
+            className="rounded-xl border border-surface-200 dark:border-surface-800 p-4 hover:border-primary-500 transition-colors space-y-1"
+          >
+            <p className="font-semibold text-surface-900 dark:text-surface-50">Contact form</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">
+              Send a message via the contact page for general enquiries and feedback.
+            </p>
+          </Link>
+
+          <Link
             href="/docs"
             className="rounded-xl border border-surface-200 dark:border-surface-800 p-4 hover:border-primary-500 transition-colors space-y-1"
           >
