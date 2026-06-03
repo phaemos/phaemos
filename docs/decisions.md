@@ -353,3 +353,28 @@ GitHub Discussions for questions and ideas; GitHub Issues for confirmed bugs and
 - Discussions has separate categories (General, Ideas, Show and Tell, Bugs) so contributors know where to post without polluting the bug tracker.
 - The Bugs discussion category explicitly redirects to Issues once the report is confirmed - the two channels are complementary, not competing.
 - CONTRIBUTING.md, SUPPORT.md, README and the FAQ page all direct users to Discussions first.
+
+---
+
+## 019 - Hardware-blocked work deferred until physical components arrive
+
+**Date:** 2026-06-03
+**Status:** Accepted
+
+**Context:**
+Several features require real sensor readings that cannot be simulated: Isolation Forest model training (needs 1-2 weeks of genuine fault/normal data), hardware testing across all 4 nodes, and the node enclosure design (needs breadboard prototyping to confirm fitment). These items are tracked in docs/VERIFICATION.md.
+
+**Decision:**
+Do not attempt these items until all four physical nodes (ESP32, STM32 Black Pill, Arduino Nano, Raspberry Pi Pico 2W) are assembled and producing real telemetry. No software workaround will substitute for this.
+
+**Blocked items:**
+
+- Custom node enclosure design - after all 4 nodes tested on breadboard; options: 3D print (Aston lab), laser cut acrylic, CNC aluminium
+- Hardware testing - full sensor suite on all 4 boards; see hardware/wiring/ for pinouts
+- Train Isolation Forest - after 1-2 weeks of real telemetry, run backend/ml/train.py and evaluate with evaluate.py
+
+**Consequences:**
+
+- The ML scoring route already exists and returns a default score of 0.0 until a real model.pkl is present. The system is fully functional without the trained model.
+- All firmware code is written and ready; hardware testing is the only remaining gate.
+- No code changes are required to unblock these items - the work is purely physical assembly and data collection.
