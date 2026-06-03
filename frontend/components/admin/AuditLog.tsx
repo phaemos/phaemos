@@ -89,7 +89,7 @@ export default function AuditLog() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-surface-400 dark:text-surface-600 text-xs max-w-[14rem] truncate">
-                    {e.detail || '—'}
+                    {e.detail || '-'}
                   </td>
                 </tr>
               ))

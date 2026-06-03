@@ -253,3 +253,103 @@ Managed services are not needed because:
 - Frontend stays on Vercel free tier (separate from the VPS)
 - One `docker compose up -d` on the VPS deploys the full backend stack
 - Upgrade path: if the project scales beyond one box, extract Postgres to a managed service (Neon or Supabase) at that point - the SQLAlchemy ORM means the change is a one-line `DATABASE_URL` swap
+
+---
+
+## 014 - Licence: AGPL-3.0 over Apache 2.0 or MIT
+
+**Date:** 2026-06-03
+**Status:** Accepted
+
+**Context:**
+The project needed a licence before being made public. Three common options were considered: MIT, Apache 2.0, and AGPL-3.0.
+
+**Decision:**
+AGPL-3.0.
+
+**Consequences:**
+
+- Apache 2.0 allows anyone to fork, rebrand and run the software as a commercial network service without publishing their changes. AGPL-3.0 closes this loophole: anyone running a modified version as a network service must publish the source under the same terms.
+- MIT has no such protection - a company could silently ship Phaemos as a product with no attribution requirement.
+- AGPL-3.0 requires copyright notices to remain intact and changes to be published, preventing the project from being claimed by someone else.
+- Contributors must be informed that their work will be released under AGPL-3.0 - this is stated in CONTRIBUTING.md.
+
+---
+
+## 015 - Backend hosting: DigitalOcean VPS over Render
+
+**Date:** 2026-06-03
+**Status:** Accepted
+
+**Context:**
+The original deployment target was Render's free tier. Render discontinued its free tier for web services, requiring a migration.
+
+**Decision:**
+DigitalOcean VPS with Docker Compose + Nginx reverse proxy.
+
+**Consequences:**
+
+- A $6/month DigitalOcean droplet (covered by GitHub Student Pack credit) gives full root access, no cold-start latency and predictable costs.
+- Docker Compose on the VPS mirrors the local dev environment exactly - same `docker-compose.yml`, same env vars.
+- Nginx handles SSL termination (Certbot), reverse proxy to the FastAPI container, and sets `X-Real-IP` so rate limiting works correctly.
+- No vendor lock-in: the Docker Compose stack is portable to any VPS provider.
+
+---
+
+## 016 - Status monitoring: Instatus over Uptime Kuma
+
+**Date:** 2026-06-03
+**Status:** Accepted
+
+**Context:**
+The project needed a public status page. Uptime Kuma (self-hosted) was the initial candidate.
+
+**Decision:**
+Instatus hosted SaaS at status.phaemos.com.
+
+**Consequences:**
+
+- Uptime Kuma would run on the same VPS as the application it monitors. If the VPS goes down, both the app and its monitor go offline at the same time, making the status page unreachable precisely when users need it most.
+- Instatus is hosted independently on its own infrastructure. A full VPS outage does not take the status page down.
+- Instatus provides a CNAME-based custom domain, subscriber notifications and a clean incident history view with no operational overhead.
+
+---
+
+## 017 - FFT library: CMSIS-DSP arm_rfft_fast_f32 over custom DFT
+
+**Date:** 2026-06-03
+**Status:** Accepted
+
+**Context:**
+The STM32 vibration node used a naive O(N^2) DFT implemented from scratch. A TODO in fft.h noted CMSIS-DSP as the upgrade path once the CubeIDE build was finalised.
+
+**Decision:**
+Migrate to `arm_rfft_fast_f32` from the CMSIS-DSP library.
+
+**Consequences:**
+
+- The custom DFT was O(N^2): approximately 16,400 cycles (~171 us) on a 96 MHz Cortex-M4F for N=128.
+- CMSIS-DSP gives O(N log N): approximately 1,800 cycles (~19 us) for N=128 - a 9x speedup.
+- `arm_rfft_fast_f32` uses the hardware FPU instructions of the Cortex-M4F automatically.
+- The library is bundled with STM32CubeIDE so there is no extra dependency to manage.
+- Sample buffer expanded from 100 to FFT_SIZE=128 (power-of-two required by the algorithm), giving genuine frequency resolution of 0.78 Hz per bin.
+
+---
+
+## 018 - Community channel: GitHub Discussions over Issues for questions
+
+**Date:** 2026-06-03
+**Status:** Accepted
+
+**Context:**
+With the repo made public, a community support channel was needed. GitHub Issues was already in use for bug tracking.
+
+**Decision:**
+GitHub Discussions for questions and ideas; GitHub Issues for confirmed bugs and accepted feature work only.
+
+**Consequences:**
+
+- Mixing Q&A and bug tracking in Issues makes triage harder and creates noise for contributors monitoring the issue tracker.
+- Discussions has separate categories (General, Ideas, Show and Tell, Bugs) so contributors know where to post without polluting the bug tracker.
+- The Bugs discussion category explicitly redirects to Issues once the report is confirmed - the two channels are complementary, not competing.
+- CONTRIBUTING.md, SUPPORT.md, README and the FAQ page all direct users to Discussions first.
