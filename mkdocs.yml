@@ -49,7 +49,7 @@ nav:
     - Decision Log: decisions.md
     - Week by Week: week_by_week.md
     - Verification: VERIFICATION.md
-  - Monitoring: uptime-kuma.md
+  - Monitoring: instatus.md
 
 markdown_extensions:
   - admonition
