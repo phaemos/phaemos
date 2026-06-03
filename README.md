@@ -23,7 +23,6 @@ Suggested tagline: **Reveal before failure.**
       <a href="#project-structure">Project Structure</a> •
       <a href="#docs">Docs</a> •
       <a href="#release-flow">Release Flow</a> •
-      <a href="#milestone-plan">Milestone Plan</a> •
       <a href="#hardware">Hardware</a> •
       <a href="#tech-stack">Tech Stack</a> •
       <a href="#languages--tools-used">Languages &amp; Tools Used</a>
@@ -172,7 +171,7 @@ phaemos/
 - [Security Controls](docs/security.md)
 - [Deployment Guide](docs/deployment.md)
 - [Deployment Checklist](docs/deployment-checklist.md)
-- [12-Week Plan](docs/week_by_week.md)
+- [Development Timeline](docs/week_by_week.md)
 - [Decision Log](docs/decisions.md)
 - [Verification Tracker](docs/VERIFICATION.md)
 - [Support](SUPPORT.md)
@@ -194,10 +193,6 @@ git push origin vX.Y.Z
 1. The GitHub Actions `Release` workflow validates the changelog entry and creates the GitHub release.
 
 See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS setup guide, and [docs/deployment-checklist.md](docs/deployment-checklist.md) for the pre-release checklist.
-
-## Milestone Plan
-
-See [docs/week_by_week.md](docs/week_by_week.md) for the full development timeline.
 
 ## Hardware
 
@@ -244,21 +239,29 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 
 <div align="center">
 
+### Frontend
+
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" width="60" /> | <img src="https://techstack-generator.vercel.app/react-icon.svg" width="60" /> | <img src="https://techstack-generator.vercel.app/ts-icon.svg" width="60" /> | <img src="https://skillicons.dev/icons?i=tailwind" width="60" /> | <img src="https://techstack-generator.vercel.app/js-icon.svg" width="60" /> |
 | :----------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :--------------------------------------------------------------: | :-------------------------------------------------------------------------: |
 |                                              **Next.js**                                               |                                   **React**                                    |                               **TypeScript**                                |                         **Tailwind CSS**                         |                               **JavaScript**                                |
+
+### Backend & Data
 
 | <img src="https://techstack-generator.vercel.app/python-icon.svg" width="60" /> | <img src="https://cdn.simpleicons.org/fastapi/009688" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" width="60" /> | <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" width="60" /> |
 | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
 |                                   **Python**                                    |                             **FastAPI**                             |                                                 **PostgreSQL**                                                 |                                              **Redis**                                               |                                             **Scikit-Learn**                                             |
 
-| <img src="https://techstack-generator.vercel.app/docker-icon.svg" width="60" alt="Docker" /> | <img src="https://techstack-generator.vercel.app/github-icon.svg" width="60" alt="GitHub" /> | <img src="https://cdn.simpleicons.org/vercel/000000" width="60" alt="Vercel" /> | <img src="https://cdn.simpleicons.org/digitalocean/0080FF" width="60" alt="DigitalOcean" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="60" alt="Git" /> |
-| :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :----------------------------------------------------------------: | :----------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: |
-|                                   **Docker**                                    |                                   **GitHub**                                    |                             **Vercel**                             |                           **DigitalOcean**                               |                                             **Git**                                              |
+### Infrastructure & DevOps
 
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" alt="Arduino" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" alt="C" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" width="60" alt="C++" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" width="60" alt="Shell/Bash" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" alt="STM32" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" alt="ESP32" /> |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| **Arduino** | **C** | **C++** | **Shell/Bash** | **STM32** | **ESP32** |
+| <img src="https://techstack-generator.vercel.app/docker-icon.svg" width="60" alt="Docker" /> | <img src="https://techstack-generator.vercel.app/github-icon.svg" width="60" alt="GitHub" /> | <img src="https://cdn.simpleicons.org/vercel/000000" width="60" alt="Vercel" /> | <img src="https://cdn.simpleicons.org/digitalocean/0080FF" width="60" alt="DigitalOcean" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="60" alt="Git" /> |
+| :-------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: |
+|                                           **Docker**                                          |                                           **GitHub**                                          |                                   **Vercel**                                    |                                      **DigitalOcean**                                       |                                                  **Git**                                                    |
+
+### Firmware & Hardware
+
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" alt="Arduino" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" alt="C" /> | <img src="https://techstack-generator.vercel.app/cpp-icon.svg" width="60" alt="C++" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" width="60" alt="Shell/Bash" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" alt="STM32" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" alt="ESP32" /> |
+| :---------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+|                                                      **Arduino**                                                        |                                               **C**                                                   |                                         **C++**                                          |                                               **Shell/Bash**                                                         |                                          **STM32**                                         |                                     **ESP32**                                      |
 
 </div>
 
