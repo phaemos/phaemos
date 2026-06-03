@@ -1,41 +1,41 @@
 /**
- * fft.h - Frequency analysis header for the vibration node
+ * fft.h - CMSIS-DSP frequency analysis for the vibration node
  *
- * I use a simple DFT (O(n^2)) here rather than a proper radix-2 FFT because
- * CMSIS-DSP arm_rfft_fast_f32 requires the linker to pull in the CMSIS DSP
- * static library, which needs additional STM32CubeIDE project configuration
- * (DSP lib path, __FPU_PRESENT define, correct Cortex-M4 arch flags).  At
- * this stage of the project the DFT is "good enough" for finding the
- * dominant vibration frequency in a 128-point, 100Hz window.
+ * I use arm_rfft_fast_f32 (radix-2 real FFT, O(N log N)) from CMSIS-DSP.
+ * This replaces the previous O(N^2) DFT implementation; on a 96 MHz
+ * Cortex-M4 with FPU the FFT completes in roughly 128 * log2(128) * 2 cycles
+ * (~1,800 cycles, ~19 us) versus ~16,400 cycles (~171 us) for the DFT.
  *
- * TODO: Once the project matures and the CubeMX/CubeIDE build configuration
- * is finalised, replace FFT_GetPeakFrequency with arm_rfft_fast_f32 from
- * CMSIS-DSP (Drivers/CMSIS/DSP/Lib).  The function signature stays the same
- * so callers do not need to change.
+ * Build requirements (STM32CubeIDE project properties):
+ *   C/C++ Build > Settings > MCU GCC Compiler > Preprocessor:
+ *     ARM_MATH_CM4, __FPU_PRESENT=1U
+ *   C/C++ Build > Settings > MCU GCC Compiler > Include paths:
+ *     Drivers/CMSIS/DSP/Include
+ *   C/C++ Build > Settings > MCU GCC Linker > Libraries:
+ *     Library name:        arm_cortexM4lf_math
+ *     Library search path: Drivers/CMSIS/DSP/Lib/GCC
  */
 
 #ifndef FFT_H
 #define FFT_H
 
 #include <stdint.h>
+#include "arm_math.h"
 
-/* I choose 128 because it is a power of two (friendly for a future FFT
- * upgrade), fits comfortably in the F411's 128 KB SRAM, and at 100 Hz gives
- * a frequency resolution of 100/128 ~ 0.78 Hz - adequate for mechanical
- * vibration diagnostics. */
-#define FFT_SIZE    128
+/* I choose 128 because it is a power of two (required by arm_rfft_fast_f32),
+ * fits comfortably in the F411's 128 KB SRAM, and at 100 Hz gives a
+ * frequency resolution of 100/128 = 0.78 Hz - adequate for mechanical
+ * vibration diagnostics at this sample rate. */
+#define FFT_SIZE    128U
 
 /**
  * FFT_GetPeakFrequency - Return the frequency of the dominant spectral peak.
- * @samples:     pointer to array of float time-domain samples
- * @count:       number of valid samples in the array (should equal FFT_SIZE)
+ * @samples:     pointer to FFT_SIZE float time-domain samples
+ * @count:       number of valid samples (must equal FFT_SIZE)
  * @sample_rate: sampling rate in Hz (100.0f for this node)
  *
- * Returns the frequency in Hz of the bin with the highest DFT magnitude,
- * skipping the DC bin (0 Hz) because gravity always dominates DC and is not
- * a vibration event.
- *
- * Time complexity: O(count^2) - acceptable for count=128 on a 96 MHz Cortex-M4.
+ * Returns the frequency in Hz of the bin with the highest magnitude,
+ * skipping DC (bin 0) because gravity always dominates it on the Z axis.
  */
 float FFT_GetPeakFrequency(float *samples, uint16_t count, float sample_rate);
 
