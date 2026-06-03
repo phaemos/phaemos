@@ -126,7 +126,7 @@ class TelemetryResponse(BaseModel):
     # Boolean flag derived from anomaly_score; makes it easy to filter alerts without comparing floats.
     is_anomaly:     bool
 
-    # Server-side timestamp set when the record is written — not trusting the device clock.
+    # Server-side timestamp set when the record is written - not trusting the device clock.
     recorded_at:    datetime
 
     # Required so Pydantic can serialise SQLAlchemy ORM row objects into this schema.

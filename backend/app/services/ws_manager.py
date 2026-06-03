@@ -1,5 +1,5 @@
 """
-WebSocket Manager — keeps track of connected dashboard clients per device
+WebSocket Manager - keeps track of connected dashboard clients per device
 and broadcasts new telemetry readings to them.
 
 Lives in services/ (not routes/) so both the ws route and the telemetry

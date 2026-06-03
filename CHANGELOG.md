@@ -9,6 +9,74 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-06-03
+
+### Added
+
+- Multi-tenant device ownership: nullable `owner_id` FK on devices; technicians see only their own devices; admins see all (PR 86)
+- Auth hardening: every non-public backend route now requires a valid JWT; admin-only routes require role=admin (PR 88)
+- Refresh token flow: 15-minute access tokens + 7-day httpOnly refresh cookie; `POST /auth/refresh` and `POST /auth/logout` endpoints (PR 89)
+- Human-readable ticket numbers in PHM-0001 format (SERIAL column, backend + frontend display) (PR 90)
+- Google OAuth and GitHub OAuth sign-in (authlib, email-matched upsert, redirect with JWT) (PRs 91, 92)
+- TOTP two-factor authentication: enable, confirm, verify, disable endpoints; `pyotp` + QR code via `qrcode` (PR 93)
+- User profile management: `PATCH /auth/me`, `POST /auth/change-password`, `DELETE /auth/me` (GDPR erasure), `GET /auth/me/export` (GDPR portability) (PR 94)
+- Webhooks backend: Slack, Discord and Teams integrations; auto-detect platform from URL; custom message template; test endpoint (PR 95)
+- Fleet health summary: `GET /health/summary` returning online/offline counts and health score; public `GET /status` database and Redis health check (PR 96)
+- Maintenance windows: create/update/delete windows; alert suppression during active windows; `POST /api/v1/maintenance-windows` admin endpoint (PR 97)
+- Device tags: PostgreSQL ARRAY column; `POST /devices/{id}/tags`, `DELETE /devices/{id}/tags/{tag}`; tag filter on `GET /devices`; `POST /devices/batch/firmware-update` by tag (PR 98)
+- RBAC permissions: JSONB `permissions` column on users; `PATCH /auth/users/{id}/permissions` admin endpoint (migration 009) (PR 101)
+- SMS critical alerts via Brevo transactional SMS API; graceful no-op when key is not configured (PR 102)
+- User invitation flow: `POST /auth/invite` sends signed JWT link via Resend; `GET/POST /auth/accept-invite` for onboarding (PR 104)
+- Axios refresh token interceptor: silently retries 401 responses using the httpOnly refresh cookie (PR 99)
+- Design system: Tailwind colour tokens (brand, surface, success, warning, critical); Sidebar nav replacing top nav; `SidebarNav` component (PR 100)
+- Toast notification system: `ToastProvider` context + reducer; success/warning/error/info variants with 4s auto-dismiss (PR 105)
+- Device owner picker (admin only) on device detail page (PR 106)
+- Tab visibility pause: telemetry polling pauses when `document.hidden` is true (PR 107)
+- Security headers: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`; `robots.txt`; `sitemap.ts` (PR 108)
+- Rate limiting on all sensitive endpoints: login (5/min), register (10/hr), password change (5/hr), contact form (3/hr), ML retrain; proxy-aware key function reads `X-Real-IP` from Nginx (PR 109)
+- Profile page: name/email/phone edit, password change, 2FA enrolment UI, GDPR export and account deletion (PR 110)
+- Health summary widget on dashboard: four stat cards polling `GET /health/summary` every 30s (PR 111)
+- Webhook admin UI: list, create, delete, enable/disable toggle, test button (PR 113)
+- Privacy policy (`/privacy`), terms of service (`/terms`) and cookie consent banner with localStorage consent gate (PR 114)
+- About page (`/about`), blog with three posts (`/blog`), rendered changelog (`/changelog`), docs hub (`/docs`) (PR 115)
+- Status page (`/status`): polls `GET /status` every 30s, shows per-component health badges and public Instatus link (PR 116)
+- Security (`/security`), FAQ (`/faq`), support (`/support`) public pages; all added to middleware `PUBLIC_PATHS` (PR 118)
+- Contact form (`/contact`): Cloudflare Turnstile bot protection, SMTP send, 3/hr rate limit (PR 125)
+- Vercel Analytics and Google Analytics 4 (consent-gated, loads only after cookie accept) (PR 120)
+- Maintenance windows admin panel and dashboard amber pulsing banner (PR 121)
+- Device tag chips on DeviceCard; inline tag add/remove on device detail; batch firmware update modal (PR 122)
+- MkDocs Material documentation site (`docs.phaemos.com`); `mkdocs.yml`, `requirements-docs.txt`, `docs/index.md`; `make docs` and `make docs-build` targets (PR 128)
+- Instatus external status page setup guide (`docs/instatus.md`); public status card on `/status` page linking to `status.phaemos.com` (PR 129)
+- Scalability guide (`docs/scalability.md`): six-stage scaling path from single VPS to distributed (PR 130)
+- GitHub Discussions: four category templates; README Community section and badge; support and FAQ pages updated (PR 132)
+- CodeQL security scanning workflow (Python + JavaScript, push/PR/weekly schedule); stale issue workflow; `FUNDING.yml` (PR 127)
+- GDPR cookie consent gate on GA4; `GoogleAnalytics.tsx` client component reads `cookie_consent` from localStorage (PR 120)
+- `frontend/.env.example` documenting all `NEXT_PUBLIC_*` variables (PR 135)
+- Input validation `max_length` on all string fields in device, ticket and webhook Pydantic schemas (PR 135)
+
+### Changed
+
+- Deployment platform: Render replaced by DigitalOcean VPS with Docker Compose + Nginx reverse proxy; `docs/deployment.md` fully rewritten (PR 129)
+- Rate limiter key function updated to read `X-Real-IP` from Nginx instead of `request.client.host` so per-IP limits work correctly behind a reverse proxy (PR 135)
+- `docs/week_by_week.md` rewritten from rigid 12-week table to phase-based structure separating done from pending work (PR 135)
+- `docs/architecture.md` updated for v2 hardware, Next.js 15 and DigitalOcean deployment (PR 135)
+- `docs/api-reference.md` expanded with all endpoints added since v2.2.0 (PR 135)
+- All em dashes in source comments replaced with hyphens per project style guide (PR 135)
+
+### Fixed
+
+- STM32 FFT migrated from custom O(N^2) DFT to `arm_rfft_fast_f32` (CMSIS-DSP); 9x speedup on 96 MHz Cortex-M4F; N=128 power-of-two buffer (PR 131)
+- CI postgres service container replaced with explicit pull-with-retry loop to survive transient Docker Hub timeouts (PR 134)
+- Broken `uptime-kuma.md` link in `docs/index.md` replaced with `instatus.md` (PR 135)
+- `NEXT_PUBLIC_GA_ID` added to `.env.example` (was referenced in code but undocumented) (PR 135)
+- Legacy `RENDER_DEPLOY_HOOK_URL` removed from `.env.example` (PR 135)
+
+### Security
+
+- Licence changed from Apache 2.0 to AGPL-3.0; `LICENSE` and `NOTICE` files added; README badge updated (PR 123)
+- Responsible disclosure policy updated to use GitHub Security Advisories as primary channel (PR 135)
+- Input validation: `Field(max_length=...)` added to all unbounded string fields in device, ticket and webhook schemas - prevents storage exhaustion attacks (PR 135)
+
 ## [2.2.0] - 2026-06-02
 
 ### Added

@@ -49,7 +49,7 @@ export default function UserTable() {
               users.map((u) => (
                 <tr key={u.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colours">
                   <td className="px-4 py-3 font-medium text-surface-800 dark:text-surface-200">
-                    {u.name ?? '—'}
+                    {u.name ?? '-'}
                   </td>
                   <td className="px-4 py-3 text-surface-600 dark:text-surface-400">{u.email}</td>
                   <td className="px-4 py-3">
