@@ -37,8 +37,8 @@ const DIFFERENTIATORS = [
     body: 'Four firmware nodes, four PCBs, eleven sensors. This is not a demo against a simulator - every feature was built against physical hardware with real sensor data.',
   },
   {
-    title: 'Source available',
-    body: 'Source code is publicly available on GitHub. Contributions are welcome - the architecture is intentionally simple, one Docker Compose file stands up the entire stack.',
+    title: 'AGPL-3.0 licensed',
+    body: 'Source code is publicly available on GitHub under the GNU Affero General Public License v3. Anyone running a modified version as a network service must publish their source under the same terms.',
   },
 ];
 
