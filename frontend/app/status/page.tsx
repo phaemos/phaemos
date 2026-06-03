@@ -124,6 +124,26 @@ export default function StatusPage() {
         </div>
       </section>
 
+      {/* Public status page link */}
+      <div className="card p-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-surface-900 dark:text-surface-50">
+            Public status page
+          </p>
+          <p className="text-xs text-surface-400 dark:text-surface-500 mt-0.5">
+            Incident history and uptime reports for external users
+          </p>
+        </div>
+        <a
+          href="https://status.phaemos.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline shrink-0"
+        >
+          status.phaemos.com &rarr;
+        </a>
+      </div>
+
       {/* Footer note */}
       <p className="text-xs text-surface-400 dark:text-surface-500 text-center">
         Auto-refreshes every 30 seconds.{' '}

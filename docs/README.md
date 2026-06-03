@@ -10,8 +10,8 @@ Technical documentation for the PHAEMOS project.
 | [security.md](security.md) | 18-measure security controls table |
 | [decisions.md](decisions.md) | Architectural decision log - why we chose what we chose |
 | [VERIFICATION.md](VERIFICATION.md) | Feature checklist - what is verified and merged vs still pending |
-| [deployment.md](deployment.md) | Render + Vercel deployment guide |
+| [deployment.md](deployment.md) | DigitalOcean VPS + Vercel + Instatus deployment guide |
 | [deployment-checklist.md](deployment-checklist.md) | Pre-deployment checklist |
 | [sensor_reference.md](sensor_reference.md) | All sensors - specs, calibration, expected reading ranges |
-| [uptime-kuma.md](uptime-kuma.md) | Uptime Kuma monitoring setup - Docker, monitors, Discord alerts |
+| [instatus.md](instatus.md) | Instatus status page setup - monitors, custom domain, incident workflow |
 | [week_by_week.md](week_by_week.md) | 12-week project plan |
