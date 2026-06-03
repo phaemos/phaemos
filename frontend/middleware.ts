@@ -5,6 +5,13 @@ import { NextRequest, NextResponse } from 'next/server';
 const PUBLIC_PATHS = [
   '/login',
   '/favicon.ico',
+  '/status',
+  '/about',
+  '/blog',
+  '/changelog',
+  '/docs',
+  '/privacy',
+  '/terms',
 ];
 
 export function middleware(request: NextRequest) {
