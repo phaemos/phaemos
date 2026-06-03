@@ -281,16 +281,11 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 
 ---
 
-<p align="center">
-      Email: <a href="mailto:contact@isaacadjei.me">contact@isaacadjei.me</a>
-</p>
-
-
 ## Contact and Support
 
-Open an [issue](https://github.com/zaccesss/phaemos/issues) in this repository for questions or bugs.
+Open an [issue](https://github.com/zaccesss/phaemos/issues) for bug reports and feature requests.
 
-You can also reach me directly at [contact@isaacadjei.me](mailto:contact@isaacadjei.me) or via my [website contact page](https://isaacadjei.me/contact).
+For general enquiries use the [contact form](https://phaemos.com/contact) or email [contact@phaemos.com](mailto:contact@phaemos.com). For user support email [support@phaemos.com](mailto:support@phaemos.com).
 
 <p align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=80&section=footer" />
