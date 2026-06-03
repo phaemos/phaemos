@@ -1,0 +1,29 @@
+title: "[Show] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Built something with PHAEMOS? Deployed it on real hardware? Extended it with
+        a custom sensor or integration? Show it here - screenshots, videos and
+        code snippets all welcome.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you build?
+      description: Describe your setup, what problem it solves, and anything interesting about the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware used (optional)
+      description: Which nodes, sensors, or custom boards did you use?
+
+  - type: textarea
+    id: links
+    attributes:
+      label: Links or media (optional)
+      description: Screenshots, videos, a repo fork, or a blog post.

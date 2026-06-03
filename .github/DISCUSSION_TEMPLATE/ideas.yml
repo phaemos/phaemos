@@ -1,0 +1,31 @@
+title: "[Idea] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share a feature idea or improvement suggestion. Describe the problem you are
+        trying to solve rather than jumping straight to a solution - it helps evaluate
+        whether the idea fits the project direction.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or gap
+      description: What is missing or frustrating about the current behaviour?
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed idea
+      description: What would you like to see? How would it work?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Have you worked around this in another way?
