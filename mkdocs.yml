@@ -1,0 +1,68 @@
+site_name: Phaemos
+site_description: Industrial IoT predictive maintenance platform - documentation
+site_url: https://docs.phaemos.com
+repo_url: https://github.com/zaccesss/phaemos
+repo_name: zaccesss/phaemos
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/zaccesss/phaemos
+      name: Phaemos on GitHub
+    - icon: fontawesome/brands/patreon
+      link: https://www.patreon.com/c/zaccesss
+      name: Support on Patreon
+
+docs_dir: docs
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Architecture: architecture.md
+    - Deployment: deployment.md
+    - Deployment Checklist: deployment-checklist.md
+  - Reference:
+    - API Reference: api-reference.md
+    - Sensor Reference: sensor_reference.md
+    - Database Schema: schema.md
+  - Security: security.md
+  - Development:
+    - Decision Log: decisions.md
+    - Week by Week: week_by_week.md
+    - Verification: VERIFICATION.md
+  - Monitoring: uptime-kuma.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
