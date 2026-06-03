@@ -1,0 +1,34 @@
+title: "[Bug] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **This category is for discussing bugs, not reporting them.**
+        > To report a confirmed bug, please [open an Issue](https://github.com/zaccesss/phaemos/issues/new/choose)
+        > where it can be triaged and tracked properly.
+
+        Use this Discussion category if you are unsure whether something is a bug,
+        or if you want to discuss the behaviour before filing a formal report.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What did you observe?
+      description: Describe the unexpected behaviour and what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can someone else reproduce what you saw?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Which commit hash or release are you running?
