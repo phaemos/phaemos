@@ -7,7 +7,7 @@
  * ~0.2 ms so a 10 ms delay produces an actual period of ~10.2 ms, yielding
  * an effective sample rate of ~98 Hz instead of 100 Hz.  TIM2 fires at an
  * exact hardware-timed period regardless of I2C transaction length, giving
- * a stable 100 Hz timebase that the DFT relies on for accurate frequency
+ * a stable 100 Hz timebase that the FFT relies on for accurate frequency
  * calculation (frequency = bin * sample_rate / N).
  *
  * STM32CubeIDE note:
@@ -35,17 +35,18 @@ TIM_HandleTypeDef   htim2;
 
 /* ---------------------------------------------------------------------
  * Sample buffer
- * I store 100 accel-Z samples (1 second at 100 Hz) rather than a circular
- * buffer because the DFT operates on a complete fixed-length window.  The
- * buffer is overwritten each second so memory usage stays constant.
+ * I store FFT_SIZE (128) accel-Z samples rather than a circular buffer
+ * because arm_rfft_fast_f32 requires a complete power-of-two window.
+ * At 100 Hz this covers 1.28 seconds per FFT window; the buffer is
+ * overwritten each window so memory usage stays constant at 512 bytes.
  * --------------------------------------------------------------------- */
-static float accel_z_buf[100];
+static float accel_z_buf[FFT_SIZE];
 
 /* I use volatile here because sample_ready is written in the ISR (TIM2
  * callback) and read in the main loop - without volatile the compiler may
  * cache the read in a register and never see the ISR's update. */
-volatile uint8_t sample_ready = 0;
-static uint8_t   sample_idx   = 0;
+volatile uint8_t  sample_ready = 0;
+static uint16_t   sample_idx   = 0;  /* uint16_t because FFT_SIZE (128) > UINT8_MAX is false, but widening is safer */
 
 /* ---------------------------------------------------------------------
  * Forward declarations for CubeMX-generated init stubs
@@ -73,9 +74,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         accel_z_buf[sample_idx] = imu.accel_z;
         sample_idx++;
 
-        if (sample_idx >= 100U)
+        if (sample_idx >= FFT_SIZE)
         {
-            sample_idx  = 0;
+            sample_idx   = 0;
             sample_ready = 1;  /* Signal main loop that a full window is ready */
         }
     }
@@ -138,25 +139,23 @@ int main(void)
                 sum_y = frame.accel_y;
             }
 
-            for (uint8_t i = 0; i < 100U; i++)
+            for (uint16_t i = 0; i < FFT_SIZE; i++)
             {
                 sum_z += accel_z_buf[i];
             }
 
-            float mean_x = sum_x;            /* Single point for X/Y */
+            float mean_x = sum_x;                      /* Single point for X/Y */
             float mean_y = sum_y;
-            float mean_z = sum_z / 100.0f;   /* Mean of the 100-sample Z window */
+            float mean_z = sum_z / (float)FFT_SIZE;    /* Mean of the FFT_SIZE-sample Z window */
 
             /* Vector magnitude: sqrt(x^2 + y^2 + z^2) */
             float magnitude = sqrtf(mean_x * mean_x +
                                     mean_y * mean_y +
                                     mean_z * mean_z);
 
-            /* Compute DFT peak frequency on the Z-axis buffer.
-             * I pass FFT_SIZE (128) as the count limit even though the buffer
-             * holds 100 samples; FFT_GetPeakFrequency uses the 'count' param
-             * so only 100 samples are processed and the result is still valid. */
-            float peak_hz = FFT_GetPeakFrequency(accel_z_buf, 100U, 100.0f);
+            /* Compute FFT peak frequency on the full FFT_SIZE-sample Z-axis buffer.
+             * arm_rfft_fast_f32 requires exactly FFT_SIZE input samples. */
+            float peak_hz = FFT_GetPeakFrequency(accel_z_buf, FFT_SIZE, 100.0f);
 
             UART_SendVibrationData(&huart1,
                                    mean_x, mean_y, mean_z,
