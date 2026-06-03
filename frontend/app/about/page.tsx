@@ -37,8 +37,8 @@ const DIFFERENTIATORS = [
     body: 'Four firmware nodes, four PCBs, eleven sensors. This is not a demo against a simulator - every feature was built against physical hardware with real sensor data.',
   },
   {
-    title: 'Open source',
-    body: 'Apache 2.0 licensed. Fork it, deploy it, contribute. The architecture is intentionally simple - one Docker Compose file stands up the entire stack.',
+    title: 'Source available',
+    body: 'Source code is publicly available on GitHub. Contributions are welcome - the architecture is intentionally simple, one Docker Compose file stands up the entire stack.',
   },
 ];
 
