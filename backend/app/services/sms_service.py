@@ -16,7 +16,8 @@ _UNSET = {"", "placeholder"}
 def send_sms(to_number: str, message: str) -> None:
     """Send an SMS to to_number. Silently skips if Brevo is not configured."""
     if settings.brevo_api_key in _UNSET:
-        _log.warning("Brevo API key not configured - SMS not sent to %s", to_number)
+        # I omit the recipient from this log because phone numbers are PII.
+        _log.warning("Brevo API key not configured - SMS not sent")
         return
     if not to_number:
         return
