@@ -9,6 +9,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- Resolved CodeQL high-severity findings in backend: webhook URL platform detection now uses `urlparse` netloc comparison instead of substring matching to prevent bypass; phone number removed from SMS warning log to prevent PII exposure
+- Pinned transitive `postcss` dependency to 8.5.10 via npm `overrides` to address GHSA-qx2v-qp2m-jg93 (XSS via unescaped `</style>` in CSS stringify output); the vulnerability was in the version of postcss bundled internally by next
+
 ### Added
 
 - GitHub Sponsors added to `.github/FUNDING.yml` as first entry; order updated to github, buy_me_a_coffee, patreon
