@@ -10,6 +10,7 @@ alert ingest flow is never blocked by a broken webhook.
 """
 
 import logging
+from urllib.parse import urlparse
 
 import httpx
 from sqlalchemy.orm import Session
@@ -32,12 +33,28 @@ def _build_text(webhook: Webhook, context: dict) -> str:
     return tpl.format_map(context)
 
 
+def _host(url: str) -> str:
+    # I extract only the netloc so downstream checks cannot be fooled by the
+    # target domain appearing in the path or query string of a malicious URL.
+    try:
+        return urlparse(url).netloc.lower()
+    except Exception:
+        return ""
+
+
 def _is_discord(url: str) -> bool:
-    return "discord.com/api/webhooks" in url
+    host = _host(url)
+    return host == "discord.com" or host.endswith(".discord.com")
 
 
 def _is_teams(url: str) -> bool:
-    return "webhook.office.com" in url or "teams.microsoft.com" in url
+    host = _host(url)
+    return (
+        host == "webhook.office.com"
+        or host.endswith(".webhook.office.com")
+        or host == "teams.microsoft.com"
+        or host.endswith(".teams.microsoft.com")
+    )
 
 
 def _build_payload(webhook: Webhook, text: str, severity: str) -> dict:
