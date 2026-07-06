@@ -1,0 +1,49 @@
+# Deletes merged PR branches that the merge itself failed to clean up.
+#
+# GitHub does not trigger other workflows' push or pull_request events for actions
+# performed with a workflow's own GITHUB_TOKEN (anti-recursion safeguard), so the
+# automerge job's squash-merge commits do not reliably fire this on push: main. A
+# schedule trigger does not depend on what authored the previous event, so it is
+# used as the reliable path; deleting an already-merged branch never pushes a commit
+# to an open PR, so it cannot trigger further CI.
+
+name: Repo maintenance
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every 2 hours - cheap safety net for branch deletion only
+    - cron: "0 */2 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  maintain-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete head branches of merged PRs that still exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Recently merged PRs - their head branch should have been deleted at
+          # merge time, but the GITHUB_TOKEN restriction above means it often did not
+          merged_branches=$(gh api "repos/$REPO/pulls?state=closed&sort=updated&direction=desc&per_page=30" \
+            --jq '[.[] | select(.merged_at != null and .head.repo.full_name == "'"$REPO"'") | .head.ref] | .[]')
+
+          if [ -z "$merged_branches" ]; then
+            echo "No recently merged PRs found"
+            exit 0
+          fi
+
+          while read -r branch; do
+            [ "$branch" = "main" ] && continue
+            if gh api "repos/$REPO/branches/$branch" >/dev/null 2>&1; then
+              echo "Deleting stale merged branch: $branch"
+              gh api -X DELETE "repos/$REPO/git/refs/heads/$branch" || echo "Failed to delete $branch - may already be gone"
+            fi
+          done <<< "$merged_branches"
