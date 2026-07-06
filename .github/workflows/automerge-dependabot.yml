@@ -1,62 +1,72 @@
-# Auto-merge safe Dependabot pull requests after required checks pass.
+# Enables auto-merge (squash) on Dependabot PRs and any PR labelled "automerge".
+# Draft PRs are skipped. Small updates (patch and minor) auto-merge on any
+# ecosystem. Major updates only auto-merge for GitHub Actions, where CI runs the
+# action itself so a breaking bump goes red; major application-dependency bumps
+# (npm, pip and the like) are held for manual review, because CI can pass while
+# runtime behaviour breaks. CI must still pass before any merge lands.
 #
-# Rules:
-# - Dependabot author only
-# - Semantic version patch or minor bump only
-# - Uses GitHub auto-merge so required checks are still enforced
-# - Deletes source branch after merge
+# Branch deletion for merges the token could not clean up is handled by the
+# scheduled Repo maintenance workflow. See update-pr-branches.yml for the detail.
 
-name: Dependabot Auto-merge
+name: Auto-merge Dependabot
 
 on:
   pull_request_target:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  automerge:
+  enable-automerge:
     name: Auto-merge safe Dependabot PRs
-    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:
-      # Parse versions from the Dependabot PR title.
-      # Expected title pattern:
-      # "... from X.Y.Z to A.B.C ..."
-      - name: Detect safe semver bump
-        id: semver
-        shell: bash
-        run: |
-          TITLE='${{ github.event.pull_request.title }}'
-          if [[ "$TITLE" =~ from[[:space:]]([0-9]+)\.([0-9]+)\.([0-9]+)[[:space:]]to[[:space:]]([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
-            FROM_MAJOR="${BASH_REMATCH[1]}"
-            FROM_MINOR="${BASH_REMATCH[2]}"
-            TO_MAJOR="${BASH_REMATCH[4]}"
-            TO_MINOR="${BASH_REMATCH[5]}"
+      - name: Fetch Dependabot metadata
+        id: meta
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-            # Patch/minor update means major version did not change.
-            if [[ "$FROM_MAJOR" == "$TO_MAJOR" ]]; then
-              echo "safe=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "safe=false" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            # If the title cannot be parsed safely, skip auto-merge.
-            echo "safe=false" >> "$GITHUB_OUTPUT"
+      - name: Enable auto-merge for eligible PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_IS_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type }}
+          ECOSYSTEM: ${{ steps.meta.outputs.package-ecosystem }}
+        run: |
+          # Never auto-merge drafts - they are explicitly not ready
+          if [ "$PR_IS_DRAFT" = "true" ]; then
+            echo "Draft PR - skipping auto-merge setup"
+            exit 0
           fi
 
-      # Enable auto-merge so GitHub merges only after required checks succeed.
-      - name: Enable auto-merge
-        if: steps.semver.outputs.safe == 'true'
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          gh pr merge "${{ github.event.pull_request.number }}" --auto --squash --delete-branch
+          # Non-Dependabot PRs opt in with the automerge label
+          if [ "$PR_AUTHOR" != "dependabot[bot]" ]; then
+            if echo "$PR_LABELS" | grep -Eq '(^|,)automerge(,|$)'; then
+              gh pr merge --auto --squash --delete-branch "$PR_URL"
+            else
+              echo "Auto-merge not enabled - add the automerge label for non-Dependabot PRs"
+            fi
+            exit 0
+          fi
 
-      # Log when a PR is intentionally skipped.
-      - name: Skip unsafe update
-        if: steps.semver.outputs.safe != 'true'
-        run: echo "Skipping auto-merge because this is not a safe patch/minor bump."
+          # Dependabot: hold major bumps for application dependencies (anything
+          # that is not GitHub Actions), auto-merge everything else.
+          if [ "$UPDATE_TYPE" = "version-update:semver-major" ]; then
+            case "$ECOSYSTEM" in
+              github_actions|github-actions)
+                echo "Major GitHub Actions bump - CI runs the action, enabling auto-merge" ;;
+              *)
+                echo "Holding major $ECOSYSTEM bump for manual review"
+                exit 0 ;;
+            esac
+          fi
+
+          gh pr merge --auto --squash --delete-branch "$PR_URL"
