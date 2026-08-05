@@ -400,7 +400,7 @@ def _oauth_redirect(user: User, frontend_url: str) -> RedirectResponse:
         key="refresh_token",
         value=refresh,
         httponly=True,
-        secure=False,  # set True in production via env guard
+        secure=settings.environment != "development",
         samesite="lax",
         max_age=7 * 24 * 3600,
         path="/api/v1/auth/refresh",
