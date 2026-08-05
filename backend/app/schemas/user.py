@@ -19,6 +19,10 @@ class UserRegister(BaseModel):
         # Rules: 8+ chars, at least one uppercase letter, at least one digit.
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
+        # bcrypt only hashes the first 72 bytes, so anything longer is
+        # rejected here rather than silently truncated.
+        if len(v.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes")
         if not re.search(r"[A-Z]", v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"\d", v):
@@ -51,6 +55,10 @@ class ChangePassword(BaseModel):
     def password_strength(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
+        # bcrypt only hashes the first 72 bytes, so anything longer is
+        # rejected here rather than silently truncated.
+        if len(v.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes")
         if not re.search(r"[A-Z]", v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"\d", v):
@@ -105,6 +113,10 @@ class AcceptInvite(BaseModel):
     def password_strength(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
+        # bcrypt only hashes the first 72 bytes, so anything longer is
+        # rejected here rather than silently truncated.
+        if len(v.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 bytes")
         if not re.search(r"[A-Z]", v):
             raise ValueError("Password must contain at least one uppercase letter")
         if not re.search(r"\d", v):

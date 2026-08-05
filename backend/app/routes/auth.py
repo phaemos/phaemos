@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import bcrypt
 import httpx
 import pyotp
 import qrcode
@@ -13,6 +14,38 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+
+# passlib (unmaintained since 2020) is incompatible with bcrypt 4.1+ in two ways:
+#
+# 1. It reads bcrypt.__about__.__version__ to detect the installed version,
+#    which bcrypt 4.1+ removed.
+# 2. On import it runs its own internal self-test, hashing a deliberately
+#    255-byte string to detect an old bcrypt wraparound bug. Old bcrypt
+#    silently truncated an overlong secret to 72 bytes; bcrypt 4.1+ correctly
+#    raises instead, which crashes passlib's own test, not anything a real
+#    caller sent.
+#
+# Restoring the version attribute and bcrypt's old truncate-rather-than-raise
+# behaviour fixes both. Real user passwords are separately capped at 72 bytes
+# in app/schemas/user.py's password_strength validator, so this only ever
+# truncates passlib's internal probe strings, never live input.
+if not hasattr(bcrypt, "__about__"):
+    class _BcryptAbout:
+        __version__ = bcrypt.__version__
+
+    bcrypt.__about__ = _BcryptAbout()
+
+    _real_hashpw = bcrypt.hashpw
+    _real_checkpw = bcrypt.checkpw
+
+    def _truncated_hashpw(password: bytes, salt: bytes) -> bytes:
+        return _real_hashpw(password[:72], salt)
+
+    def _truncated_checkpw(password: bytes, hashed: bytes) -> bool:
+        return _real_checkpw(password[:72], hashed)
+
+    bcrypt.hashpw = _truncated_hashpw
+    bcrypt.checkpw = _truncated_checkpw
 
 from app.config import settings
 from app.db import get_db
