@@ -14,6 +14,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Bumped backend `python-jose` to 3.4.0, `scikit-learn` to 1.5.0, `pytest` to 9.0.3 and `python-dotenv` to 1.2.2, closing 5 Dependabot alerts. Pinned a frontend `sharp` override to `^0.35.0` via npm `overrides`, closing 1 more. The remaining 21 open alerts (`authlib`, `python-multipart`) are already at their fixed versions in requirements.txt from earlier merged PRs, pending GitHub's next dependency graph rescan to auto-close
 - Resolved CodeQL high-severity findings in backend: webhook URL platform detection now uses `urlparse` netloc comparison instead of substring matching to prevent bypass; phone number removed from SMS warning log to prevent PII exposure
 - Pinned transitive `postcss` dependency to 8.5.10 via npm `overrides` to address GHSA-qx2v-qp2m-jg93 (XSS via unescaped `</style>` in CSS stringify output); the vulnerability was in the version of postcss bundled internally by next
+- The OAuth login path's refresh cookie was hardcoded `secure=False` with a stale comment saying to gate it in production, unlike the password and TOTP verify paths which correctly gate on environment; now matches the same pattern
 
 ### Added
 
@@ -24,10 +25,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Auto-merge is now ecosystem-aware: patch and minor Dependabot bumps and major GitHub Actions bumps auto-merge once CI passes, but major `npm` and `pip` bumps are held for manual review since a breaking runtime change could pass lint and build yet still deploy; previously major bumps were skipped entirely
 - README rewritten: dropped the leftover animated capsule-render footer banner, switched the prose to first person, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it has been live since Phase 2, only real hardware data is still pending), verified every doc link and image still resolves
+- Backend `redis` bumped to 8.1.0, `pandas` to 3.0.5 and `bcrypt` to 5.0.0; frontend `tailwind-merge` bumped to 3.6.0, `react`/`react-dom` to 19 and `eslint`/`eslint-config-next` to 9/16, each held for manual review as a major bump and verified individually rather than merged blind
+- Frontend migrated to Tailwind CSS v4: `@tailwindcss/postcss` replaces the old `tailwindcss` + `autoprefixer` PostCSS plugins, `globals.css` uses a single `@import "tailwindcss"` instead of the three `@tailwind` directives, and the existing `tailwind.config.ts` stays in effect via `@config` rather than migrating its theme into CSS
+- Frontend migrated to ESLint 9's flat config for `eslint-config-next` 16: `.eslintrc.cjs` replaced by `eslint.config.mjs` importing the package's native flat config export directly; `next lint` (deprecated, crashes on ESLint 9 with a circular-JSON error) replaced by calling the `eslint` CLI directly in the `lint` script
 
 ### Fixed
 
 - `.github/dependabot.yml` had `open-pull-requests-limit: 0` on all three ecosystems, silently blocking every Dependabot PR since the pause was added; raised back to 5 on each ecosystem to match the limit already used in repo-ops and mirror-ops
+- The `pydantic` bump to 2.13 split `email-validator` into an optional extra; schemas here use `EmailStr`, so bare `pydantic` no longer shipped it, added `pydantic[email]` to requirements.txt
+- `prometheus-fastapi-instrumentator` 7.1.0 accessed a router attribute the newer `fastapi`/`starlette` no longer exposes; bumped to 8.1.0 alongside the `fastapi` bump it depends on rather than as a separate PR
+- Tests asserting 403 for a missing Authorization header were updated to 401, matching newer `starlette`'s `HTTPBearer` behaviour; role-guard 403s for an authenticated but unauthorised user are unaffected
+- `passlib` (unmaintained since around 2020) is incompatible with `bcrypt` 4.1+ in two ways: it reads a version attribute bcrypt 4.1+ removed, and its own internal self-test hashes a deliberately 255-byte probe string that bcrypt 4.1+ now correctly rejects instead of silently truncating. Restored both the version attribute and the old truncate-rather-than-raise behaviour at the `bcrypt.hashpw`/`checkpw` boundary; real passwords are separately capped at 72 bytes in the password strength validator
+- 18 existing call sites across several hooks and components were newly flagged by stricter `react-hooks` rules aimed at React Compiler compatibility, bundled with the `eslint-config-next` 16 upgrade. One (`app/faq/page.tsx`) was a genuine issue, a running counter mutated during render, replaced with a precomputed per-section offset. The other 17 are legitimate, documented patterns (syncing state from an external source on mount, an intentional ref read to batch WebSocket pushes between polls, a standard recursive-reconnect closure) that this new rule set is unable to distinguish from unsafe code; each is annotated with a scoped, justified `eslint-disable` rather than rewritten
 
 ## [2.3.0] - 2026-06-03
 

@@ -55,6 +55,9 @@ export function useTelemetry(
   useEffect(() => {
     // I set loading true whenever the deviceId or time range changes so the consumer
     // knows fresh data is incoming rather than displaying stale results.
+    // Fetching on dependency change, the documented effect pattern
+    // (react.dev/learn/synchronizing-with-effects#fetching-data).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchTelemetry();
 
