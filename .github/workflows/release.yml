@@ -24,7 +24,7 @@ jobs:
     steps:
       # Check out the repository at the tagged commit
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Extract the version string from the Git ref.
       # Example: refs/tags/v0.3.0 -> 0.3.0
