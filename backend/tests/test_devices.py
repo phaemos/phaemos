@@ -128,8 +128,8 @@ def test_technician_sees_own_and_unowned(
 
 def test_list_devices_requires_auth(client, unowned_device):
     resp = client.get("/api/v1/devices")
-    # FastAPI's HTTPBearer returns 403 when the Authorization header is absent
-    assert resp.status_code == 403
+    # FastAPI's HTTPBearer returns 401 when the Authorization header is absent
+    assert resp.status_code == 401
 
 
 def test_owner_id_returned_in_response(client, admin_user, owned_device, technician):
@@ -144,7 +144,7 @@ def test_owner_id_returned_in_response(client, admin_user, owned_device, technic
 def test_register_device_requires_admin(client, technician, admin_user):
     payload = {"name": "New Device", "type": "esp32", "location": "Lab"}
     # unauthenticated
-    assert client.post("/api/v1/devices", json=payload).status_code == 403
+    assert client.post("/api/v1/devices", json=payload).status_code == 401
     # technician
     assert client.post(
         "/api/v1/devices", json=payload, headers=_token_for(technician, "technician")
@@ -157,7 +157,7 @@ def test_register_device_requires_admin(client, technician, admin_user):
 
 def test_get_device_requires_auth(client, unowned_device):
     resp = client.get(f"/api/v1/devices/{unowned_device.id}")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 def test_technician_cannot_get_others_device(

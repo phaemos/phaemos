@@ -62,7 +62,7 @@ def test_resolve_alert_not_found(client, auth_headers):
 
 def test_list_alerts_requires_auth(client):
     res = client.get("/api/v1/alerts")
-    assert res.status_code == 403
+    assert res.status_code == 401
 
 
 def test_create_rule_requires_admin(client, device, db):
