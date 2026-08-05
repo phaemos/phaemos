@@ -27,6 +27,6 @@ matplotlib==3.9.0
 pytest==8.2.0
 pytest-cov==5.0.0
 # python-dotenv added in v2.0 for local .env loading in scripts and evaluate.py
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 # pytest-asyncio needed for async FastAPI endpoint tests
 pytest-asyncio==0.23.6
