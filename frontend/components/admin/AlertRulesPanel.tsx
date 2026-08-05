@@ -61,7 +61,9 @@ export default function AlertRulesPanel() {
     }
   }, []);
 
-  useEffect(() => { fetchRules(); }, [fetchRules]);
+  // Fetching on mount, the documented effect pattern
+  // (react.dev/learn/synchronizing-with-effects#fetching-data).
+  useEffect(() => { fetchRules(); }, [fetchRules]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const deviceName = (id: string) => devices.find((d) => d.id === id)?.name ?? id.slice(0, 8) + '...';
 

@@ -41,7 +41,9 @@ export default function WebhooksPanel() {
     }
   }
 
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Fetching on mount, the documented effect pattern
+  // (react.dev/learn/synchronizing-with-effects#fetching-data).
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();

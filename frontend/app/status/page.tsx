@@ -44,6 +44,9 @@ export default function StatusPage() {
   }
 
   useEffect(() => {
+    // Fetching on mount, the documented effect pattern
+    // (react.dev/learn/synchronizing-with-effects#fetching-data).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStatus();
     // I poll every 30s so the page stays current without a manual refresh.
     const id = setInterval(fetchStatus, 30_000);
