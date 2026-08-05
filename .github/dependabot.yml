@@ -11,8 +11,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    # Pause Dependabot PRs for now. Set to a positive number to re-enable.
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
     groups:
       backend-patch-minor:
         patterns:
@@ -31,8 +30,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    # Pause Dependabot PRs for now. Set to a positive number to re-enable.
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
     groups:
       frontend-patch-minor:
         patterns:
@@ -51,8 +49,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    # Pause Dependabot PRs for now. Set to a positive number to re-enable.
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
     groups:
       actions-patch-minor:
         patterns:
