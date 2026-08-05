@@ -26,7 +26,7 @@ Phaemos connects embedded sensor nodes (ESP32, STM32, Arduino Nano, Raspberry Pi
 | [API Reference](api-reference.md) | All REST endpoints with auth and shapes |
 | [Sensor Reference](sensor_reference.md) | All sensors, specs, calibration ranges |
 | [Database Schema](schema.md) | PostgreSQL table definitions |
-| [Security](security.md) | 18-measure security controls |
+| [Security](security.md) | 27-measure security controls |
 | [Decision Log](decisions.md) | Why we chose what we chose |
 | [Monitoring](instatus.md) | Uptime monitoring setup (Instatus) |
 | [Scalability](scalability.md) | Scaling guide - 6 stages from single VPS to distributed |

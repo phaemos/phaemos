@@ -45,21 +45,43 @@ CREATE TABLE devices (
 
 ```sql
 CREATE TABLE telemetry (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id     UUID REFERENCES devices(id) ON DELETE CASCADE,
-  temperature   FLOAT,
-  humidity      FLOAT,
-  vibration_x   FLOAT,
-  vibration_y   FLOAT,
-  vibration_z   FLOAT,
-  light_level   FLOAT,
-  anomaly_score FLOAT,            -- ML output, 0-1
-  is_anomaly    BOOLEAN DEFAULT FALSE,
-  recorded_at   TIMESTAMP DEFAULT NOW()
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  device_id       UUID REFERENCES devices(id) ON DELETE CASCADE,
+  node_type       VARCHAR(20),                  -- esp32/stm32/nano/pico_w
+  temperature     FLOAT,                        -- BME280
+  humidity        FLOAT,                        -- BME280
+  pressure        FLOAT,                        -- BME280
+  vibration_x     FLOAT,                        -- MPU6050
+  vibration_y     FLOAT,                        -- MPU6050
+  vibration_z     FLOAT,                        -- MPU6050
+  gyro_x          FLOAT,                        -- MPU6050
+  gyro_y          FLOAT,                        -- MPU6050
+  gyro_z          FLOAT,                        -- MPU6050
+  bus_voltage     FLOAT,                        -- INA219
+  current_ma      FLOAT,                        -- INA219
+  power_mw        FLOAT,                        -- INA219
+  ir_temperature  FLOAT,                        -- MLX90614
+  distance_mm     FLOAT,                        -- VL53L0X
+  gas_level       FLOAT,                        -- MQ-2
+  gas_alert       BOOLEAN DEFAULT FALSE,         -- MQ-2 digital output
+  shaft_angle     FLOAT,                        -- AS5600
+  shaft_rpm       FLOAT,                        -- AS5600
+  sound_level     FLOAT,                        -- MAX4466
+  light_level     FLOAT,                        -- LDR
+  contact_temp    FLOAT,                        -- DS18B20
+  moisture_level  FLOAT,                        -- FC-28
+  water_detected  BOOLEAN DEFAULT FALSE,         -- FC-28
+  fft_peak_hz     FLOAT,                        -- STM32 FFT output
+  vib_magnitude   FLOAT,                        -- STM32 FFT output
+  anomaly_score   FLOAT,                        -- ML output, 0-1
+  is_anomaly      BOOLEAN DEFAULT FALSE,
+  recorded_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE INDEX idx_telemetry_device_recorded ON telemetry (device_id, recorded_at DESC);
 ```
+
+All sensor columns are nullable - a device only reports the metrics its node type actually measures.
 
 ### alert_rules
 
@@ -125,10 +147,10 @@ CREATE TABLE users (
   -- OAuth + 2FA + RBAC columns (migration 005, 009)
   oauth_provider         VARCHAR(50),                        -- 'google' or 'github', NULL for password accounts
   oauth_id               VARCHAR(200),                       -- provider user ID
-  phone_number           VARCHAR(20),                        -- optional, used for SMS alerts
-  totp_secret            VARCHAR(100),                       -- TOTP shared secret (set when 2FA enabled)
+  phone_number           VARCHAR(30),                        -- optional, used for SMS alerts
+  totp_secret            VARCHAR(64),                        -- TOTP shared secret (set when 2FA enabled)
   totp_enabled           BOOLEAN NOT NULL DEFAULT FALSE,     -- whether 2FA is active for this user
-  permissions            JSONB NOT NULL DEFAULT '{}'         -- per-user permission overrides (migration 009)
+  permissions            JSONB                                -- per-user permission overrides, NULL = role defaults only (migration 009)
 );
 ```
 
