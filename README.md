@@ -3,29 +3,27 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Discussions](https://img.shields.io/github/discussions/zaccesss/phaemos)](https://github.com/zaccesss/phaemos/discussions)
 
-Smart Maintenance Platform - collects real-time sensor data from ESP32/Arduino/STM32 hardware nodes, displays a live dashboard, fires alerts when readings exceed thresholds and uses machine learning to predict faults before they happen.
+I built PHAEMOS as a smart maintenance platform: it collects real-time sensor data from ESP32, STM32 and Arduino hardware nodes, shows it on a live dashboard, fires alerts when readings cross a threshold and uses machine learning to flag anomalies before they turn into failures.
 
-## Name, Pronunciation, and Meaning
+## Name, pronunciation and meaning
 
 - Pronunciation: **FAY-mos**
-- Meaning: **"an ordered system that reveals"**
-- Origin: coined from Ancient Greek roots tied to revelation/appearance and structure/order
+- Meaning: "an ordered system that reveals"
+- Origin: coined from Ancient Greek roots tied to revelation and structure
 
-Why this fits: PHAEMOS reveals hidden machine behavior through telemetry, alerting, anomaly detection, and maintenance workflows before visible failure occurs.
+I chose the name because PHAEMOS reveals hidden machine behavior through telemetry, alerting, anomaly detection and maintenance workflows before a failure becomes visible. My tagline for it: reveal before failure.
 
-Suggested tagline: **Reveal before failure.**
-
-## Quick Navigation
+## Quick navigation
 
 <p align="center">
       <a href="#architecture">Architecture</a> •
       <a href="#quickstart">Quickstart</a> •
-      <a href="#project-structure">Project Structure</a> •
+      <a href="#project-structure">Project structure</a> •
       <a href="#docs">Docs</a> •
-      <a href="#release-flow">Release Flow</a> •
+      <a href="#release-flow">Release flow</a> •
       <a href="#hardware">Hardware</a> •
-      <a href="#tech-stack">Tech Stack</a> •
-      <a href="#languages--tools-used">Languages &amp; Tools Used</a>
+      <a href="#tech-stack">Tech stack</a> •
+      <a href="#languages--tools-used">Languages &amp; tools used</a>
 </p>
 
 ## Architecture
@@ -51,7 +49,9 @@ Suggested tagline: **Reveal before failure.**
    PostgreSQL 15 + Redis 7
         |
   [ ML Layer - Isolation Forest ]
-  anomaly scoring on every ingest (Week 10 after hardware data collected)
+  anomaly scoring runs on every ingest; POST /api/v1/ml/retrain refits on the
+  last 10,000 rows. The shipped model.pkl is trained on synthetic data and
+  will be retrained on real sensor data once Phase 5 hardware bring-up is done
         |
   [ Frontend - Next.js 15 ]
   live dashboard, sensor grid, device list, ticket system, admin panel
@@ -64,7 +64,7 @@ Suggested tagline: **Reveal before failure.**
 
 ### Prerequisites
 
-- Docker + Docker Compose
+- Docker and Docker Compose
 - Node.js 18+
 - Python 3.11+
 
@@ -83,7 +83,7 @@ docker compose up --build
 
 Frontend: http://localhost:3000
 Backend API: http://localhost:8000
-API Docs: http://localhost:8000/docs
+API docs: http://localhost:8000/docs
 
 ### Run without Docker
 
@@ -105,9 +105,9 @@ npm install
 npm run dev
 ```
 
-### Quick API Smoke Test (No Hardware)
+### Quick API smoke test (no hardware)
 
-Run this when you want to validate core backend flows quickly without wiring sensors.
+I use this when I want to validate core backend flows quickly without wiring up sensors.
 
 ```bash
 cd backend
@@ -122,13 +122,13 @@ python scripts/quick_api_smoke.py
 
 What it tests:
 
-- auth register/login
+- auth register and login
 - device registration
-- telemetry ingest with generated device API key
+- telemetry ingest with a generated device API key
 - latest telemetry fetch
 - ML score endpoint
 
-## Project Structure
+## Project structure
 
 ```
 phaemos/
@@ -148,9 +148,9 @@ phaemos/
 │   ├── hooks/              useTelemetry, useAlerts, useWebSocketTelemetry
 │   └── lib/                Axios API client, utility functions
 ├── hardware/
-│   ├── schematics/         Proteus schematic placeholders (Phase 2)
+│   ├── schematics/         Proteus schematic placeholders (Phase 5)
 │   ├── wiring/             Pin connection tables for all 4 nodes
-│   └── pcb/                PCB design guide for Proteus ARES (Phase 3)
+│   └── pcb/                PCB design guide for Proteus ARES (Phase 5)
 ├── docs/                   Architecture, API reference, sensor reference, security, deployment
 ├── monitoring/             Grafana + Prometheus overlay
 ├── Makefile                make dev / test / lint / build / migrate / seed
@@ -164,26 +164,26 @@ phaemos/
 
 ## Docs
 
-- [Architecture Overview](docs/architecture.md)
-- [Database Schema](docs/schema.md)
-- [API Reference](docs/api-reference.md)
-- [Sensor Reference](docs/sensor_reference.md)
-- [Security Controls](docs/security.md)
-- [Deployment Guide](docs/deployment.md)
-- [Deployment Checklist](docs/deployment-checklist.md)
-- [Development Timeline](docs/week_by_week.md)
-- [Decision Log](docs/decisions.md)
-- [Verification Tracker](docs/VERIFICATION.md)
+- [Architecture overview](docs/architecture.md)
+- [Database schema](docs/schema.md)
+- [API reference](docs/api-reference.md)
+- [Sensor reference](docs/sensor_reference.md)
+- [Security controls](docs/security.md)
+- [Deployment guide](docs/deployment.md)
+- [Deployment checklist](docs/deployment-checklist.md)
+- [Development timeline](docs/week_by_week.md)
+- [Decision log](docs/decisions.md)
+- [Verification tracker](docs/VERIFICATION.md)
 - [Support](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
 
-## Release Flow
+## Release flow
 
 PHAEMOS uses tag-based releases with changelog validation.
 
-1. Update `CHANGELOG.md` with a new version section: `## [X.Y.Z] - DD-MM-YYYY`
-2. Commit and merge to `main`.
-3. Create and push the tag:
+1. Update `CHANGELOG.md` with a new version section: `## [X.Y.Z] - DD-MM-YYYY`.
+1. Commit and merge to `main`.
+1. Create and push the tag:
 
 ```bash
 git tag vX.Y.Z
@@ -192,16 +192,18 @@ git push origin vX.Y.Z
 
 1. The GitHub Actions `Release` workflow validates the changelog entry and creates the GitHub release.
 
-See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS setup guide, and [docs/deployment-checklist.md](docs/deployment-checklist.md) for the pre-release checklist.
+See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS setup guide. See [docs/deployment-checklist.md](docs/deployment-checklist.md) for the pre-release checklist.
 
 ## Hardware
 
+I currently run four physical nodes. Phase 5 (wiring the boards, validating readings and training the ML model on real data) has not started yet, so the firmware and backend below are ready but unverified against live hardware. See [docs/week_by_week.md](docs/week_by_week.md) for the full phase breakdown.
+
 | Board | Language | Role |
 | --- | --- | --- |
-| ESP32 DevKit | C++ (Arduino IDE) | Primary node - 11 sensors, Wi-Fi POST, OLED, buzzer, RGB LED, relay |
-| STM32 Black Pill F411CEU6 | C (STM32 HAL) | Vibration node - MPU6050 at 100Hz, FFT, UART to ESP32 |
-| Arduino Nano | C++ (Arduino IDE) | Secondary node - BME280, LDR, FC-28, serial CSV to ESP32 |
-| Raspberry Pi Pico 2W | MicroPython | Ambient node - BME280, LDR, OLED, direct Wi-Fi POST |
+| ESP32 DevKit | C++ (Arduino IDE) | Primary node, 11 sensors, Wi-Fi POST, OLED, buzzer, RGB LED, relay |
+| STM32 Black Pill F411CEU6 | C (STM32 HAL) | Vibration node, MPU6050 at 100Hz, FFT, UART to ESP32 |
+| Arduino Nano | C++ (Arduino IDE) | Secondary node, BME280, LDR, FC-28, serial CSV to ESP32 |
+| Raspberry Pi Pico 2W | MicroPython | Ambient node, BME280, LDR, OLED, direct Wi-Fi POST |
 
 | Sensor | Measures | Interface | Node |
 | --- | --- | --- | --- |
@@ -219,23 +221,23 @@ See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS se
 
 See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [docs/sensor_reference.md](docs/sensor_reference.md) for library details.
 
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | Next.js 15 + TypeScript + Tailwind CSS |
+| Frontend | Next.js 15, TypeScript, Tailwind CSS |
 | Backend | FastAPI (Python 3.11) |
 | Database | PostgreSQL 15 |
 | Cache | Redis 7 |
 | ML | scikit-learn (Isolation Forest), pandas, numpy |
-| Auth | JWT (python-jose), bcrypt |
+| Auth | JWT (python-jose), bcrypt, TOTP 2FA, Google/GitHub OAuth |
 | Firmware | C++ (Arduino IDE), C (STM32 HAL), MicroPython |
 | Hardware | ESP32, STM32 Black Pill F411CEU6, Arduino Nano, Raspberry Pi Pico 2W |
-| Containers | Docker + Docker Compose |
-| Monitoring | Prometheus + Grafana |
+| Containers | Docker, Docker Compose |
+| Monitoring | Prometheus, Grafana |
 | Deployment | Vercel (frontend + docs), DigitalOcean VPS (backend + DB) |
 
-## Languages & Tools Used
+## Languages & tools used
 
 <div align="center">
 
@@ -245,7 +247,7 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 | :----------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :--------------------------------------------------------------: | :-------------------------------------------------------------------------: |
 |                                              **Next.js**                                               |                                   **React**                                    |                               **TypeScript**                                |                         **Tailwind CSS**                         |                               **JavaScript**                                |
 
-### Backend & Data
+### Backend & data
 
 | <img src="https://techstack-generator.vercel.app/python-icon.svg" width="60" /> | <img src="https://cdn.simpleicons.org/fastapi/009688" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" width="60" /> | <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" width="60" /> |
 | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
@@ -257,7 +259,7 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 | :-------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: |
 |                                           **Docker**                                          |                                           **GitHub**                                          |                                   **Vercel**                                    |                                      **DigitalOcean**                                       |                                                  **Git**                                                    |
 
-### Firmware & Hardware
+### Firmware & hardware
 
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" alt="Arduino" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" alt="C" /> | <img src="https://techstack-generator.vercel.app/cpp-icon.svg" width="60" alt="C++" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" width="60" alt="Shell/Bash" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" alt="STM32" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" alt="ESP32" /> |
 | :---------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
@@ -265,21 +267,15 @@ See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [doc
 
 </div>
 
----
-
 ## Contributing
 
 Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branch naming convention, commit format, code standards and PR checklist before opening a pull request.
 
 ## Community
 
-- [GitHub Discussions](https://github.com/zaccesss/phaemos/discussions) - questions, ideas and show-and-tell
-- [GitHub Issues](https://github.com/zaccesss/phaemos/issues) - bug reports and feature requests
+- [GitHub Discussions](https://github.com/zaccesss/phaemos/discussions): questions, ideas and show-and-tell
+- [GitHub Issues](https://github.com/zaccesss/phaemos/issues): bug reports and feature requests
 
-## Contact and Support
+## Contact and support
 
-For general enquiries use the [contact form](https://phaemos.com/contact) or email [contact@phaemos.com](mailto:contact@phaemos.com). For user support email [support@phaemos.com](mailto:support@phaemos.com).
-
-<p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=80&section=footer" />
-</p>
+For general enquiries use the [contact form](https://phaemos.com/contact) or email [contact@phaemos.com](mailto:contact@phaemos.com). For user support email [support@phaemos.com](mailto:support@phaemos.com). See [SUPPORT.md](SUPPORT.md) for the full list of help channels and [SECURITY.md](SECURITY.md) to report a vulnerability.
