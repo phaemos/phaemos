@@ -11,6 +11,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- Bumped backend `python-jose` to 3.4.0, `scikit-learn` to 1.5.0, `pytest` to 9.0.3 and `python-dotenv` to 1.2.2, closing 5 Dependabot alerts. Pinned a frontend `sharp` override to `^0.35.0` via npm `overrides`, closing 1 more. The remaining 21 open alerts (`authlib`, `python-multipart`) are already at their fixed versions in requirements.txt from earlier merged PRs, pending GitHub's next dependency graph rescan to auto-close
 - Resolved CodeQL high-severity findings in backend: webhook URL platform detection now uses `urlparse` netloc comparison instead of substring matching to prevent bypass; phone number removed from SMS warning log to prevent PII exposure
 - Pinned transitive `postcss` dependency to 8.5.10 via npm `overrides` to address GHSA-qx2v-qp2m-jg93 (XSS via unescaped `</style>` in CSS stringify output); the vulnerability was in the version of postcss bundled internally by next
 
