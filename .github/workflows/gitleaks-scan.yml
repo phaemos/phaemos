@@ -29,7 +29,7 @@ jobs:
     steps:
       # Checkout the repository content for scanning
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Download a pinned gitleaks binary from the official releases page.
       # Extracting to /tmp first then moving to /usr/local/bin avoids
