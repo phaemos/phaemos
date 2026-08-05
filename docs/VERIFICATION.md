@@ -231,7 +231,7 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] SECURITY.md (responsible disclosure via GitHub Security Advisories)
 - [x] SUPPORT.md (Discussions first, status.phaemos.com, contact form)
 - [x] CODEOWNERS
-- [x] FUNDING.yml (Patreon + Buy Me a Coffee)
+- [x] FUNDING.yml (GitHub Sponsors, Buy Me a Coffee, Patreon)
 
 ---
 

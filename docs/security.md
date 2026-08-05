@@ -10,7 +10,7 @@ Last updated: 2026-06-03
 
 | # | Measure | Layer | Status | PR |
 | - | ------- | ----- | ------ | -- |
-| 1 | JWT authentication (HS256, 24h expiry) | Backend | Done | PR 55 |
+| 1 | JWT authentication (HS256, 15-min access token expiry) | Backend | Done | PR 55 |
 | 2 | Bcrypt password hashing (passlib) | Backend | Done | PR 55 |
 | 3 | Role-based access control (admin / technician / viewer) | Backend | Done | PR 55 |
 | 4 | Rate limiting on POST /auth/login (5/min via slowapi) | Backend | Done | PR 74 |
@@ -20,7 +20,7 @@ Last updated: 2026-06-03
 | 8 | Telemetry GET and export require Bearer token | Backend | Done | PR 74 |
 | 9 | Firmware upload 2 MB cap | Backend | Done | PR 74 |
 | 10 | CORS locked to explicit origin list (no wildcard) | Backend | Done | PR 74 |
-| 11 | API key rotation endpoint POST /auth/api-key/rotate | Backend | Done | PR 74 |
+| 11 | API key rotation endpoint POST /devices/{device_id}/rotate-key | Backend | Done | PR 74 |
 | 12 | Audit logging on all mutating routes | Backend | Done | PRs 55-56 |
 | 13 | SQLAlchemy parameterised queries (no raw string interpolation) | Backend | Done | All |
 | 14 | SQLAlchemy text() wrapping for raw audit_service inserts | Backend | Done | PR 74 |
