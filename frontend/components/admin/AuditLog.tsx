@@ -24,6 +24,9 @@ export default function AuditLog() {
   const [skip, setSkip] = useState(0);
 
   useEffect(() => {
+    // Fetching on mount/dependency change, the documented effect pattern
+    // (react.dev/learn/synchronizing-with-effects#fetching-data).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     api
       .get<AuditEntry[]>('/audit-logs', { params: { skip, limit: PAGE_SIZE } })

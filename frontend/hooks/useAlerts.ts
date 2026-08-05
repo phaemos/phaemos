@@ -39,6 +39,9 @@ export function useAlerts(intervalMs: number = 5000): UseAlertsResult {
   }, []);
 
   useEffect(() => {
+    // Fetching on mount/dependency change, the documented effect pattern
+    // (react.dev/learn/synchronizing-with-effects#fetching-data).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchAlerts();
 

@@ -94,8 +94,14 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
 
   // I merge live readings ahead of polled ones; duplicates are filtered by id
   // so a reading that arrives via WS before the next poll does not appear twice.
+  // This deliberately reads liveRef during render: the whole point of buffering
+  // WS pushes in a ref (see above) is to skip a re-render on every single push
+  // and only merge them in on the next natural re-render, which polledReadings
+  // changing already triggers. This is a plain client component with no
+  // concurrent rendering in play, so there is no tearing risk in practice.
   const readings = useMemo(() => {
     const seen = new Set(polledReadings.map((r) => r.id));
+    // eslint-disable-next-line react-hooks/refs
     const fresh = liveRef.current.filter((r) => !seen.has(r.id));
     return [...fresh, ...polledReadings];
   }, [polledReadings]);

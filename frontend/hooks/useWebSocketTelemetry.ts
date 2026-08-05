@@ -81,6 +81,11 @@ export function useWebSocketTelemetry(deviceId: string, { onMessage, onStatusCha
       onStatusRef.current?.('closed');
       const delay = BACKOFF_DELAYS_MS[attempt];
       attemptRef.current = attempt + 1;
+      // connect is referenced before its own const finishes initializing here,
+      // but this callback only runs once the WebSocket actually closes, long
+      // after connect's declaration has completed, so the closure always sees
+      // the fully assigned function. Standard recursive-reconnect pattern.
+      // eslint-disable-next-line react-hooks/immutability
       timerRef.current = setTimeout(connect, delay);
     };
 

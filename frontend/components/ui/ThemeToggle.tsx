@@ -11,7 +11,10 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     // I sync with the class applied by the pre-hydration script so the initial
-    // button label matches what the user already sees.
+    // button label matches what the user already sees. Synchronizing with the
+    // external DOM class, the documented effect pattern
+    // (react.dev/learn/synchronizing-with-effects).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(document.documentElement.classList.contains('dark'));
   }, []);
 

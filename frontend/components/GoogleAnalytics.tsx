@@ -9,6 +9,9 @@ export default function GoogleAnalytics() {
   const [consented, setConsented] = useState(false);
 
   useEffect(() => {
+    // Synchronizing with the external localStorage source, the documented
+    // effect pattern (react.dev/learn/synchronizing-with-effects).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsented(localStorage.getItem('cookie_consent') === 'accepted');
 
     function onStorage(e: StorageEvent) {

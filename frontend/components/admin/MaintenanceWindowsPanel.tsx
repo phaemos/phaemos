@@ -53,6 +53,9 @@ export default function MaintenanceWindowsPanel() {
     }
   };
 
+  // Fetching on mount, the documented effect pattern
+  // (react.dev/learn/synchronizing-with-effects#fetching-data).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   const handleCreate = async () => {

@@ -71,11 +71,15 @@ export default function DevicesPage() {
   }, [page, debouncedSearch, statusFilter]);
 
   useEffect(() => {
+    // Fetching on mount/dependency change, the documented effect pattern
+    // (react.dev/learn/synchronizing-with-effects#fetching-data).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
   // Reset to page 1 when filters change.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [debouncedSearch, statusFilter]);
 

@@ -339,7 +339,13 @@ const FAQ_SECTIONS = [
 ];
 
 export default function FaqPage() {
-  let globalIndex = 0;
+  // I precompute each section's starting number so the running count across
+  // sections is a pure function of FAQ_SECTIONS rather than a counter mutated
+  // during render.
+  const sectionOffsets = FAQ_SECTIONS.reduce<number[]>((offsets, _section, i) => {
+    offsets.push(i === 0 ? 0 : offsets[i - 1] + FAQ_SECTIONS[i - 1].items.length);
+    return offsets;
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 text-surface-800 dark:text-surface-200 space-y-10">
@@ -358,15 +364,14 @@ export default function FaqPage() {
         </p>
       </div>
 
-      {FAQ_SECTIONS.map(({ title, items }) => (
+      {FAQ_SECTIONS.map(({ title, items }, sectionIndex) => (
         <section key={title} className="space-y-6">
           <h2 className="text-xl font-semibold border-b border-surface-200 dark:border-surface-800 pb-2">
             {title}
           </h2>
           <div className="space-y-6">
-            {items.map(({ q, a }) => {
-              globalIndex += 1;
-              const n = globalIndex;
+            {items.map(({ q, a }, itemIndex) => {
+              const n = sectionOffsets[sectionIndex] + itemIndex + 1;
               return (
                 <section key={q} className="space-y-2">
                   <h3 className="text-base font-semibold text-surface-900 dark:text-surface-50">
