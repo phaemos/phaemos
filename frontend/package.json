@@ -21,7 +21,8 @@
     "tailwind-merge": "^2.3.0"
   },
   "overrides": {
-    "postcss": "8.5.23"
+    "postcss": "8.5.23",
+    "sharp": "^0.35.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
