@@ -25,7 +25,7 @@ sib-api-v3-sdk==7.6.0
 apscheduler==3.11.3
 matplotlib==3.11.1
 pytest==9.1.1
-pytest-cov==5.0.0
+pytest-cov==7.1.0
 # python-dotenv added in v2.0 for local .env loading in scripts and evaluate.py
 python-dotenv==1.2.2
 # pytest-asyncio needed for async FastAPI endpoint tests
