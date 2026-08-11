@@ -34,11 +34,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Set up Python 3.11 matching the production runtime
+      # Set up Python 3.12 matching the production runtime
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       # Install ruff for fast Python linting - not a full requirements install
       # because we only need the linter, not every runtime dependency
@@ -66,7 +66,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       # I pull the image explicitly so transient Docker Hub timeouts can be retried.
       # Service containers start before any steps and cannot be retried on failure.
