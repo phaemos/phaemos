@@ -18,7 +18,7 @@ joblib==1.5.3
 httpx==0.28.1
 authlib==1.7.2
 pyotp==2.10.0
-qrcode==7.4.2
+qrcode==8.2
 prometheus-fastapi-instrumentator==8.1.0
 resend==2.35.0
 sib-api-v3-sdk==7.6.0
