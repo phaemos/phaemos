@@ -38,6 +38,13 @@ updates:
         update-types:
           - "patch"
           - "minor"
+    ignore:
+      # eslint-plugin-react (bundled inside eslint-config-next) does not support ESLint 10 yet,
+      # its react/display-name rule calls a context API ESLint 10 removed. Real upstream gap, not
+      # fixable here, tracked at jsx-eslint/eslint-plugin-react#3977 and vercel/next.js#89764.
+      # Remove this once eslint-plugin-react ships v10 support.
+      - dependency-name: "eslint"
+        versions: ["10.x"]
     labels:
       - "chore"
     commit-message:
