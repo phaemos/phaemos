@@ -27,7 +27,7 @@ class Alert(Base):
 
     id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     device_id    = Column(UUID(as_uuid=True), ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
-    # nullable=True because some alerts may be system-generated without a matching AlertRule
+    # nullable=True because some alerts are system-generated and lack a matching AlertRule
     rule_id      = Column(UUID(as_uuid=True), ForeignKey("alert_rules.id"), nullable=True)
     # No length limit on String here - alert messages can be arbitrarily long
     message      = Column(String)

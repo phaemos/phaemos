@@ -20,7 +20,7 @@ const SECTIONS = [
   },
   {
     title: 'API Reference',
-    description: 'All REST endpoints, authentication requirements, request/response schemas, and WebSocket protocol.',
+    description: 'All REST endpoints, authentication requirements, request/response schemas and WebSocket protocol.',
     href: `${BASE}/api-reference.md`,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
@@ -80,7 +80,7 @@ const SECTIONS = [
   },
   {
     title: 'Schema',
-    description: 'Database schema ER diagram, table definitions, and migration history.',
+    description: 'Database schema ER diagram, table definitions and migration history.',
     href: `${BASE}/schema.md`,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">

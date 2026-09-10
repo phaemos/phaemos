@@ -16,7 +16,7 @@ def post_telemetry(url, payload_dict, api_key):
 
     I catch all exceptions and return -1 rather than crashing the main loop
     because network errors are transient on a Pico - a dropped Wi-Fi packet,
-    a temporary server restart, or a DNS hiccup should not halt sensor
+    a temporary server restart or a DNS hiccup should not halt sensor
     collection.  The caller can decide to log the failure or retry.
 
     Args:

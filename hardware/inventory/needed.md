@@ -1,6 +1,6 @@
 # What We Still Need
 
-Everything in this file is either on order (not yet arrived), at the Aston lab (collect from Richard), or not yet purchased.
+Everything in this file is either on order (not yet arrived), at the Aston lab (collect from Richard) or not yet purchased.
 
 ---
 

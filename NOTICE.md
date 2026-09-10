@@ -23,7 +23,7 @@ repository but are pulled in at build and run time. They are declared in:
 - `backend/requirements.txt` (Python packages)
 - `frontend/package.json` (npm packages)
 
-Each of those packages is distributed under its own licence by its own authors, and those
+Each of those packages is distributed under its own licence by its own authors and those
 licences govern the packages themselves. To produce the full dependency licence list, run
 `pip-licenses` against the installed Python environment and `license-checker` against the
 installed npm environment.

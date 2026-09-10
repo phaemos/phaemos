@@ -23,7 +23,7 @@
 #include "arm_math.h"
 
 /* I choose 128 because it is a power of two (required by arm_rfft_fast_f32),
- * fits comfortably in the F411's 128 KB SRAM, and at 100 Hz gives a
+ * fits comfortably in the F411's 128 KB SRAM and at 100 Hz gives a
  * frequency resolution of 100/128 = 0.78 Hz - adequate for mechanical
  * vibration diagnostics at this sample rate. */
 #define FFT_SIZE    128U

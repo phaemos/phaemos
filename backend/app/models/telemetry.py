@@ -78,7 +78,7 @@ class Telemetry(Base):
     vib_magnitude = Column(Float)
 
     # ML output - computed by ml_service after ingest
-    # anomaly_score is a continuous value (e.g. 0.0–1.0) from an ML model indicating how unusual this reading is
+    # anomaly_score is a continuous value (e.g. 0.0-1.0) from an ML model indicating how unusual this reading is
     anomaly_score = Column(Float)
     # is_anomaly is a derived boolean flag: True when anomaly_score crosses the configured threshold
     is_anomaly    = Column(Boolean, default=False)

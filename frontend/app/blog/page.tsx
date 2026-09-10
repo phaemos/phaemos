@@ -25,7 +25,7 @@ const POSTS = [
     slug: 'hardware-deep-dive',
     title: 'Hardware Deep Dive: 4 Nodes, 11 Sensors, One Platform',
     date: '2026-05-28',
-    excerpt: 'A tour of the four firmware nodes at the core of PHAEMOS - ESP32 telemetry hub, STM32 vibration processor, Pico W power monitor, and Arduino Nano legacy bridge.',
+    excerpt: 'A tour of the four firmware nodes at the core of PHAEMOS - ESP32 telemetry hub, STM32 vibration processor, Pico W power monitor and Arduino Nano legacy bridge.',
     tags: ['hardware', 'firmware'],
   },
 ];

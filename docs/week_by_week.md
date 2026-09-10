@@ -105,7 +105,7 @@ This document records the development history of PHAEMOS in chronological phases
 
 ## Phase 5 - Hardware (PENDING - hardware-blocked)
 
-**Goal:** Physical assembly, sensor validation, and real-data ML training.
+**Goal:** Physical assembly, sensor validation and real-data ML training.
 
 These tasks require physical components on the bench. All firmware and backend code is ready; this phase begins when components arrive.
 

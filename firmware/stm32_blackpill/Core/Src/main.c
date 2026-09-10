@@ -118,7 +118,7 @@ int main(void)
     {
         /* Spin-wait for the ISR to collect 100 samples.
          * I avoid a WFI/sleep here because the STM32F411 wakes from WFI on
-         * any interrupt including SysTick, and managing re-entry correctly
+         * any interrupt including SysTick and managing re-entry correctly
          * adds complexity that is not needed at 100 Hz. */
         if (sample_ready)
         {

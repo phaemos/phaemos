@@ -198,7 +198,7 @@ Pass the JWT as a `?token=` query parameter. The server validates the token befo
 **Status:** Accepted
 
 **Context:**
-The ML retrain endpoint needs to fit an IsolationForest on up to 10,000 rows. This takes a few seconds - too long to block the HTTP response. Several options exist: a Celery/RQ task queue, a subprocess, or FastAPI's built-in BackgroundTasks.
+The ML retrain endpoint needs to fit an IsolationForest on up to 10,000 rows. This takes a few seconds - too long to block the HTTP response. Several options exist: a Celery/RQ task queue, a subprocess or FastAPI's built-in BackgroundTasks.
 
 **Decision:**
 Use FastAPI BackgroundTasks. The task runs in the same process after the 202 response is sent. A 1-hour in-memory cooldown prevents concurrent runs. The model is written to disk and the in-memory reference reloaded atomically via reload_model().
@@ -262,7 +262,7 @@ Managed services are not needed because:
 **Status:** Accepted
 
 **Context:**
-The project needed a licence before being made public. Three common options were considered: MIT, Apache 2.0, and AGPL-3.0.
+The project needed a licence before being made public. Three common options were considered: MIT, Apache 2.0 and AGPL-3.0.
 
 **Decision:**
 AGPL-3.0.
@@ -291,7 +291,7 @@ DigitalOcean VPS with Docker Compose + Nginx reverse proxy.
 
 - A $6/month DigitalOcean droplet (covered by GitHub Student Pack credit) gives full root access, no cold-start latency and predictable costs.
 - Docker Compose on the VPS mirrors the local dev environment exactly - same `docker-compose.yml`, same env vars.
-- Nginx handles SSL termination (Certbot), reverse proxy to the FastAPI container, and sets `X-Real-IP` so rate limiting works correctly.
+- Nginx handles SSL termination (Certbot), reverse proxy to the FastAPI container and sets `X-Real-IP` so rate limiting works correctly.
 - No vendor lock-in: the Docker Compose stack is portable to any VPS provider.
 
 ---
@@ -362,7 +362,7 @@ GitHub Discussions for questions and ideas; GitHub Issues for confirmed bugs and
 **Status:** Accepted
 
 **Context:**
-Several features require real sensor readings that cannot be simulated: Isolation Forest model training (needs 1-2 weeks of genuine fault/normal data), hardware testing across all 4 nodes, and the node enclosure design (needs breadboard prototyping to confirm fitment). These items are tracked in docs/VERIFICATION.md.
+Several features require real sensor readings that cannot be simulated: Isolation Forest model training (needs 1-2 weeks of genuine fault/normal data), hardware testing across all 4 nodes and the node enclosure design (needs breadboard prototyping to confirm fitment). These items are tracked in docs/VERIFICATION.md.
 
 **Decision:**
 Do not attempt these items until all four physical nodes (ESP32, STM32 Black Pill, Arduino Nano, Raspberry Pi Pico 2W) are assembled and producing real telemetry. No software workaround will substitute for this.
