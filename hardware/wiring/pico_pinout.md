@@ -82,7 +82,7 @@ The onboard SMPS on the Pico 2W can supply up to 300mA on the 3.3V rail for exte
 The Pico 2W integrates a CYW43439 Wi-Fi and Bluetooth chip with an onboard PCB trace antenna located at the end of the board opposite the USB connector.
 
 Key rules for the antenna area:
-- Keep a clear zone of at least 15mm around the antenna end of the board free of metal objects, wire runs, and other PCB ground planes.
+- Keep a clear zone of at least 15mm around the antenna end of the board free of metal objects, wire runs and other PCB ground planes.
 - Do not route copper traces or pour ground fill on your PCB directly beneath the antenna area if the Pico 2W is soldered to a carrier board.
 - Avoid placing metal enclosures or mounting brackets directly above or touching the antenna end.
 - For IP-rated enclosures, use a plastic (ABS or polycarbonate) enclosure. Metal enclosures significantly attenuate 2.4 GHz signals and may prevent Wi-Fi connectivity entirely.

@@ -111,7 +111,7 @@
 8. If rule triggered - inserts alert row - auto-creates ticket if critical
 9. Telemetry row saved to PostgreSQL with anomaly_score + is_anomaly
 10. If alert severity is critical - webhook service fires Slack/Discord/Teams payload
-11. Frontend polls `GET /api/v1/telemetry/{device_id}/latest` every 5s, or receives push via WebSocket
+11. Frontend polls `GET /api/v1/telemetry/{device_id}/latest` every 5s or receives push via WebSocket
 
 ## Authentication Architecture
 

@@ -9,7 +9,7 @@
 #include "config.h"
 #include "dht22.h"
 #include "mpu6050.h"
-// ota.ino is compiled alongside this file by the Arduino IDE — no #include needed.
+// ota.ino is compiled alongside this file by the Arduino IDE - no #include needed.
 // checkAndApplyOTA() is declared and defined in ota.ino.
 
 void setup() {

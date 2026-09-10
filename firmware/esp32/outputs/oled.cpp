@@ -1,5 +1,5 @@
 // I include Wire.h first because Adafruit_SSD1306 needs it initialised before
-// any I2C transaction can happen, and include order matters on Arduino.
+// any I2C transaction can happen and include order matters on Arduino.
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>

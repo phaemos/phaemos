@@ -2,7 +2,7 @@
 title: "Hardware Deep Dive: 4 Nodes, 11 Sensors, One Platform"
 date: "2026-05-28"
 slug: "hardware-deep-dive"
-excerpt: "A tour of the four firmware nodes at the core of PHAEMOS - ESP32 telemetry hub, STM32 vibration processor, Pico W power monitor, and Arduino Nano legacy bridge."
+excerpt: "A tour of the four firmware nodes at the core of PHAEMOS - ESP32 telemetry hub, STM32 vibration processor, Pico W power monitor and Arduino Nano legacy bridge."
 ---
 
 # Hardware Deep Dive: 4 Nodes, 11 Sensors, One Platform
@@ -11,7 +11,7 @@ PHAEMOS is built around four microcontroller nodes, each chosen for a specific r
 
 ## ESP32 - Wi-Fi telemetry hub
 
-The ESP32 is the primary data reporter. It reads temperature, humidity and gas concentration, packages them as JSON, and POSTs to `/api/v1/telemetry` over Wi-Fi every 5 seconds. The authentication token is stored in non-volatile storage (NVS) so it survives power cycles.
+The ESP32 is the primary data reporter. It reads temperature, humidity and gas concentration, packages them as JSON and POSTs to `/api/v1/telemetry` over Wi-Fi every 5 seconds. The authentication token is stored in non-volatile storage (NVS) so it survives power cycles.
 
 **Sensors on this node:**
 - DHT22 - temperature (-40 to 80 C, ±0.5 C) and humidity (0-100%, ±2%)
@@ -50,7 +50,7 @@ Power monitoring gives the ML model an additional input. Motors drawing more cur
 
 ## Arduino Nano - legacy sensor bridge
 
-The Nano bridges sensors with 5V-only interfaces that would damage a 3.3V MCU directly. It reads them via its 5V ADC, converts the readings, and sends JSON over UART at 115200 baud to the ESP32.
+The Nano bridges sensors with 5V-only interfaces that would damage a 3.3V MCU directly. It reads them via its 5V ADC, converts the readings and sends JSON over UART at 115200 baud to the ESP32.
 
 **Sensors on this node:**
 - HC-SR04 - ultrasonic distance (2-400 cm, ±3 mm) for level or proximity monitoring

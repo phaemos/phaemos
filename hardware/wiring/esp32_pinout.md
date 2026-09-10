@@ -67,7 +67,7 @@ Power enters through a 2.1mm barrel jack rated for 12V DC. From there the path i
 12V barrel jack -> SPDT toggle switch -> 2A inline fuse -> LM2596 adjustable buck converter (set output to 5V) -> AMS1117-3.3 linear regulator (outputs 3.3V).
 
 - The 4-channel relay module coils run on the **5V rail** from the LM2596 output.
-- All sensor breakouts, the ESP32, STM32, and Pico 2W logic run on the **3.3V rail** from the AMS1117.
+- All sensor breakouts, the ESP32, STM32 and Pico 2W logic run on the **3.3V rail** from the AMS1117.
 - The Nano itself runs on the **5V rail** but its I/O to the ESP32 must be level-shifted.
 - Place a 10uF electrolytic capacitor on the 5V rail (close to the LM2596 output) and another on the 3.3V rail (close to the AMS1117 output) for bulk decoupling.
 - Place 100nF ceramic decoupling capacitors between VCC and GND on each sensor breakout, as physically close to the IC as possible.

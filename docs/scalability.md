@@ -50,7 +50,7 @@ Change the Uvicorn start command to use multiple workers:
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-This runs 4 processes sharing the same port. Each process has its own in-memory APScheduler instance - the daily retention job will run 4 times. Guard against this by checking if the process is the primary worker, or migrate background tasks to Celery (see Stage 4).
+This runs 4 processes sharing the same port. Each process has its own in-memory APScheduler instance - the daily retention job will run 4 times. Guard against this by checking if the process is the primary worker or migrate background tasks to Celery (see Stage 4).
 
 ### Option B: Multiple machines with a load balancer
 
@@ -110,7 +110,7 @@ PostgreSQL streaming replication adds one or more read replicas. Direct read-hea
 read_engine = create_engine(settings.database_url_replica)
 ```
 
-The primary handles all writes. The replica handles `GET /telemetry`, exports, and ML training data fetches.
+The primary handles all writes. The replica handles `GET /telemetry`, exports and ML training data fetches.
 
 ### Managed Postgres (when self-hosted becomes a burden)
 

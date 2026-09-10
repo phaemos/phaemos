@@ -372,7 +372,7 @@ Login and receive a short-lived access token. Sets a 7-day httpOnly refresh cook
 }
 ```
 
-If the account has 2FA enabled, the response returns `{ "requires_2fa": true, "temp_token": "..." }` instead, and the client must call `POST /auth/2fa/verify` to complete login.
+If the account has 2FA enabled, the response returns `{ "requires_2fa": true, "temp_token": "..." }` instead and the client must call `POST /auth/2fa/verify` to complete login.
 
 ---
 
@@ -488,7 +488,7 @@ Initiate Google OAuth flow. Redirects to Google consent screen.
 
 ### GET /auth/google/callback
 
-Google OAuth callback. Exchanges the authorisation code, creates or finds the user by email, and issues tokens.
+Google OAuth callback. Exchanges the authorisation code, creates or finds the user by email and issues tokens.
 
 **Auth:** None (public)
 
@@ -504,7 +504,7 @@ Initiate GitHub OAuth flow. Redirects to GitHub consent screen.
 
 ### GET /auth/github/callback
 
-GitHub OAuth callback. Exchanges the authorisation code, creates or finds the user by email, and issues tokens.
+GitHub OAuth callback. Exchanges the authorisation code, creates or finds the user by email and issues tokens.
 
 **Auth:** None (public)
 

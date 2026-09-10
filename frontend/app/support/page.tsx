@@ -13,7 +13,7 @@ const TROUBLESHOOTING = [
   },
   {
     problem: 'Login blocked after 5 failed attempts',
-    solution: 'The account is locked for 15 minutes. Wait it out, or ask an admin to reset the locked_until column in the database directly.',
+    solution: 'The account is locked for 15 minutes. Wait it out or ask an admin to reset the locked_until column in the database directly.',
   },
   {
     problem: 'Frontend shows blank screen after fresh clone',
@@ -25,7 +25,7 @@ const TROUBLESHOOTING = [
   },
   {
     problem: 'Telemetry not appearing for a device',
-    solution: 'Confirm the firmware node is sending the correct API key in the X-API-Key header, and that the device ID in the POST path matches the device ID shown on the device detail page.',
+    solution: 'Confirm the firmware node is sending the correct API key in the X-API-Key header and that the device ID in the POST path matches the device ID shown on the device detail page.',
   },
   {
     problem: 'Rate limit error on login',

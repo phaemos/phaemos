@@ -1,6 +1,6 @@
 # Sensor Reference
 
-This document lists every sensor used across all four Phaemos nodes, with interface details, libraries, measurement ranges, and datasheet links.
+This document lists every sensor used across all four Phaemos nodes, with interface details, libraries, measurement ranges and datasheet links.
 
 ---
 
