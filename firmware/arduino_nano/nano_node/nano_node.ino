@@ -1,6 +1,6 @@
 // nano_node.ino - Arduino Nano secondary node main sketch
 //
-// Reads BME280, LDR, and FC-28 moisture sensor.
+// Reads BME280, LDR and FC-28 moisture sensor.
 // Outputs one CSV line every 2 seconds over Serial at 9600 baud.
 //
 // I chose CSV over Serial rather than JSON or a binary protocol because:

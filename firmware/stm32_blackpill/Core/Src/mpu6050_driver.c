@@ -101,7 +101,7 @@ HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data)
 }
 
 /**
- * MPU6050_ReadAll - Read accel, temperature, and gyro in one burst (14 bytes).
+ * MPU6050_ReadAll - Read accel, temperature and gyro in one burst (14 bytes).
  *
  * I read all 14 bytes in a single Mem_Read call so that all axes are captured
  * at the same sensor measurement instant.  Reading accel and gyro in separate

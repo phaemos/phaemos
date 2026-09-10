@@ -20,7 +20,7 @@
 
 
 class BME280:
-    """BME280 temperature, pressure, and humidity sensor driver."""
+    """BME280 temperature, pressure and humidity sensor driver."""
 
     # Register addresses from BME280 datasheet Table 18 / Table 19
     _REG_CALIB_T_P  = 0x88   # Start of temperature and pressure calibration data (24 bytes)

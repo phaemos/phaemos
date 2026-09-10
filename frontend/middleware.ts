@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // I whitelist paths that must be accessible without authentication so that
-// assets, the login form itself, and the health check are never blocked.
+// assets, the login form itself and the health check are never blocked.
 const PUBLIC_PATHS = [
   '/login',
   '/favicon.ico',

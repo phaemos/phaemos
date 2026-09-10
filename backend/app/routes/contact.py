@@ -77,6 +77,6 @@ async def submit_contact(request: Request, payload: ContactRequest):
     try:
         _send_email(payload)
     except Exception:
-        # I swallow SMTP errors here - the message was valid, and a mail
+        # I swallow SMTP errors here - the message was valid and a mail
         # delivery failure should not surface a 500 to the visitor.
         pass

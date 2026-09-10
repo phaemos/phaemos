@@ -37,7 +37,7 @@
 The Postgres data volume is wiped by `docker compose down`. Use `docker compose stop` to preserve data. After a wipe, re-run migrations with `make migrate`.
 
 **Login blocked after 5 failed attempts:**
-The account is locked for 15 minutes. Wait, or ask an admin to clear the `locked_until` column in the database directly.
+The account is locked for 15 minutes. Wait or ask an admin to clear the `locked_until` column in the database directly.
 
 **Frontend shows blank screen:**
 Ensure `frontend/.env.local` contains `NEXT_PUBLIC_API_URL=http://localhost:8000`. Run:

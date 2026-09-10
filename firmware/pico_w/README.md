@@ -1,7 +1,7 @@
 # Raspberry Pi Pico 2W - Ambient Node
 
 This node reads BME280 (temperature, humidity, pressure), an LDR (light),
-displays readings on an SSD1306 OLED, and POSTs telemetry to the Phaemos API
+displays readings on an SSD1306 OLED and POSTs telemetry to the Phaemos API
 over Wi-Fi every 5 seconds.
 
 ---

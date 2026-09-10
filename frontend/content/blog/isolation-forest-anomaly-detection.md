@@ -49,7 +49,7 @@ curl -X POST http://localhost:8000/api/v1/ml/retrain \
   -H "Authorization: Bearer <admin-token>"
 ```
 
-The endpoint fits a new Isolation Forest on the last 10,000 telemetry rows (roughly 14 hours at 5-second intervals), saves `model.pkl`, and hot-reloads it without a restart. There is a 1-hour cooldown between retrains to prevent thrashing.
+The endpoint fits a new Isolation Forest on the last 10,000 telemetry rows (roughly 14 hours at 5-second intervals), saves `model.pkl` and hot-reloads it without a restart. There is a 1-hour cooldown between retrains to prevent thrashing.
 
 Retrain whenever:
 - You add a new device type with different operating characteristics

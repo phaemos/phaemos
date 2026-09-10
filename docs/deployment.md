@@ -107,7 +107,7 @@ All other variables (SMTP, Resend, Brevo, Turnstile, etc.) are optional - the ap
 docker compose up -d
 ```
 
-This starts four containers: `backend` (port 8000), `postgres` (port 5432), `redis` (port 6379), and `frontend` (port 3000). In production, only Nginx faces the internet - the container ports are not exposed publicly.
+This starts four containers: `backend` (port 8000), `postgres` (port 5432), `redis` (port 6379) and `frontend` (port 3000). In production, only Nginx faces the internet - the container ports are not exposed publicly.
 
 ### Run database migrations
 

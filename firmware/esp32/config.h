@@ -5,7 +5,7 @@
 // ============================================================
 
 // `#pragma once` is a non-standard but universally supported guard that prevents this header
-// being included more than once per compilation unit — safer than manual #ifndef guards.
+// being included more than once per compilation unit - safer than manual #ifndef guards.
 #pragma once
 
 // Wi-Fi
@@ -13,7 +13,7 @@
 #define WIFI_PASSWORD    "YourNetworkPassword"
 
 // API
-// Base URL of the backend (no trailing slash) — used by OTA to build endpoint paths.
+// Base URL of the backend (no trailing slash) - used by OTA to build endpoint paths.
 #define API_BASE_URL     "http://your-backend-url"
 // Telemetry ingest endpoint exposed by the FastAPI backend.
 #define API_URL          "http://your-backend-url/api/v1/telemetry"

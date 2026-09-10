@@ -3,7 +3,7 @@
 #
 # I write my own minimal driver rather than relying on the MicroPython
 # standard library's ssd1306.py because not all MicroPython builds for the
-# Pico 2W include it in the frozen modules, and keeping dependencies local
+# Pico 2W include it in the frozen modules and keeping dependencies local
 # means the firmware is self-contained and does not require an internet
 # connection on the Pico to install packages via upip.
 

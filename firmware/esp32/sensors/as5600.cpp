@@ -1,4 +1,4 @@
-// I include config.h first to get AS5600_ADDR, I2C_SDA, and I2C_SCL without
+// I include config.h first to get AS5600_ADDR, I2C_SDA and I2C_SCL without
 // hard-coding the values in this file.
 #include "../config.h"
 #include "as5600.h"
@@ -29,7 +29,7 @@ static uint16_t readRawAngle() {
     uint8_t lo = Wire.available() ? Wire.read() : 0;
 
     // I mask hi to 4 bits because the top 4 bits of register 0x0C are unused
-    // per the AS5600 datasheet, and leaving them in would corrupt the angle.
+    // per the AS5600 datasheet and leaving them in would corrupt the angle.
     return ((uint16_t)(hi & 0x0F) << 8) | lo;
 }
 

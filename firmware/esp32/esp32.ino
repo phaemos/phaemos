@@ -1,5 +1,5 @@
 // esp32.ino - PHAEMOS v2 main firmware for the ESP32 hub node.
-// I split all sensor, output, and comms logic into submodules and keep this
+// I split all sensor, output and comms logic into submodules and keep this
 // file as the orchestration layer only - it wires everything together without
 // containing implementation details.
 

@@ -1,7 +1,7 @@
 # STM32 Black Pill F411CEU6 - Vibration Node
 
 This node samples the MPU6050 IMU at 100 Hz, runs a 128-point CMSIS-DSP
-radix-2 FFT over each 1.28-second window, and emits one UART line per window:
+radix-2 FFT over each 1.28-second window and emits one UART line per window:
 
 ```text
 VIB:0.02,-0.01,1.01,MAG:1.01,FFT_PEAK:12.5Hz
