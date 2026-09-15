@@ -1,0 +1,56 @@
+name: Bug report
+description: Report something that is broken or behaving incorrectly
+title: "fix: "
+labels: ["bug"]
+assignees:
+  - zaccesss
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: A short description of what is broken.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps to reliably trigger the bug.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Fill in whichever of these are relevant.
+      placeholder: |
+        OS:
+        Browser / client (if frontend):
+        Python version (if backend):
+        Node version (if frontend):
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Logs, screenshots or related issues.
+    validations:
+      required: false
