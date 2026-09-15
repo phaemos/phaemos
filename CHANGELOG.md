@@ -20,6 +20,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - GitHub Sponsors added to `.github/FUNDING.yml` as first entry; order updated to github, buy_me_a_coffee, patreon
 - `Repo maintenance` workflow (`update-pr-branches.yml`) to delete merged PR branches the merge could not clean up
+- `.markdownlint.json` and a `markdownlint.yml` CI workflow, with a `.github/workflows/README.md` documenting every workflow in the repository
+- YAML issue forms (`bug_report.yml`, `feature_request.yml`) replacing the old markdown issue templates
 
 ### Changed
 
@@ -132,6 +134,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [2.1.0] - 2026-06-01
 
 ### Added
+
 - Login page and session guard (backlog - next session)
 - Hardware inventory tracking: hardware/inventory/owned.md and needed.md with full component list
 - README added to every folder and subfolder across the entire repo
@@ -141,6 +144,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Dashboard selected-device polling bug fix - user selection no longer resets every 5 seconds
 
 ### Changed
+
 - TelemetryChart refactored: prop changed from readings[] to deviceId, now manages own data fetch
 - Dashboard uses Promise.allSettled so a failing alerts query never blocks device cards
 - layout.tsx: suppressHydrationWarning on html element, proper light/dark body classes
@@ -148,6 +152,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [2.0.0] - 2026-05-30
 
 ### Added
+
 - Extended telemetry schema with 18 new sensor columns (v2)
 - ESP32 v2 structured firmware: 10 sensor modules, 4 output modules, 3 comms modules
 - STM32 Black Pill firmware (FFT vibration analysis)
