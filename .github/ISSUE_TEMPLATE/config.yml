@@ -1,0 +1,15 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Platform status
+    url: https://status.phaemos.com
+    about: Check here first during an outage before opening an issue.
+  - name: Questions and discussion
+    url: https://github.com/zaccesss/phaemos/discussions
+    about: Setup questions, usage questions and feature ideas.
+  - name: Security vulnerability
+    url: https://github.com/zaccesss/phaemos/security/policy
+    about: Report privately following SECURITY.md, never a public issue.
+  - name: Contact form
+    url: https://phaemos.com/contact
+    about: General enquiries.
