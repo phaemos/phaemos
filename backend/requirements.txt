@@ -1,8 +1,8 @@
 fastapi==0.141.1
 slowapi==0.1.10
-uvicorn[standard]==0.52.4
-sqlalchemy==2.0.52
-alembic==1.19.2
+uvicorn[standard]==0.53.0
+sqlalchemy==2.0.54
+alembic==1.20.0
 psycopg2-binary==2.9.13
 pydantic[email]==2.13.5
 pydantic-settings==2.15.0
@@ -12,7 +12,7 @@ bcrypt==5.0.0
 python-multipart==0.0.32
 redis==8.1.0
 scikit-learn==1.9.1
-pandas==3.0.5
+pandas==3.0.6
 numpy==2.5.3
 joblib==1.6.0
 httpx==0.28.1
@@ -20,10 +20,10 @@ authlib==1.8.0
 pyotp==2.10.0
 qrcode==8.2
 prometheus-fastapi-instrumentator==8.1.0
-resend==2.44.0
+resend==2.47.0
 sib-api-v3-sdk==7.6.0
 apscheduler==3.11.3
-matplotlib==3.11.1
+matplotlib==3.11.2
 pytest==9.1.1
 pytest-cov==7.1.0
 # python-dotenv added in v2.0 for local .env loading in scripts and evaluate.py
