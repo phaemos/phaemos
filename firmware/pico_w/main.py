@@ -1,7 +1,7 @@
 # firmware/pico_w/main.py
-# Raspberry Pi Pico 2W ambient node - main entry point.
+# raspberry Pi Pico 2W ambient node - main entry point.
 #
-# Reads BME280 (temperature, humidity, pressure) and LDR (light level),
+# reads BME280 (temperature, humidity, pressure) and LDR (light level),
 # displays readings on an SSD1306 OLED and POSTs telemetry to the Phaemos
 # API over Wi-Fi every TELEMETRY_INTERVAL seconds.
 
@@ -113,11 +113,11 @@ def build_payload(temp, humidity, pressure, light):
 last_post_ticks = time.ticks_ms()
 
 while True:
-    # Read sensors
+    # read sensors
     temp, humidity, pressure = read_sensor()
     light = read_light()
 
-    # Update OLED every iteration (fast - no Wi-Fi involved)
+    # update OLED every iteration (fast - no Wi-Fi involved)
     update_oled(temp, humidity, pressure, light)
 
     # POST telemetry every TELEMETRY_INTERVAL seconds

@@ -44,7 +44,7 @@ export default function StatusPage() {
   }
 
   useEffect(() => {
-    // Fetching on mount, the documented effect pattern
+    // fetching on mount, the documented effect pattern
     // (react.dev/learn/synchronizing-with-effects#fetching-data).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStatus();
@@ -67,7 +67,7 @@ export default function StatusPage() {
         </h1>
       </section>
 
-      {/* Overall banner */}
+      {/* overall banner */}
       <div className={`card p-5 flex items-center gap-4 border-l-4 ${
         loading  ? 'border-surface-300 dark:border-surface-700' :
         error    ? 'border-critical-500' :
@@ -95,7 +95,7 @@ export default function StatusPage() {
         </div>
       </div>
 
-      {/* Component breakdown */}
+      {/* component breakdown */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500">
           Components
@@ -127,7 +127,7 @@ export default function StatusPage() {
         </div>
       </section>
 
-      {/* Public status page link */}
+      {/* public status page link */}
       <div className="card p-4 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-surface-900 dark:text-surface-50">
@@ -147,7 +147,7 @@ export default function StatusPage() {
         </a>
       </div>
 
-      {/* Footer note */}
+      {/* footer note */}
       <p className="text-xs text-surface-400 dark:text-surface-500 text-center">
         Auto-refreshes every 30 seconds.{' '}
         For incident reports, contact{' '}

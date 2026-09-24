@@ -14,11 +14,11 @@ class User(Base):
     name = Column(String(100))
     # unique=True enforces that no two accounts can share the same email at the DB level
     email = Column(String(150), unique=True, nullable=False)
-    # The plain-text password is never stored - only its bcrypt hash,
+    # the plain-text password is never stored - only its bcrypt hash,
     # so a DB leak doesn't expose real passwords. Nullable to support
     # OAuth users who authenticate via Google/GitHub and have no password.
     password_hash = Column(String(255), nullable=True)
-    # Default is "viewer" for security: a newly created or compromised account gets
+    # default is "viewer" for security: a newly created or compromised account gets
     # the least privilege; only admins can elevate a role to technician or admin
     role = Column(String(20), default="viewer")  # admin / technician / viewer
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -32,14 +32,14 @@ class User(Base):
     oauth_provider = Column(String(50), nullable=True)   # "google" | "github" | None
     oauth_id       = Column(String(200), nullable=True)  # provider's user sub/id
 
-    # Profile - phone number for SMS alert delivery (Step 20g)
+    # profile - phone number for SMS alert delivery (Step 20g)
     phone_number = Column(String(30), nullable=True)
 
     # TOTP 2FA - secret stored encrypted-at-rest by the DB; flag tracks enrolment state
     totp_secret  = Column(String(64), nullable=True)
     totp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
-    # Granular RBAC overrides - JSON dict of per-user capability flags and device scope.
+    # granular RBAC overrides - JSON dict of per-user capability flags and device scope.
     # NULL means "use role defaults only". Non-null entries take precedence over the role
     # so admins can grant a technician limited extra capabilities without a full role change.
     permissions = Column(JSON, nullable=True)

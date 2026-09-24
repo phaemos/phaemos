@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 # --- DeviceCreate ---
-# Used when a client (e.g. admin UI or POST /devices) registers a new device.
+# used when a client (e.g. admin UI or POST /devices) registers a new device.
 class DeviceCreate(BaseModel):
     # I cap string lengths to prevent storage exhaustion from oversized payloads.
     name:     str = Field(max_length=200)
@@ -16,7 +16,7 @@ class DeviceCreate(BaseModel):
 
 
 # --- DeviceUpdate ---
-# All fields are optional so clients can PATCH only the fields they want to change.
+# all fields are optional so clients can PATCH only the fields they want to change.
 class DeviceUpdate(BaseModel):
     name:             str | None = Field(default=None, max_length=200)
     location:         str | None = Field(default=None, max_length=200)
@@ -28,7 +28,7 @@ class DeviceUpdate(BaseModel):
 
 
 # --- DeviceResponse ---
-# Shape of the data the API sends back to the client after reading from the DB.
+# shape of the data the API sends back to the client after reading from the DB.
 class DeviceResponse(BaseModel):
     # UUID avoids leaking record counts and stays unique across distributed nodes.
     id:         UUID
@@ -50,7 +50,7 @@ class DeviceResponse(BaseModel):
 
 
 # --- DeviceWithKey ---
-# Extends DeviceResponse to include the raw API key - returned once at creation only.
+# extends DeviceResponse to include the raw API key - returned once at creation only.
 class DeviceWithKey(DeviceResponse):
-    # Inheriting from DeviceResponse reuses all validated fields without repeating them.
+    # inheriting from DeviceResponse reuses all validated fields without repeating them.
     api_key: str

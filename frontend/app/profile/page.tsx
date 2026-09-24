@@ -24,13 +24,13 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>('profile');
 
-  // Profile edit state
+  // profile edit state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
 
-  // Password state
+  // password state
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -42,7 +42,7 @@ export default function ProfilePage() {
   const [disableCode, setDisableCode] = useState('');
   const [tfaSaving, setTfaSaving] = useState(false);
 
-  // Delete account state
+  // delete account state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const deleteInputRef = useRef<HTMLInputElement>(null);
@@ -199,7 +199,7 @@ export default function ProfilePage() {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">Account</h1>
 
-        {/* Section nav */}
+        {/* section nav */}
         <nav className="flex gap-1 mb-8 border-b border-surface-800 pb-0">
           {navItems.map(item => (
             <button
@@ -457,7 +457,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Delete account */}
+            {/* delete account */}
             <div className="pt-6 border-t border-surface-800">
               <h2 className="text-lg font-medium text-critical-400 mb-2">Delete account</h2>
               <p className="text-sm text-surface-400 mb-4">

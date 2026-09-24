@@ -8,7 +8,7 @@ export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Show only if consent hasn't been recorded yet. Synchronizing with the
+    // show only if consent hasn't been recorded yet. Synchronizing with the
     // external localStorage source, the documented effect pattern
     // (react.dev/learn/synchronizing-with-effects).
     if (!localStorage.getItem(STORAGE_KEY)) {

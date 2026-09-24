@@ -21,7 +21,7 @@ export default function TicketsPage() {
       .finally(() => setLoading(false));
   };
 
-  // Fetching on mount/dependency change, the documented effect pattern
+  // fetching on mount/dependency change, the documented effect pattern
   // (react.dev/learn/synchronizing-with-effects#fetching-data).
   useEffect(() => { load(page); }, [page]); // eslint-disable-line react-hooks/set-state-in-effect
 

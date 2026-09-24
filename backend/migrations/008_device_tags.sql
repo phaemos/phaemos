@@ -1,4 +1,4 @@
--- Migration 008: device tags (PostgreSQL ARRAY)
+-- migration 008: device tags (PostgreSQL ARRAY)
 -- I use ARRAY rather than a join table because the tag set is small and
 -- querying with `tag = ANY(tags)` is fast with a GIN index at this scale.
 

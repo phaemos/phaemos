@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 
 # --- TelemetryIngest ---
-# The payload any firmware node POSTs to /api/v1/telemetry.
-# All sensor fields are optional so nodes with fewer sensors still pass validation.
+# the payload any firmware node POSTs to /api/v1/telemetry.
+# all sensor fields are optional so nodes with fewer sensors still pass validation.
 class TelemetryIngest(BaseModel):
-    # Sent as a plain string from firmware; the backend resolves it to a UUID before storing.
+    # sent as a plain string from firmware; the backend resolves it to a UUID before storing.
     device_id:    str
     # node_type identifies which board sent this reading (esp32, stm32, nano, pico_w)
     node_type:    str | None = None
@@ -64,7 +64,7 @@ class TelemetryIngest(BaseModel):
 
 
 # --- TelemetryResponse ---
-# What the API returns when a client queries stored telemetry records.
+# what the API returns when a client queries stored telemetry records.
 class TelemetryResponse(BaseModel):
     id:             UUID
     # device_id is a proper UUID here because the backend has already resolved it from the ingest string.
@@ -121,13 +121,13 @@ class TelemetryResponse(BaseModel):
     vib_magnitude:  float | None
 
     # ML output
-    # Computed by the anomaly-detection model; higher value = more unusual reading.
+    # computed by the anomaly-detection model; higher value = more unusual reading.
     anomaly_score:  float | None
-    # Boolean flag derived from anomaly_score; makes it easy to filter alerts without comparing floats.
+    # boolean flag derived from anomaly_score; makes it easy to filter alerts without comparing floats.
     is_anomaly:     bool
 
-    # Server-side timestamp set when the record is written - not trusting the device clock.
+    # server-side timestamp set when the record is written - not trusting the device clock.
     recorded_at:    datetime
 
-    # Required so Pydantic can serialise SQLAlchemy ORM row objects into this schema.
+    # required so Pydantic can serialise SQLAlchemy ORM row objects into this schema.
     model_config = {"from_attributes": True}

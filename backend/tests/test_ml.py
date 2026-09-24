@@ -26,16 +26,16 @@ def test_retrain_accepted_then_cooldown(client, auth_headers):
     assert res.status_code == 202
     assert "started" in res.json()["detail"].lower()
 
-    # Second call within 1 hour must be rejected with 429.
+    # second call within 1 hour must be rejected with 429.
     res2 = client.post("/api/v1/ml/retrain", headers=auth_headers)
     assert res2.status_code == 429
 
-    # Clean up so other tests are unaffected.
+    # clean up so other tests are unaffected.
     ml_module._last_retrain = None
 
 
 def test_score_without_model(client, auth_headers):
-    # Without a trained model file, score_reading() returns 0.0 / False as a
+    # without a trained model file, score_reading() returns 0.0 / False as a
     # safe pass-through so the system works before ML training is done.
     res = client.post("/api/v1/ml/score", json={
         "device_id": "00000000-0000-0000-0000-000000000000",

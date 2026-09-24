@@ -6,7 +6,7 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token from localStorage on every request
+// attach JWT token from localStorage on every request
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
@@ -17,8 +17,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Silently renew the access token when a 401 is returned.
-// The refresh token lives in an httpOnly cookie so the browser sends it
+// silently renew the access token when a 401 is returned.
+// the refresh token lives in an httpOnly cookie so the browser sends it
 // automatically - we never touch it in JS.
 let isRefreshing = false;
 

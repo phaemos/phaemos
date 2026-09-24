@@ -22,12 +22,12 @@ def list_tickets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Assign the query to a variable so we can optionally chain filters before executing it
+    # assign the query to a variable so we can optionally chain filters before executing it
     q = db.query(Ticket)
-    # A truthy check on `status` also correctly skips the filter when an empty string is passed
+    # a truthy check on `status` also correctly skips the filter when an empty string is passed
     if status:
         q = q.filter(Ticket.status == status)
-    # Show newest tickets first - important for maintenance workflows where recent issues take priority
+    # show newest tickets first - important for maintenance workflows where recent issues take priority
     return q.order_by(Ticket.created_at.desc()).offset(skip).limit(limit).all()
 
 
@@ -43,7 +43,7 @@ def create_ticket(
     db.commit()
     db.refresh(ticket)
 
-    # Serialise before audit call - audit_service commits its own transaction,
+    # serialise before audit call - audit_service commits its own transaction,
     # which expires the ORM object and breaks FastAPI serialisation if we return
     # the raw ORM object after that second commit.
     response = TicketResponse.model_validate(ticket)
@@ -92,7 +92,7 @@ def update_ticket(
     db.commit()
     db.refresh(ticket)
 
-    # Serialise to Pydantic before the audit call for the same reason as create_ticket -
+    # serialise to Pydantic before the audit call for the same reason as create_ticket -
     # audit_service.log_action() commits its own transaction which expires ORM objects.
     response = TicketResponse.model_validate(ticket)
 

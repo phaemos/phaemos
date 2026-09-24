@@ -1,10 +1,10 @@
 # CI pipeline - runs on every push to main and every pull request targeting main.
 #
-# Jobs:
+# jobs:
 #   backend-lint  - installs Python deps and runs ruff for style and error checks
 #   frontend-check - installs Node deps, runs ESLint and performs a production build
 #
-# Third-party actions are pinned to a full commit SHA to prevent a mutable tag
+# third-party actions are pinned to a full commit SHA to prevent a mutable tag
 # (e.g. @v4) from silently updating to malicious code (supply-chain hardening).
 #
 # GITHUB_TOKEN is scoped to the minimum required permissions for each job.
@@ -17,7 +17,7 @@ on:
   pull_request:
     branches: [main]
 
-# Default: no permissions - each job declares only what it needs.
+# default: no permissions - each job declares only what it needs.
 permissions: {}
 
 jobs:
@@ -30,23 +30,23 @@ jobs:
       contents: read # needed to checkout the repository
 
     steps:
-      # Checkout the repository source code
+      # checkout the repository source code
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Set up Python 3.12 matching the production runtime
+      # set up Python 3.12 matching the production runtime
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
-      # Install ruff for fast Python linting - not a full requirements install
+      # install ruff for fast Python linting - not a full requirements install
       # because we only need the linter, not every runtime dependency
       - name: Install ruff
         run: pip install ruff==0.4.4
 
-      # Run ruff against the backend source tree.
-      # Exits with a non-zero code if any rule fires, failing the job.
+      # run ruff against the backend source tree.
+      # exits with a non-zero code if any rule fires, failing the job.
       - name: Lint backend
         run: ruff check backend/
 
@@ -69,7 +69,7 @@ jobs:
           python-version: "3.12"
 
       # I pull the image explicitly so transient Docker Hub timeouts can be retried.
-      # Service containers start before any steps and cannot be retried on failure.
+      # service containers start before any steps and cannot be retried on failure.
       - name: Pull PostgreSQL image
         run: |
           for i in 1 2 3 4 5; do
@@ -109,11 +109,11 @@ jobs:
       contents: read # needed to checkout the repository
 
     steps:
-      # Checkout the repository source code
+      # checkout the repository source code
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Set up Node 20 LTS with npm cache for faster installs
+      # set up Node 20 LTS with npm cache for faster installs
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -121,7 +121,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      # Clean install from package-lock.json for a deterministic dependency tree
+      # clean install from package-lock.json for a deterministic dependency tree
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
@@ -131,8 +131,8 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
-      # Run the Next.js production build to catch TypeScript errors and broken imports.
-      # Environment variables that the build references are set as placeholders -
+      # run the Next.js production build to catch TypeScript errors and broken imports.
+      # environment variables that the build references are set as placeholders -
       # real values are not needed for a build-only check.
       - name: Build
         working-directory: frontend

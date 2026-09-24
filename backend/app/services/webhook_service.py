@@ -69,7 +69,7 @@ def _build_payload(webhook: Webhook, text: str, severity: str) -> dict:
             }],
         }
     if _is_teams(webhook.url):
-        # Adaptive Card format for Teams incoming webhooks
+        # adaptive Card format for Teams incoming webhooks
         return {
             "@type": "MessageCard",
             "@context": "http://schema.org/extensions",
@@ -77,7 +77,7 @@ def _build_payload(webhook: Webhook, text: str, severity: str) -> dict:
             "themeColor": "EF4444" if severity == "critical" else "F97316",
             "text": text,
         }
-    # Default: Slack-compatible {"text": "..."} format
+    # default: Slack-compatible {"text": "..."} format
     return {"text": text}
 
 
@@ -86,7 +86,7 @@ def _deliver(webhook: Webhook, payload: dict) -> None:
         with httpx.Client(timeout=5) as client:
             res = client.post(webhook.url, json=payload)
             if not res.is_success:
-                # Retry once on transient failure
+                # retry once on transient failure
                 res = client.post(webhook.url, json=payload)
                 res.raise_for_status()
     except Exception as exc:

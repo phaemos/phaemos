@@ -22,7 +22,7 @@ router = APIRouter()
 _last_retrain: datetime | None = None
 _COOLDOWN = timedelta(hours=1)
 
-# Number of most-recent telemetry rows to train on.
+# number of most-recent telemetry rows to train on.
 _RETRAIN_ROWS = 10_000
 
 
@@ -103,7 +103,7 @@ def retrain(
     return {"detail": "Retrain started. Model will be updated in the background."}
 
 
-# No response_model here because the return shape is simple and defined inline as a plain dict
+# no response_model here because the return shape is simple and defined inline as a plain dict
 @router.post("/score")
 def score(
     payload: TelemetryIngest,

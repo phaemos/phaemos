@@ -38,7 +38,7 @@ def test_ingest_success(client, device):
 
 
 def test_ingest_v2_sensors_stored(client, device, auth_headers):
-    # All v2 sensor fields must reach the DB - previously only 6 fields were
+    # all v2 sensor fields must reach the DB - previously only 6 fields were
     # forwarded into the reading dict and the rest were silently dropped.
     res = client.post(
         "/api/v1/telemetry",

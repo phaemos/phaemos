@@ -21,7 +21,7 @@ class AlertRule(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-# Alert is a fired event - one row is created each time a rule's condition is met
+# alert is a fired event - one row is created each time a rule's condition is met
 class Alert(Base):
     __tablename__ = "alerts"
 
@@ -29,7 +29,7 @@ class Alert(Base):
     device_id    = Column(UUID(as_uuid=True), ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
     # nullable=True because some alerts are system-generated and lack a matching AlertRule
     rule_id      = Column(UUID(as_uuid=True), ForeignKey("alert_rules.id"), nullable=True)
-    # No length limit on String here - alert messages can be arbitrarily long
+    # no length limit on String here - alert messages can be arbitrarily long
     message      = Column(String)
     severity     = Column(String(20))
     resolved     = Column(Boolean, default=False)
