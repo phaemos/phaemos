@@ -75,7 +75,7 @@ def get_device(
     # .first() returns None if no row matches, avoiding an exception from .one()
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
-        # Raising HTTPException short-circuits the function and sends a JSON error response to the client
+        # raising HTTPException short-circuits the function and sends a JSON error response to the client
         raise HTTPException(status_code=404, detail="Device not found")
     if (
         current_user.role == "technician"

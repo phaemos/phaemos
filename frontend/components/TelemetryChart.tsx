@@ -80,7 +80,7 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
   const { data: polledReadings, loading } = useTelemetry(deviceId, { fromTs, limit: 500, nodeType });
 
   // I keep WS-pushed readings in a ref to avoid re-renders on every push.
-  // The chart only rebuilds when polledReadings changes (every 5s poll), but
+  // the chart only rebuilds when polledReadings changes (every 5s poll), but
   // the ref lets me merge live readings in the useMemo below without stale closures.
   const liveRef = useRef<Telemetry[]>([]);
 
@@ -94,7 +94,7 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
 
   // I merge live readings ahead of polled ones; duplicates are filtered by id
   // so a reading that arrives via WS before the next poll does not appear twice.
-  // This deliberately reads liveRef during render: the whole point of buffering
+  // this deliberately reads liveRef during render: the whole point of buffering
   // WS pushes in a ref (see above) is to skip a re-render on every single push
   // and only merge them in on the next natural re-render, which polledReadings
   // changing already triggers. This is a plain client component with no
@@ -126,7 +126,7 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Time range selector */}
+      {/* time range selector */}
       <div className="flex items-centre gap-1">
         {RANGE_LABELS.map(({ value, label }) => (
           <button

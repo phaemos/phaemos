@@ -46,7 +46,7 @@ export default function AboutPage() {
   return (
     <main className="p-6 max-w-4xl mx-auto space-y-12">
 
-      {/* Hero */}
+      {/* hero */}
       <section className="space-y-4">
         <p className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500">
           About PHAEMOS
@@ -60,7 +60,7 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* Mission */}
+      {/* mission */}
       <section className="card p-6 space-y-3">
         <h2 className="text-xl font-bold tracking-tight text-surface-900 dark:text-surface-50">Mission</h2>
         <p className="text-surface-600 dark:text-surface-400 leading-relaxed">
@@ -76,7 +76,7 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* What makes it different */}
+      {/* what makes it different */}
       <section className="space-y-4">
         <h2 className="text-xl font-bold tracking-tight text-surface-900 dark:text-surface-50">What makes it different</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -89,7 +89,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Architecture overview */}
+      {/* architecture overview */}
       <section className="card p-6 space-y-3">
         <h2 className="text-xl font-bold tracking-tight text-surface-900 dark:text-surface-50">Architecture overview</h2>
         <p className="text-surface-600 dark:text-surface-400 leading-relaxed">
@@ -112,7 +112,7 @@ export default function AboutPage() {
         </a>
       </section>
 
-      {/* Tech stack */}
+      {/* tech stack */}
       <section className="space-y-4">
         <h2 className="text-xl font-bold tracking-tight text-surface-900 dark:text-surface-50">Tech stack</h2>
         <div className="card overflow-hidden">
@@ -136,7 +136,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Contact */}
+      {/* contact */}
       <section className="card p-6 space-y-3">
         <h2 className="text-xl font-bold tracking-tight text-surface-900 dark:text-surface-50">Get in touch</h2>
         <div className="flex flex-col sm:flex-row gap-4 text-sm">

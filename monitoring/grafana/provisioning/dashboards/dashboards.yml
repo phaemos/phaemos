@@ -1,5 +1,5 @@
-# Tells Grafana where to find pre-built dashboard JSON files.
-# Any .json file dropped in the path below is loaded automatically on startup.
+# tells Grafana where to find pre-built dashboard JSON files.
+# any .json file dropped in the path below is loaded automatically on startup.
 
 apiVersion: 1
 

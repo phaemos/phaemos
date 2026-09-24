@@ -34,7 +34,7 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
         priority: priority || undefined,
         device_id: deviceId || undefined,
       });
-      // Reset form on success so the user can immediately create another ticket.
+      // reset form on success so the user can immediately create another ticket.
       setTitle('');
       setDescription('');
       setPriority('');

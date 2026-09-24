@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 # from exhausting server RAM (the whole file is read into memory before writing).
 _MAX_FIRMWARE_BYTES = 2 * 1024 * 1024
 
-# Metadata about the latest firmware is kept in memory (single file at a time).
-# A production system would use a database table to track version history.
+# metadata about the latest firmware is kept in memory (single file at a time).
+# a production system would use a database table to track version history.
 _latest: dict = {}
 
 
@@ -46,7 +46,7 @@ async def upload_firmware(
     db: Session = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
-    # Reject non-.bin files as a first-pass guard (server-side validation).
+    # reject non-.bin files as a first-pass guard (server-side validation).
     if not file.filename or not file.filename.endswith(".bin"):
         raise HTTPException(status_code=400, detail="Only .bin firmware files accepted")
 
@@ -91,8 +91,8 @@ def get_latest_firmware():
 
 @router.get("/firmware/download")
 def download_firmware(x_api_key: str = Header(...)):
-    # Reuse device API key auth - any registered device can download firmware.
-    # The key is validated by existence check (simple; no DB lookup needed here).
+    # reuse device API key auth - any registered device can download firmware.
+    # the key is validated by existence check (simple; no DB lookup needed here).
     if not x_api_key:
         raise HTTPException(status_code=401, detail="X-API-Key header required")
 

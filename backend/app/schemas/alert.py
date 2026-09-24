@@ -4,31 +4,31 @@ from pydantic import BaseModel
 
 
 # --- AlertRuleCreate ---
-# Defines a threshold-based rule that the backend evaluates on every incoming telemetry reading.
+# defines a threshold-based rule that the backend evaluates on every incoming telemetry reading.
 class AlertRuleCreate(BaseModel):
-    # Scoped to a single device so different machines can have different tolerances.
+    # scoped to a single device so different machines can have different tolerances.
     device_id: UUID
-    # Name of the telemetry column to watch, e.g. "temperature" or "vibration_x".
+    # name of the telemetry column to watch, e.g. "temperature" or "vibration_x".
     metric:    str
     condition: str   # gt, lt, eq
-    # The numeric boundary; e.g. threshold=80.0 with condition="gt" fires when metric > 80.
+    # the numeric boundary; e.g. threshold=80.0 with condition="gt" fires when metric > 80.
     threshold: float
     severity:  str   # info, warning, critical
 
 
 # --- AlertRuleResponse ---
-# Inherits all fields from AlertRuleCreate, then adds the DB-generated id and timestamp.
-# This pattern avoids duplicating field definitions between the "create" and "response" schemas.
+# inherits all fields from AlertRuleCreate, then adds the DB-generated id and timestamp.
+# this pattern avoids duplicating field definitions between the "create" and "response" schemas.
 class AlertRuleResponse(AlertRuleCreate):
     id:         UUID
     created_at: datetime
 
-    # Needed to serialise SQLAlchemy model instances; see DeviceResponse for full explanation.
+    # needed to serialise SQLAlchemy model instances; see DeviceResponse for full explanation.
     model_config = {"from_attributes": True}
 
 
 # --- AlertRuleUpdate ---
-# All fields optional so callers can PATCH any subset without resending unchanged values.
+# all fields optional so callers can PATCH any subset without resending unchanged values.
 class AlertRuleUpdate(BaseModel):
     metric:    str | None = None
     condition: str | None = None
@@ -37,7 +37,7 @@ class AlertRuleUpdate(BaseModel):
 
 
 # --- AlertResponse ---
-# Represents a fired alert event (not the rule itself) as stored in the alerts table.
+# represents a fired alert event (not the rule itself) as stored in the alerts table.
 class AlertResponse(BaseModel):
     id:           UUID
     device_id:    UUID

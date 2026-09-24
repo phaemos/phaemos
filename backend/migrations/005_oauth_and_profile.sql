@@ -1,4 +1,4 @@
--- Add OAuth provider columns so users can sign in with Google or GitHub
+-- add OAuth provider columns so users can sign in with Google or GitHub
 -- without needing a password. Also adds phone number for SMS alerts and
 -- TOTP fields for two-factor authentication.
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;

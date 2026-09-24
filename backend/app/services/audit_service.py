@@ -1,6 +1,6 @@
 # I put audit logging in its own service because it is a cross-cutting concern - any route
 # can call log_action() without knowing anything about how audit records are stored.
-# Keeping it separate also means we can silence or redirect audit logging (e.g. swap to
+# keeping it separate also means we can silence or redirect audit logging (e.g. swap to
 # an external SIEM) by editing only this file, without touching any route logic.
 
 from sqlalchemy.orm import Session
@@ -29,7 +29,7 @@ def log_action(
         detail:      Optional free-text context, e.g. changed field names and old/new values.
     """
     # I use a try/except here because audit logging must never crash the main request.
-    # If the audit_log table is missing or the DB is briefly unavailable, the primary
+    # if the audit_log table is missing or the DB is briefly unavailable, the primary
     # operation should still succeed - a lost audit row is far less damaging than a
     # failed user-facing write.
     try:
@@ -56,7 +56,7 @@ def log_action(
         db.commit()
     except Exception as exc:  # noqa: BLE001
         # I swallow the exception intentionally - see docstring above.
-        # The rollback prevents a half-open transaction from blocking future queries
+        # the rollback prevents a half-open transaction from blocking future queries
         # on this session.
         db.rollback()
         # I still log to stderr so operators can detect if audit logging is broken

@@ -24,7 +24,7 @@ export default function AuditLog() {
   const [skip, setSkip] = useState(0);
 
   useEffect(() => {
-    // Fetching on mount/dependency change, the documented effect pattern
+    // fetching on mount/dependency change, the documented effect pattern
     // (react.dev/learn/synchronizing-with-effects#fetching-data).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
@@ -100,7 +100,7 @@ export default function AuditLog() {
           </tbody>
         </table>
 
-        {/* Pagination - I use skip/limit rather than page numbers so the controls
+        {/* pagination - I use skip/limit rather than page numbers so the controls
             map directly onto the backend query params without any conversion. */}
         <div className="flex items-center justify-between px-4 py-3 bg-surface-50 dark:bg-surface-800/50 border-t border-surface-200 dark:border-surface-800">
           <button

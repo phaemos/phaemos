@@ -9,7 +9,7 @@ from app.config import settings
 
 _log = logging.getLogger(__name__)
 
-# Placeholder sentinel values that mean "not configured yet"
+# placeholder sentinel values that mean "not configured yet"
 _UNSET = {"", "placeholder"}
 
 
