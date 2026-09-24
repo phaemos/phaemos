@@ -1,5 +1,5 @@
 # firmware/pico_w/bme280.py
-# Full MicroPython BME280 driver - no external library required.
+# full MicroPython BME280 driver - no external library required.
 #
 # I include the full compensation math here rather than returning raw ADC
 # values because the Pico does not have the precision integer math limitations
@@ -7,13 +7,13 @@
 # natively, so the Bosch-specified compensation formulas run correctly without
 # the workarounds needed on Arduino.
 #
-# Compensation formulas are taken directly from the BME280 datasheet
+# compensation formulas are taken directly from the BME280 datasheet
 # (BST-BME280-DS002, Section 4.2.3 "Compensation formulas in double precision
 # floating point").  I use the integer variant (Section 4.2.3, code listing 1)
 # for temperature and pressure to match the datasheet reference implementation,
 # then convert to practical units at the end.
 #
-# Output units:
+# output units:
 #   temperature : int, units of 0.01 degC  (divide by 100 for Celsius)
 #   pressure    : int, units of 1/256 Pa   (divide by 256 for Pa, /25600 for hPa)
 #   humidity    : int, units of 1/1024 %RH (divide by 1024 for %RH)
@@ -22,17 +22,17 @@
 class BME280:
     """BME280 temperature, pressure and humidity sensor driver."""
 
-    # Register addresses from BME280 datasheet Table 18 / Table 19
-    _REG_CALIB_T_P  = 0x88   # Start of temperature and pressure calibration data (24 bytes)
-    _REG_ID         = 0xD0   # Chip ID register - should read 0x60 for BME280
+    # register addresses from BME280 datasheet Table 18 / Table 19
+    _REG_CALIB_T_P  = 0x88   # start of temperature and pressure calibration data (24 bytes)
+    _REG_ID         = 0xD0   # chip ID register - should read 0x60 for BME280
     _REG_RESET      = 0xE0
     _REG_CALIB_H1   = 0xA1   # dig_H1 (1 byte)
     _REG_CTRL_HUM   = 0xF2
     _REG_STATUS     = 0xF3
     _REG_CTRL_MEAS  = 0xF4
     _REG_CONFIG     = 0xF5
-    _REG_PRESS_MSB  = 0xF7   # Start of measurement data block (8 bytes)
-    _REG_CALIB_H2   = 0xE1   # Start of dig_H2..dig_H6 (7 bytes)
+    _REG_PRESS_MSB  = 0xF7   # start of measurement data block (8 bytes)
+    _REG_CALIB_H2   = 0xE1   # start of dig_H2..dig_H6 (7 bytes)
 
     def __init__(self, i2c, addr=0x76):
         """Initialise BME280 and read all calibration registers.
@@ -49,7 +49,7 @@ class BME280:
         self._i2c = i2c
         self._addr = addr
 
-        # Verify chip identity before attempting calibration reads.
+        # verify chip identity before attempting calibration reads.
         # I check the chip ID so a wiring error produces a clear error message
         # instead of silently reading garbage calibration data.
         chip_id = self._read_byte(self._REG_ID)
@@ -86,12 +86,12 @@ class BME280:
         """
         raw = self._read_bytes(self._REG_CALIB_T_P, 24)
 
-        # Temperature calibration: dig_T1 (unsigned), dig_T2, dig_T3 (signed)
+        # temperature calibration: dig_T1 (unsigned), dig_T2, dig_T3 (signed)
         self.dig_T1 = (raw[1] << 8) | raw[0]           # uint16
         self.dig_T2 = self._signed16((raw[3] << 8) | raw[2])
         self.dig_T3 = self._signed16((raw[5] << 8) | raw[4])
 
-        # Pressure calibration: dig_P1 (unsigned), dig_P2..dig_P9 (signed)
+        # pressure calibration: dig_P1 (unsigned), dig_P2..dig_P9 (signed)
         self.dig_P1 = (raw[7]  << 8) | raw[6]          # uint16
         self.dig_P2 = self._signed16((raw[9]  << 8) | raw[8])
         self.dig_P3 = self._signed16((raw[11] << 8) | raw[10])
@@ -102,7 +102,7 @@ class BME280:
         self.dig_P8 = self._signed16((raw[21] << 8) | raw[20])
         self.dig_P9 = self._signed16((raw[23] << 8) | raw[22])
 
-        # Humidity calibration (split across two non-contiguous register banks)
+        # humidity calibration (split across two non-contiguous register banks)
         self.dig_H1 = self._read_byte(self._REG_CALIB_H1)   # uint8
 
         raw_h = self._read_bytes(self._REG_CALIB_H2, 7)
@@ -123,11 +123,11 @@ class BME280:
         increase current draw without benefit at this reporting rate.
         """
         # I2C mode (no SPI) is selected by the sensor's CSB pin wiring.
-        # Set humidity oversampling to 1x before ctrl_meas (datasheet requirement).
+        # set humidity oversampling to 1x before ctrl_meas (datasheet requirement).
         self._write_byte(self._REG_CTRL_HUM, 0x01)   # osrs_h = 1x
-        # Normal mode, temperature 1x, pressure 1x
+        # normal mode, temperature 1x, pressure 1x
         self._write_byte(self._REG_CTRL_MEAS, 0x27)  # osrs_t=1, osrs_p=1, mode=normal
-        # Standby 1000ms, filter off, SPI 3-wire off
+        # standby 1000ms, filter off, SPI 3-wire off
         self._write_byte(self._REG_CONFIG, 0xA0)
 
     @staticmethod
@@ -149,11 +149,11 @@ class BME280:
               pressure    : units of 1/256 Pa   - divide by 25600.0 for hPa
               humidity    : units of 1/1024 %RH - divide by 1024.0 for %RH
         """
-        # Read all 8 measurement bytes in one I2C transaction to ensure
+        # read all 8 measurement bytes in one I2C transaction to ensure
         # all three values are from the same sensor measurement snapshot.
         raw = self._read_bytes(self._REG_PRESS_MSB, 8)
 
-        # Unpack 20-bit ADC values (MSB, LSB, XLSB format)
+        # unpack 20-bit ADC values (MSB, LSB, XLSB format)
         adc_P = (raw[0] << 12) | (raw[1] << 4) | (raw[2] >> 4)
         adc_T = (raw[3] << 12) | (raw[4] << 4) | (raw[5] >> 4)
         adc_H = (raw[6] << 8)  |  raw[7]

@@ -1,5 +1,5 @@
 # firmware/pico_w/wifi_connect.py
-# Wi-Fi connection helper for the Pico 2W ambient node.
+# wi-Fi connection helper for the Pico 2W ambient node.
 
 import network
 import time
@@ -33,7 +33,7 @@ def connect_wifi(ssid, password, timeout_s=30):
     # nothing without an explicit activate().
     wlan.active(True)
 
-    # Disconnect first if already connected to a different network from a
+    # disconnect first if already connected to a different network from a
     # previous session that did not cleanly shut down.
     if wlan.isconnected():
         wlan.disconnect()

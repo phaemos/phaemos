@@ -71,13 +71,13 @@ export default function DevicesPage() {
   }, [page, debouncedSearch, statusFilter]);
 
   useEffect(() => {
-    // Fetching on mount/dependency change, the documented effect pattern
+    // fetching on mount/dependency change, the documented effect pattern
     // (react.dev/learn/synchronizing-with-effects#fetching-data).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
-  // Reset to page 1 when filters change.
+  // reset to page 1 when filters change.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
@@ -117,7 +117,7 @@ export default function DevicesPage() {
     <main className="p-6 max-w-5xl mx-auto space-y-4">
       <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-50">Devices</h1>
 
-      {/* Search */}
+      {/* search */}
       <input
         type="search"
         placeholder="Search devices..."
@@ -126,7 +126,7 @@ export default function DevicesPage() {
         className="w-full max-w-sm px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-sm text-surface-900 dark:text-surface-50 focus:ring-2 focus:ring-brand-500 outline-none"
       />
 
-      {/* Status filter tabs */}
+      {/* status filter tabs */}
       <div className="flex gap-1 flex-wrap">
         {STATUS_TABS.map((tab) => (
           <button
@@ -158,7 +158,7 @@ export default function DevicesPage() {
         />
       ) : (
         <>
-          {/* Select-all row - admins only */}
+          {/* select-all row - admins only */}
           {isAdmin && (
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400 cursor-pointer select-none">
@@ -226,7 +226,7 @@ export default function DevicesPage() {
         </>
       )}
 
-      {/* Bulk firmware update modal */}
+      {/* bulk firmware update modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-800 p-6 w-full max-w-sm mx-4 space-y-4">

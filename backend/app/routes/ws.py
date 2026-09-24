@@ -22,7 +22,7 @@ async def telemetry_ws(
 ):
     # I validate the JWT before calling accept() so unauthenticated clients are
     # rejected at the handshake stage and never enter the subscriber list.
-    # Close code 1008 (Policy Violation) is the standard signal for auth failure.
+    # close code 1008 (Policy Violation) is the standard signal for auth failure.
     if not token:
         await websocket.close(code=1008)
         return
@@ -42,7 +42,7 @@ async def telemetry_ws(
     key = str(device_id)
     subscribe(key, websocket)
     try:
-        # Keep the connection alive - the client does not need to send messages,
+        # keep the connection alive - the client does not need to send messages,
         # but we must await receive to detect disconnects.
         while True:
             await websocket.receive_text()

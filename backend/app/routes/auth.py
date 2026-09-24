@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 #    raises instead, which crashes passlib's own test, not anything a real
 #    caller sent.
 #
-# Restoring the version attribute and bcrypt's old truncate-rather-than-raise
+# restoring the version attribute and bcrypt's old truncate-rather-than-raise
 # behaviour fixes both. Real user passwords are separately capped at 72 bytes
 # in app/schemas/user.py's password_strength validator, so this only ever
 # truncates passlib's internal probe strings, never live input.
@@ -173,7 +173,7 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
             db.commit()
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Reset failure counter and record the successful login timestamp.
+    # reset failure counter and record the successful login timestamp.
     user.failed_login_attempts = 0
     user.locked_until = None
     user.last_login = datetime.now(timezone.utc)
@@ -196,7 +196,7 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
-    # The get_current_user dependency handles decoding and DB lookup.
+    # the get_current_user dependency handles decoding and DB lookup.
     return current_user
 
 
@@ -576,7 +576,7 @@ def set_user_permissions(
     db: Session = Depends(get_db),
 ):
     # I replace the entire permissions dict atomically to avoid partial-update races.
-    # Passing null clears all overrides and reverts the user to role defaults.
+    # passing null clears all overrides and reverts the user to role defaults.
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

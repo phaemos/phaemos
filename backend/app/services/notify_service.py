@@ -14,7 +14,7 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Only notify for these severities - info would cause alert fatigue.
+# only notify for these severities - info would cause alert fatigue.
 _NOTIFY_SEVERITIES = {"critical", "warning"}
 
 
@@ -35,7 +35,7 @@ def send_discord_alert(message: str, severity: str) -> None:
         }]
     }
     try:
-        # Use a short timeout - notification failure must not block the request.
+        # use a short timeout - notification failure must not block the request.
         with httpx.Client(timeout=5) as client:
             res = client.post(settings.discord_webhook_url, json=payload)
             res.raise_for_status()

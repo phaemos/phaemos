@@ -62,9 +62,9 @@ def ingest_telemetry(
     # I evaluate alert rules after persistence so alerts reference committed state.
     evaluate_rules(device, reading, db)
 
-    # Serialize before scheduling - the DB session closes after this function returns.
+    # serialize before scheduling - the DB session closes after this function returns.
     row_json = TelemetryResponse.model_validate(row).model_dump_json()
-    # Push to any WebSocket clients watching this device (runs after response is sent).
+    # push to any WebSocket clients watching this device (runs after response is sent).
     background_tasks.add_task(ws_manager.broadcast, str(device.id), row_json)
 
     return row
@@ -93,7 +93,7 @@ def export_telemetry(
     buf = io.StringIO()
     writer = csv.writer(buf)
 
-    # Header row derived from the column names of the first row's mapping
+    # header row derived from the column names of the first row's mapping
     if rows:
         writer.writerow(rows[0].__table__.columns.keys())
     else:

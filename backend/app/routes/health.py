@@ -16,7 +16,7 @@ from app.models.ticket import Ticket
 from app.models.user import User
 from app.routes.auth import get_current_user
 
-# Two routers: one for auth-protected fleet stats, one for the public /status check.
+# two routers: one for auth-protected fleet stats, one for the public /status check.
 router = APIRouter()
 public_router = APIRouter()
 

@@ -1,9 +1,9 @@
 -- anomaly-report.sql
 -- I use this query to get a summary of anomaly events per device over a given period.
--- Useful for reviewing ML model performance and identifying problem machines.
--- Safe to run on production (read-only).
+-- useful for reviewing ML model performance and identifying problem machines.
+-- safe to run on production (read-only).
 --
--- Adjust the interval filter as needed.
+-- adjust the interval filter as needed.
 
 SELECT
     d.name                                  AS device_name,

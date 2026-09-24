@@ -1,5 +1,5 @@
 # Dependabot configuration.
-# Checks for outdated dependencies weekly and opens a pull request for each
+# checks for outdated dependencies weekly and opens a pull request for each
 # update so dependency upgrades are reviewed rather than applied silently.
 
 version: 2

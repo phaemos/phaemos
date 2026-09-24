@@ -23,7 +23,7 @@ export default function WebhooksPanel() {
   const [testingId, setTestingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // New webhook form state
+  // new webhook form state
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
@@ -41,7 +41,7 @@ export default function WebhooksPanel() {
     }
   }
 
-  // Fetching on mount, the documented effect pattern
+  // fetching on mount, the documented effect pattern
   // (react.dev/learn/synchronizing-with-effects#fetching-data).
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
@@ -110,14 +110,14 @@ export default function WebhooksPanel() {
 
   return (
     <div className="space-y-4">
-      {/* Webhook list */}
+      {/* webhook list */}
       {webhooks.length === 0 ? (
         <p className="text-sm text-surface-400">No webhooks configured.</p>
       ) : (
         <div className="divide-y divide-surface-100 dark:divide-surface-800 rounded-lg border border-surface-200 dark:border-surface-800 overflow-hidden">
           {webhooks.map(wh => (
             <div key={wh.id} className="flex items-start gap-3 px-4 py-3 bg-white dark:bg-surface-900">
-              {/* Toggle */}
+              {/* toggle */}
               <button
                 type="button"
                 onClick={() => handleToggle(wh)}
@@ -135,7 +135,7 @@ export default function WebhooksPanel() {
                 />
               </button>
 
-              {/* Details */}
+              {/* details */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-surface-800 dark:text-surface-200">{wh.name}</p>
                 <p className="text-xs text-surface-400 truncate">{wh.url}</p>
@@ -168,7 +168,7 @@ export default function WebhooksPanel() {
         </div>
       )}
 
-      {/* Add webhook */}
+      {/* add webhook */}
       {showForm ? (
         <form onSubmit={handleCreate} className="space-y-3 rounded-lg border border-surface-200 dark:border-surface-800 p-4 bg-white dark:bg-surface-900">
           <h3 className="text-sm font-medium text-surface-700 dark:text-surface-300">New webhook</h3>

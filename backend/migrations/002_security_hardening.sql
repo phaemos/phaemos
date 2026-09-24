@@ -1,5 +1,5 @@
 -- 002_security_hardening.sql
--- Run with: psql $DATABASE_URL -f migrations/002_security_hardening.sql
+-- run with: psql $DATABASE_URL -f migrations/002_security_hardening.sql
 --
 -- I use IF NOT EXISTS / IF EXISTS guards throughout so this script is
 -- idempotent - safe to run more than once on an existing database.

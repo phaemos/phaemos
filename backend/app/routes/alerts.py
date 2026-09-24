@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-# Alert is a fired event; AlertRule is the config that defines when an alert should fire
+# alert is a fired event; AlertRule is the config that defines when an alert should fire
 from app.models.alert import Alert, AlertRule
 from app.schemas.alert import AlertRuleCreate, AlertRuleUpdate, AlertRuleResponse, AlertResponse
 from app.routes.auth import get_current_user, require_admin
@@ -22,12 +22,12 @@ def list_alerts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Build the query object first, then conditionally append filters before executing
+    # build the query object first, then conditionally append filters before executing
     q = db.query(Alert)
-    # Only add the resolved filter when the caller explicitly passes ?resolved=true or ?resolved=false
+    # only add the resolved filter when the caller explicitly passes ?resolved=true or ?resolved=false
     if resolved is not None:
         q = q.filter(Alert.resolved == resolved)
-    # Show most recently triggered alerts first - useful for dashboards
+    # show most recently triggered alerts first - useful for dashboards
     return q.order_by(Alert.triggered_at.desc()).all()
 
 
@@ -40,7 +40,7 @@ def alerts_for_device(
     return (
         db.query(Alert)
         .filter(Alert.device_id == device_id)
-        # Chain .order_by on the same query object - SQLAlchemy queries are lazily built until .all()/.first()
+        # chain .order_by on the same query object - SQLAlchemy queries are lazily built until .all()/.first()
         .order_by(Alert.triggered_at.desc())
         .all()
     )
@@ -65,7 +65,7 @@ def resolve_alert(
     # I serialise to Pydantic BEFORE calling audit_service because audit_service
     # calls db.commit() internally, which expires all SQLAlchemy ORM objects in
     # the session. FastAPI would then fail to serialise the expired alert object.
-    # Capturing it as a Pydantic model first avoids that race.
+    # capturing it as a Pydantic model first avoids that race.
     response = AlertResponse.model_validate(alert)
 
     audit_service.log_action(

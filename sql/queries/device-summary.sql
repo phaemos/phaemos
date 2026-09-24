@@ -1,7 +1,7 @@
 -- device-summary.sql
 -- I use this query to get a quick overview of all devices: their current status,
 -- last reading values and how recently they were seen.
--- Safe to run on production (read-only).
+-- safe to run on production (read-only).
 
 SELECT
     d.id,

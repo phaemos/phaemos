@@ -55,7 +55,7 @@ def export_audit_logs(
     db: Session = Depends(get_db),
 ):
     # I build the WHERE clause dynamically so unused filters add no overhead.
-    # All parameters are passed as bound values to prevent SQL injection.
+    # all parameters are passed as bound values to prevent SQL injection.
     conditions = ["1=1"]
     params: dict = {}
     if from_:
@@ -83,7 +83,7 @@ def export_audit_logs(
         params,
     ).fetchall()
 
-    # Build CSV in memory - audit logs are small enough that streaming from a
+    # build CSV in memory - audit logs are small enough that streaming from a
     # StringIO buffer is simpler than a true streaming generator.
     buf = io.StringIO()
     writer = csv.writer(buf)

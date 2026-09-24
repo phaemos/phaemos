@@ -115,7 +115,7 @@ export default function DocsPage() {
         </p>
       </section>
 
-      {/* Doc cards */}
+      {/* doc cards */}
       <section>
         <p className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500 mb-4">
           All documents
@@ -145,7 +145,7 @@ export default function DocsPage() {
         </div>
       </section>
 
-      {/* Quick links */}
+      {/* quick links */}
       <section className="card p-6 space-y-3">
         <h2 className="font-semibold text-surface-900 dark:text-surface-50">Quick links</h2>
         <div className="flex flex-wrap gap-3">
@@ -170,7 +170,7 @@ export default function DocsPage() {
         </div>
       </section>
 
-      {/* Support */}
+      {/* support */}
       <section className="card p-6 space-y-2">
         <h2 className="font-semibold text-surface-900 dark:text-surface-50">Need help?</h2>
         <p className="text-sm text-surface-600 dark:text-surface-400">

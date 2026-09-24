@@ -1,10 +1,10 @@
-# Release workflow - runs when a semantic version tag is pushed.
+# release workflow - runs when a semantic version tag is pushed.
 #
-# Purpose:
+# purpose:
 # 1) Validate that CHANGELOG.md contains a matching version heading.
 # 2) Create a GitHub release entry from the pushed tag.
 #
-# This ties repository version tags directly to changelog discipline.
+# this ties repository version tags directly to changelog discipline.
 
 name: Release
 
@@ -22,12 +22,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the repository at the tagged commit
+      # check out the repository at the tagged commit
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Extract the version string from the Git ref.
-      # Example: refs/tags/v0.3.0 -> 0.3.0
+      # extract the version string from the Git ref.
+      # example: refs/tags/v0.3.0 -> 0.3.0
       - name: Derive version from tag
         id: version
         shell: bash
@@ -37,8 +37,8 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      # Ensure CHANGELOG.md has a heading for this version.
-      # Expected format: ## [0.3.0] - DD-MM-YYYY
+      # ensure CHANGELOG.md has a heading for this version.
+      # expected format: ## [0.3.0] - DD-MM-YYYY
       - name: Validate changelog entry
         shell: bash
         run: |
@@ -49,8 +49,8 @@ jobs:
             exit 1
           fi
 
-      # Create a GitHub Release from the tag.
-      # Release notes are generated automatically from merged pull requests.
+      # create a GitHub Release from the tag.
+      # release notes are generated automatically from merged pull requests.
       - name: Create GitHub release
         env:
           GITHUB_TOKEN: ${{ github.token }}

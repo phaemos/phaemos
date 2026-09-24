@@ -1,7 +1,7 @@
 -- 001_initial_schema.sql
 -- I number migrations so they run in a deterministic order and so it is obvious
 -- at a glance how far a given environment has been migrated.
--- Run with: psql $DATABASE_URL -f migrations/001_initial_schema.sql
+-- run with: psql $DATABASE_URL -f migrations/001_initial_schema.sql
 
 
 -- ---------------------------------------------------------------------------
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS devices (
 
 -- ---------------------------------------------------------------------------
 -- users
--- Stores human operators and API service accounts.
+-- stores human operators and API service accounts.
 -- I use gen_random_uuid() as the default so rows inserted without an explicit
 -- id still get a proper UUID without requiring application-side generation.
 -- ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
     -- I store hashed_password rather than password - bcrypt hash goes here.
     hashed_password VARCHAR(255) NOT NULL,
     -- role controls what the UI shows and what API endpoints are accessible.
-    -- Allowed values: 'admin', 'operator', 'viewer'
+    -- allowed values: 'admin', 'operator', 'viewer'
     role            VARCHAR(20) DEFAULT 'viewer',
     is_active       BOOLEAN DEFAULT TRUE,
     last_login      TIMESTAMP WITH TIME ZONE,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- ---------------------------------------------------------------------------
 -- telemetry
--- Central time-series table. Every sensor reading from every node lands here.
+-- central time-series table. Every sensor reading from every node lands here.
 -- I include all v2 sensor columns even if a given node only populates a subset -
 -- NULL means "sensor not present on this node", not "bad reading".
 -- ---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS telemetry (
     device_id     UUID REFERENCES devices(id) ON DELETE CASCADE,
     -- node_type lets the ML pipeline segment training data by hardware variant.
     node_type     VARCHAR(20),
-    -- Environmental sensors
+    -- environmental sensors
     temperature   FLOAT,
     humidity      FLOAT,
     pressure      FLOAT,
@@ -68,30 +68,30 @@ CREATE TABLE IF NOT EXISTS telemetry (
     gyro_x        FLOAT,
     gyro_y        FLOAT,
     gyro_z        FLOAT,
-    -- Power monitoring (INA219)
+    -- power monitoring (INA219)
     bus_voltage   FLOAT,
     current_ma    FLOAT,
     power_mw      FLOAT,
-    -- Thermal imaging (MLX90614 contactless IR)
+    -- thermal imaging (MLX90614 contactless IR)
     ir_temperature FLOAT,
-    -- Distance (VL53L0X ToF)
+    -- distance (VL53L0X ToF)
     distance_mm   FLOAT,
-    -- Gas / air quality
+    -- gas / air quality
     gas_level     FLOAT,
     gas_alert     BOOLEAN DEFAULT FALSE,
-    -- Rotary encoder
+    -- rotary encoder
     shaft_angle   FLOAT,
     shaft_rpm     FLOAT,
-    -- Acoustic
+    -- acoustic
     sound_level   FLOAT,
-    -- Ambient light (BH1750 / LDR)
+    -- ambient light (BH1750 / LDR)
     light_level   FLOAT,
-    -- Contact thermistor
+    -- contact thermistor
     contact_temp  FLOAT,
-    -- Soil / liquid moisture
+    -- soil / liquid moisture
     moisture_level FLOAT,
     water_detected BOOLEAN DEFAULT FALSE,
-    -- Derived / computed fields populated by the ML pipeline
+    -- derived / computed fields populated by the ML pipeline
     fft_peak_hz   FLOAT,
     vib_magnitude FLOAT,
     anomaly_score FLOAT,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS telemetry (
 
 -- ---------------------------------------------------------------------------
 -- alert_rules
--- User-defined threshold rules evaluated server-side on each telemetry insert.
+-- user-defined threshold rules evaluated server-side on each telemetry insert.
 -- I keep rules in the DB rather than config files so operators can change them
 -- via the UI without redeploying anything.
 -- ---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS alert_rules (
 
 -- ---------------------------------------------------------------------------
 -- alerts
--- Each row is one fired alert event. I keep resolved alerts in the same table
+-- each row is one fired alert event. I keep resolved alerts in the same table
 -- (rather than archiving them) so we can query resolution time distributions.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS alerts (
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 -- ---------------------------------------------------------------------------
 -- tickets
--- Maintenance work items linked to a device and optionally to the alert that
+-- maintenance work items linked to a device and optionally to the alert that
 -- triggered them. assigned_to and created_by reference users but are SET NULL
 -- on user deletion to preserve the ticket history.
 -- ---------------------------------------------------------------------------
@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 -- ---------------------------------------------------------------------------
 -- audit_log
--- Append-only record of every state-changing API call. I use VARCHAR for
+-- append-only record of every state-changing API call. I use VARCHAR for
 -- user_id and resource_id rather than UUID FKs so the table survives user
 -- or resource deletion without orphan issues - the audit trail must be
 -- immutable even when the referenced entities are gone.
@@ -182,9 +182,9 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 
 -- ---------------------------------------------------------------------------
--- Indexes
+-- indexes
 -- I create these after all tables are defined to keep the schema section clean.
--- Each index is justified by a specific query pattern in the application.
+-- each index is justified by a specific query pattern in the application.
 -- ---------------------------------------------------------------------------
 
 -- telemetry is queried most often by device and by time, so both columns get indexes.

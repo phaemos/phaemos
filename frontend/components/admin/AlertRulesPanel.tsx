@@ -61,7 +61,7 @@ export default function AlertRulesPanel() {
     }
   }, []);
 
-  // Fetching on mount, the documented effect pattern
+  // fetching on mount, the documented effect pattern
   // (react.dev/learn/synchronizing-with-effects#fetching-data).
   useEffect(() => { fetchRules(); }, [fetchRules]); // eslint-disable-line react-hooks/set-state-in-effect
 

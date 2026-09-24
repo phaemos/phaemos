@@ -1,4 +1,4 @@
--- Migration 006: webhook integrations
+-- migration 006: webhook integrations
 -- I use IF NOT EXISTS guards throughout so this migration is idempotent and
 -- safe to rerun on a database that was partially migrated.
 

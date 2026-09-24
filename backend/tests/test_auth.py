@@ -66,10 +66,10 @@ def test_refresh_token_flow(client):
         "password": "Secret123!",
     })
     assert login_res.status_code == 200
-    # The refresh token is delivered as an httpOnly cookie.
+    # the refresh token is delivered as an httpOnly cookie.
     assert "refresh_token" in login_res.cookies
 
-    # Use the cookie to obtain a new access token.
+    # use the cookie to obtain a new access token.
     refresh_res = client.post(
         "/api/v1/auth/refresh",
         cookies={"refresh_token": login_res.cookies["refresh_token"]},

@@ -1,10 +1,10 @@
 -- telemetry-export.sql
 -- I use this query to export all telemetry data to a CSV file for ML model training.
--- Run from psql: \copy (SELECT ...) TO '/tmp/telemetry.csv' WITH CSV HEADER
--- Or: psql $DATABASE_URL -f sql/queries/telemetry-export.sql
+-- run from psql: \copy (SELECT ...) TO '/tmp/telemetry.csv' WITH CSV HEADER
+-- or: psql $DATABASE_URL -f sql/queries/telemetry-export.sql
 --
--- Dependencies: devices and telemetry tables must exist.
--- Safe to run on production (read-only).
+-- dependencies: devices and telemetry tables must exist.
+-- safe to run on production (read-only).
 
 SELECT
     t.id,

@@ -53,7 +53,7 @@ export default function MaintenanceWindowsPanel() {
     }
   };
 
-  // Fetching on mount, the documented effect pattern
+  // fetching on mount, the documented effect pattern
   // (react.dev/learn/synchronizing-with-effects#fetching-data).
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
@@ -102,7 +102,7 @@ export default function MaintenanceWindowsPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Window list */}
+      {/* window list */}
       {loading && <p className="text-sm text-surface-500">Loading...</p>}
       {error && <p className="text-sm text-critical-500">{error}</p>}
 
@@ -151,7 +151,7 @@ export default function MaintenanceWindowsPanel() {
         </div>
       )}
 
-      {/* Create form */}
+      {/* create form */}
       <div className="border-t border-surface-200 dark:border-surface-800 pt-4 space-y-3">
         <p className="text-sm font-medium text-surface-700 dark:text-surface-300">
           Schedule a window

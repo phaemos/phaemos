@@ -1,5 +1,5 @@
 import uuid
-# Column and the type classes (String, DateTime, etc.) describe the shape of each DB column
+# column and the type classes (String, DateTime, etc.) describe the shape of each DB column
 from sqlalchemy import Column, ForeignKey, String, DateTime, func
 # UUID is imported from the PostgreSQL dialect because it's a Postgres-specific column type
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from app.db import Base
 
 
-# Inheriting from Base registers this class with SQLAlchemy's ORM metadata
+# inheriting from Base registers this class with SQLAlchemy's ORM metadata
 class Device(Base):
     # __tablename__ tells SQLAlchemy which database table this class maps to
     __tablename__ = "devices"
@@ -17,7 +17,7 @@ class Device(Base):
     id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # nullable=False enforces a NOT NULL constraint at the database level
     name       = Column(String(100), nullable=False)
-    # No nullable=False means this column is optional - the device may not have a location yet
+    # no nullable=False means this column is optional - the device may not have a location yet
     location   = Column(String(100))
     type       = Column(String(50))          # esp32 / arduino / stm32
     # unique=True adds a UNIQUE constraint so no two devices can share the same API key

@@ -3,7 +3,7 @@
 #
 # I write my own minimal driver rather than relying on the MicroPython
 # standard library's ssd1306.py because not all MicroPython builds for the
-# Pico 2W include it in the frozen modules and keeping dependencies local
+# pico 2W include it in the frozen modules and keeping dependencies local
 # means the firmware is self-contained and does not require an internet
 # connection on the Pico to install packages via upip.
 
@@ -19,14 +19,14 @@ class SSD1306_I2C:
     _CMD_DISPLAY_OFF        = 0xAE
     _CMD_DISPLAY_ON         = 0xAF
     _CMD_SET_CONTRAST       = 0x81
-    _CMD_ENTIRE_DISPLAY_RAM = 0xA4   # Output follows RAM content
-    _CMD_NORMAL_DISPLAY     = 0xA6   # Non-inverted
+    _CMD_ENTIRE_DISPLAY_RAM = 0xA4   # output follows RAM content
+    _CMD_NORMAL_DISPLAY     = 0xA6   # non-inverted
     _CMD_MEM_ADDR_MODE      = 0x20
-    _CMD_ADDR_MODE_HORIZ    = 0x00   # Horizontal addressing - row auto-increments
+    _CMD_ADDR_MODE_HORIZ    = 0x00   # horizontal addressing - row auto-increments
     _CMD_SET_COL_ADDR       = 0x21
     _CMD_SET_PAGE_ADDR      = 0x22
     _CMD_SET_DISP_START_LINE= 0x40
-    _CMD_SET_SEG_REMAP      = 0xA1   # Column address 127 mapped to SEG0
+    _CMD_SET_SEG_REMAP      = 0xA1   # column address 127 mapped to SEG0
     _CMD_SET_MUX_RATIO      = 0xA8
     _CMD_SET_COM_SCAN_DIR   = 0xC8   # COM scan from N-1 to 0 (vertical flip)
     _CMD_SET_DISP_OFFSET    = 0xD3
@@ -93,7 +93,7 @@ class SSD1306_I2C:
         self._cmd(self._CMD_SET_MUX_RATIO, mux)
         self._cmd(self._CMD_SET_DISP_OFFSET, 0x00)
         self._cmd(self._CMD_SET_DISP_START_LINE | 0x00)
-        self._cmd(self._CMD_CHARGE_PUMP, self._CHARGE_PUMP_ON)  # Enable internal VCHP
+        self._cmd(self._CMD_CHARGE_PUMP, self._CHARGE_PUMP_ON)  # enable internal VCHP
         self._cmd(self._CMD_MEM_ADDR_MODE, self._CMD_ADDR_MODE_HORIZ)
         self._cmd(self._CMD_SET_SEG_REMAP)
         self._cmd(self._CMD_SET_COM_SCAN_DIR)
@@ -135,7 +135,7 @@ class SSD1306_I2C:
         The write format is: [0x40, data0, data1, ..., data15]
         where 0x40 is the SSD1306 "data follows" control byte.
         """
-        # Set column and page address windows to the full display size so
+        # set column and page address windows to the full display size so
         # the display's internal pointer auto-increments correctly across
         # all 8 pages (for 64px height).
         self._cmd(self._CMD_SET_COL_ADDR, 0, self.width - 1)
@@ -147,6 +147,6 @@ class SSD1306_I2C:
 
         while offset < buf_len:
             chunk = self._buffer[offset:offset + chunk_size]
-            # Prepend the 0x40 data control byte to each chunk.
+            # prepend the 0x40 data control byte to each chunk.
             self._i2c.writeto(self._addr, bytes([0x40]) + chunk)
             offset += chunk_size

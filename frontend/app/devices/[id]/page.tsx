@@ -2,7 +2,7 @@
 
 // I convert this to a client component so I can use hooks (useState, useEffect,
 // useTelemetry) to fetch device data and stream live telemetry.
-// In Next.js 15 App Router, params is a Promise even in client components;
+// in Next.js 15 App Router, params is a Promise even in client components;
 // React.use() unwraps it synchronously within the render so the page can read
 // the dynamic segment without adding an extra async wrapper.
 
@@ -69,7 +69,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
   }, [id]);
 
   // I fetch the user list once so the owner picker dropdown is populated.
-  // Only admins see this picker so this request is skipped for other roles.
+  // only admins see this picker so this request is skipped for other roles.
   useEffect(() => {
     if (!isAdmin) return;
     api.get<UserSummary[]>('/auth/users').then((r) => setUsers(r.data));
@@ -146,7 +146,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         <ErrorToast message={devErr} onDismiss={() => setDevErr(null)} />
       )}
 
-      {/* Device header */}
+      {/* device header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-semibold text-surface-900 dark:text-surface-50">{device.name}</h1>
@@ -161,7 +161,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         />
       </div>
 
-      {/* Owner picker - admins only */}
+      {/* owner picker - admins only */}
       {isAdmin && (
         <section className="card p-4">
           <label className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500 mb-2 block">
@@ -184,7 +184,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Tags - admins can add and remove; all roles see the chips */}
+      {/* tags - admins can add and remove; all roles see the chips */}
       <section className="card p-4 space-y-3">
         <label className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500 block">
           Tags
@@ -234,7 +234,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         )}
       </section>
 
-      {/* Latest sensor readings grid */}
+      {/* latest sensor readings grid */}
       <section>
         <h2 className="text-sm font-medium text-surface-600 dark:text-surface-400 mb-3 uppercase tracking-wider">
           Live Sensor Readings
@@ -242,7 +242,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
         <SensorGrid reading={liveReadings[0] ?? null} />
       </section>
 
-      {/* Historical telemetry chart */}
+      {/* historical telemetry chart */}
       <section>
         <div className="flex items-centre justify-between mb-3">
           <h2 className="text-sm font-medium text-surface-600 dark:text-surface-400 uppercase tracking-wider">
