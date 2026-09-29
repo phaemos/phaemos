@@ -1,4 +1,4 @@
-# deploy pipeline — runs automatically after CI passes on pushes to main.
+# deploy pipeline: runs automatically after CI passes on pushes to main.
 #
 # backend: triggers a Render deploy hook via HTTP POST.
 # frontend: Vercel auto-deploys via its own GitHub integration (no step needed here).
@@ -20,7 +20,7 @@ jobs:
     name: Deploy backend to Render
     runs-on: ubuntu-latest
 
-    # only deploy when CI actually passed — never deploy broken code.
+    # only deploy when CI actually passed, never deploy broken code.
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     permissions:

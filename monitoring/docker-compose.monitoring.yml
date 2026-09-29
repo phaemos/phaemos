@@ -1,4 +1,4 @@
-# monitoring stack — run alongside the main compose file:
+# monitoring stack: run alongside the main compose file:
 #   docker compose -f docker-compose.yml -f monitoring/docker-compose.monitoring.yml up
 #
 # prometheus scrapes the backend /metrics endpoint every 15 seconds.
