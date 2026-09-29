@@ -19,4 +19,4 @@ body:
     id: context
     attributes:
       label: Context (optional)
-      description: What are you trying to accomplish? Any relevant config, firmware type, or deployment setup?
+      description: What are you trying to accomplish? Any relevant config, firmware type or deployment setup?

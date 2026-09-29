@@ -19,6 +19,12 @@ updates:
         update-types:
           - "patch"
           - "minor"
+    ignore:
+      # SQLAlchemy 2.1 makes a bare postgresql:// URL use the psycopg (v3) driver. This backend runs
+      # on psycopg2-binary, so the test suite fails to import and production would too. Moving means
+      # a driver change tested against the real database. Remove this once that migration is done.
+      - dependency-name: "sqlalchemy"
+        versions: [">=2.1"]
     labels:
       - "chore"
     commit-message:
