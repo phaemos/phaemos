@@ -12,7 +12,7 @@ body:
     id: what
     attributes:
       label: What did you build?
-      description: Describe your setup, what problem it solves, and anything interesting about the implementation.
+      description: Describe your setup, what problem it solves and anything interesting about the implementation.
     validations:
       required: true
 
@@ -20,10 +20,10 @@ body:
     id: hardware
     attributes:
       label: Hardware used (optional)
-      description: Which nodes, sensors, or custom boards did you use?
+      description: Which nodes, sensors or custom boards did you use?
 
   - type: textarea
     id: links
     attributes:
       label: Links or media (optional)
-      description: Screenshots, videos, a repo fork, or a blog post.
+      description: Screenshots, videos, a repo fork or a blog post.

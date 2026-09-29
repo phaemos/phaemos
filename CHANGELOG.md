@@ -41,6 +41,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `passlib` (unmaintained since around 2020) is incompatible with `bcrypt` 4.1+ in two ways: it reads a version attribute bcrypt 4.1+ removed and its own internal self-test hashes a deliberately 255-byte probe string that bcrypt 4.1+ now correctly rejects instead of silently truncating. Restored both the version attribute and the old truncate-rather-than-raise behaviour at the `bcrypt.hashpw`/`checkpw` boundary; real passwords are separately capped at 72 bytes in the password strength validator
 - 18 existing call sites across several hooks and components were newly flagged by stricter `react-hooks` rules aimed at React Compiler compatibility, bundled with the `eslint-config-next` 16 upgrade. One (`app/faq/page.tsx`) was a genuine issue, a running counter mutated during render, replaced with a precomputed per-section offset. The other 17 are legitimate, documented patterns (syncing state from an external source on mount, an intentional ref read to batch WebSocket pushes between polls, a standard recursive-reconnect closure) that this new rule set is unable to distinguish from unsafe code; each is annotated with a scoped, justified `eslint-disable` rather than rewritten
 
+### Changed
+
+- Bumped backend `uvicorn` to 0.54.0. SQLAlchemy stays on 2.0.x and Dependabot now ignores 2.1 and later, since 2.1 switches a bare `postgresql://` URL to the `psycopg` driver while the backend uses `psycopg2-binary`.
+- Replaced em dashes in comments in `deploy.yml` and the monitoring compose file with plain punctuation. The discussion templates lost their Oxford commas too.
+
 ## [2.3.0] - 2026-06-03
 
 ### Added
