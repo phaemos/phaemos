@@ -29,7 +29,7 @@ export default function SecurityPage() {
           If you discover a security vulnerability in PHAEMOS, please do not open a public GitHub issue.
           Report it privately via{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/security/advisories/new"
+            href="https://github.com/phaemos/phaemos/security/advisories/new"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary-400 hover:underline"
@@ -75,7 +75,7 @@ export default function SecurityPage() {
         <p className="text-surface-600 dark:text-surface-400">
           The full security control record is maintained in{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/blob/main/docs/security.md"
+            href="https://github.com/phaemos/phaemos/blob/main/docs/security.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary-400 hover:underline"
@@ -112,7 +112,7 @@ export default function SecurityPage() {
             because the Next.js edge middleware reads it at the JS layer. This is a known trade-off
             documented in{' '}
             <a
-              href="https://github.com/zaccesss/phaemos/blob/main/docs/security.md"
+              href="https://github.com/phaemos/phaemos/blob/main/docs/security.md"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-400 hover:underline"
@@ -131,7 +131,7 @@ export default function SecurityPage() {
         <p>
           For security disclosures:{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/security/advisories/new"
+            href="https://github.com/phaemos/phaemos/security/advisories/new"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary-400 hover:underline"

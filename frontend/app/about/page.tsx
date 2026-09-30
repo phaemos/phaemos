@@ -100,7 +100,7 @@ export default function AboutPage() {
           background task queuing.
         </p>
         <a
-          href="https://github.com/zaccesss/phaemos/blob/main/docs/architecture.md"
+          href="https://github.com/phaemos/phaemos/blob/main/docs/architecture.md"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm text-brand-600 dark:text-brand-400 hover:underline"
@@ -141,7 +141,7 @@ export default function AboutPage() {
         <h2 className="text-xl font-bold tracking-tight text-surface-900 dark:text-surface-50">Get in touch</h2>
         <div className="flex flex-col sm:flex-row gap-4 text-sm">
           <a
-            href="https://github.com/zaccesss/phaemos"
+            href="https://github.com/phaemos/phaemos"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-surface-600 dark:text-surface-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"

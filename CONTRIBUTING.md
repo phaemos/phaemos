@@ -101,7 +101,7 @@ no `Generated with Claude` or any similar attribution).
 
 ## Questions and discussion
 
-Use [GitHub Discussions](https://github.com/zaccesss/phaemos/discussions) for:
+Use [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for:
 
 - Questions about setup, usage or architecture
 - Feature ideas and feedback

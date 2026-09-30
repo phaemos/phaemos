@@ -20,7 +20,7 @@ export default function ContactPage() {
           Use this form for general enquiries and feedback. For bug reports and feature
           requests, open a{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/issues"
+            href="https://github.com/phaemos/phaemos/issues"
             target="_blank"
             rel="noopener noreferrer"
             className="text-brand-600 dark:text-brand-400 hover:underline"
