@@ -76,7 +76,7 @@ sudo apt install -y nginx certbot python3-certbot-nginx
 
 ```bash
 cd /home/phaemos
-git clone https://github.com/zaccesss/phaemos.git
+git clone https://github.com/phaemos/phaemos.git
 cd phaemos
 ```
 
@@ -179,7 +179,7 @@ For `phaemos.com` itself (the Next.js app), follow the custom domain steps in Se
 ## Section 5: Vercel - frontend (phaemos.com)
 
 1. Go to [vercel.com](https://vercel.com) and sign in with GitHub.
-2. Click **Add New Project** and import the `zaccesss/phaemos` repo.
+2. Click **Add New Project** and import the `phaemos/phaemos` repo.
 3. Set **Root Directory** to `frontend/`.
 4. Set **Framework Preset** to **Next.js** (auto-detected).
 5. Under **Environment Variables**, add every variable from `frontend/.env.example`. At minimum:
@@ -195,7 +195,7 @@ For `phaemos.com` itself (the Next.js app), follow the custom domain steps in Se
 
 ## Section 6: Vercel - documentation site (docs.phaemos.com)
 
-1. In the same Vercel account, click **Add New Project** and import `zaccesss/phaemos` again (a second project).
+1. In the same Vercel account, click **Add New Project** and import `phaemos/phaemos` again (a second project).
 2. Set **Root Directory** to `.` (the repo root, not `frontend/`).
 3. Set **Framework Preset** to **Other**.
 4. Set **Build Command** to:
