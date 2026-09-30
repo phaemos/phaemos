@@ -151,6 +151,10 @@ phaemos/
 │   ├── schematics/         Proteus schematic placeholders (Phase 5)
 │   ├── wiring/             Pin connection tables for all 4 nodes
 │   └── pcb/                PCB design guide for Proteus ARES (Phase 5)
+├── client/
+│   ├── python/             phaemos-client SDK and the phaemos-sim telemetry simulator
+│   └── go/                 phaemosctl: status, send and ingest load testing
+├── edge/                   phaemos-edge: Rust store-and-forward gateway for outages
 ├── docs/                   Architecture, API reference, sensor reference, security, deployment
 ├── infra/
 │   ├── docker-compose.yml  The full stack: db, redis, backend, frontend
