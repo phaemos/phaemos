@@ -34,7 +34,7 @@ PHAEMOS is designed to be the right size: more structured than Node-RED, lighter
 ## Try it
 
 ```bash
-git clone https://github.com/zaccesss/phaemos
+git clone https://github.com/phaemos/phaemos
 cd phaemos
 make dev
 ```
