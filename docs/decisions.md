@@ -378,3 +378,25 @@ Do not attempt these items until all four physical nodes (ESP32, STM32 Black Pil
 - The ML scoring route already exists and returns a default score of 0.0 until a real model.pkl is present. The system is fully functional without the trained model.
 - All firmware code is written and ready; hardware testing is the only remaining gate.
 - No code changes are required to unblock these items - the work is purely physical assembly and data collection.
+
+---
+
+## 020 - Client tools in Python and Go, edge gateway in Rust
+
+**Date:** 2026-09-30
+**Status:** Accepted
+
+**Context:**
+PHAEMOS had two empty repositories, `client` and `infra`, and no way to feed or test the server without physical nodes beyond a single smoke script. Industrial sites also lose connectivity, and a node that posts straight to the API drops every reading taken during an outage.
+
+**Decision:**
+
+- **Python** for the client SDK and the telemetry simulator. It shares the backend's field names and is what integrators expect to `pip install`.
+- **Go** for `phaemosctl`. A single static binary suits operations work, and goroutines make an honest load generator for the ingest latency budget.
+- **Rust** for `phaemos-edge`, a store-and-forward gateway. It runs unattended on small ARM hardware, where memory safety and a runtime-free binary matter most.
+
+**Consequences:**
+
+- CI gains a job per new toolchain: pytest, Ruff and mypy for Python; vet and tests for Go; Clippy and tests for Rust.
+- `client` and `edge` are published to their own repositories like the other components.
+- No other language is added without a new decision record.

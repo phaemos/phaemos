@@ -3,6 +3,9 @@
 # jobs:
 #   backend-lint  - installs Python deps and runs ruff for style and error checks
 #   frontend-check - installs Node deps, runs ESLint and performs a production build
+#   client-python  - ruff, mypy and pytest for the Python SDK and simulator
+#   client-go      - gofmt, vet and tests for phaemosctl
+#   edge           - rustfmt, clippy and tests for the edge gateway
 #
 # third-party actions are pinned to a full commit SHA to prevent a mutable tag
 # (e.g. @v4) from silently updating to malicious code (supply-chain hardening).
@@ -139,3 +142,90 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://placeholder
+
+  # ── Client: Python SDK and simulator ─────────────────────────────────────────
+  client-python:
+    name: Client Python (ruff, mypy, pytest)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: client/python
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint and type-check
+        run: |
+          ruff check .
+          ruff format --check .
+          mypy
+
+      - name: Test
+        run: pytest
+
+  # ── Client: phaemosctl ───────────────────────────────────────────────────────
+  client-go:
+    name: Client Go (vet, test)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: client/go
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: client/go/go.mod
+          cache: false
+
+      # gofmt -l prints unformatted files, so any output fails the job
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+
+      - name: Vet and test
+        run: |
+          go vet ./...
+          go test ./...
+
+  # ── Edge gateway ─────────────────────────────────────────────────────────────
+  edge:
+    name: Edge (clippy, test)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: edge
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Lint and test
+        run: |
+          rustup component add rustfmt clippy
+          cargo fmt --check
+          cargo clippy --all-targets -- -D warnings
+          cargo test
