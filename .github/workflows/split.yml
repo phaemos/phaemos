@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        folder: [backend, frontend, firmware, hardware]
+        folder: [backend, frontend, firmware, hardware, infra]
     steps:
       - name: Check for the publishing token
         id: token

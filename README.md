@@ -57,7 +57,7 @@ I chose the name because PHAEMOS reveals hidden machine behavior through telemet
   live dashboard, sensor grid, device list, ticket system, admin panel
         |
   [ Observability ]
-  Prometheus + Grafana monitoring overlay (docker-compose.monitoring.yml)
+  Prometheus + Grafana monitoring overlay (infra/monitoring)
 ```
 
 ## Quickstart
@@ -152,9 +152,12 @@ phaemos/
 │   ├── wiring/             Pin connection tables for all 4 nodes
 │   └── pcb/                PCB design guide for Proteus ARES (Phase 5)
 ├── docs/                   Architecture, API reference, sensor reference, security, deployment
-├── monitoring/             Grafana + Prometheus overlay
+├── infra/
+│   ├── docker-compose.yml  The full stack: db, redis, backend, frontend
+│   ├── monitoring/         Grafana + Prometheus overlay
+│   └── sql/                Reporting queries and demo seed data
 ├── Makefile                make dev / test / lint / build / migrate / seed
-├── docker-compose.yml
+├── docker-compose.yml      Includes infra/docker-compose.yml so root commands keep working
 ├── CHANGELOG.md
 ├── SUPPORT.md
 ├── SECURITY.md
