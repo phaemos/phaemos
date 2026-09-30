@@ -2,6 +2,9 @@
 
 FastAPI application - telemetry ingestion, alert rules, tickets, ML anomaly detection, JWT auth, OAuth, 2FA, webhooks, maintenance windows and GDPR endpoints.
 
+> [!NOTE]
+> This folder is published to [phaemos/backend](https://github.com/phaemos/backend) as a read-only copy. Open issues and pull requests on [phaemos/phaemos](https://github.com/phaemos/phaemos).
+
 ---
 
 ## Prerequisites

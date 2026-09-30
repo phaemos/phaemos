@@ -2,6 +2,9 @@
 
 Firmware for all 4 Phaemos nodes. Each node has its own subfolder.
 
+> [!NOTE]
+> This folder is published to [phaemos/firmware](https://github.com/phaemos/firmware) as a read-only copy. Open issues and pull requests on [phaemos/phaemos](https://github.com/phaemos/phaemos).
+
 | Folder | Node | Board | Language |
 |---|---|---|---|
 | [esp32/](esp32/) | Primary gateway | ESP32 DevKit V1 | Arduino C++ |
