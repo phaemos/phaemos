@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Documentation hub for PHAEMOS - architecture, API reference, deployment, security and more.',
 };
 
-const BASE = 'https://github.com/zaccesss/phaemos/blob/main/docs';
+const BASE = 'https://github.com/phaemos/phaemos/blob/main/docs';
 
 const SECTIONS = [
   {
@@ -91,8 +91,8 @@ const SECTIONS = [
 ];
 
 const QUICK_LINKS = [
-  { label: 'GitHub repository', href: 'https://github.com/zaccesss/phaemos' },
-  { label: 'Open an issue', href: 'https://github.com/zaccesss/phaemos/issues/new/choose' },
+  { label: 'GitHub repository', href: 'https://github.com/phaemos/phaemos' },
+  { label: 'Open an issue', href: 'https://github.com/phaemos/phaemos/issues/new/choose' },
   { label: 'CHANGELOG', href: '/changelog' },
   { label: 'Status page', href: '/status' },
 ];
@@ -176,7 +176,7 @@ export default function DocsPage() {
         <p className="text-sm text-surface-600 dark:text-surface-400">
           For bug reports and feature requests, open a{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/issues"
+            href="https://github.com/phaemos/phaemos/issues"
             target="_blank"
             rel="noopener noreferrer"
             className="text-brand-600 dark:text-brand-400 hover:underline"

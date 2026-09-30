@@ -4,9 +4,9 @@
 
 **Platform status and incidents:** Check [status.phaemos.com](https://status.phaemos.com) first during an outage. Subscribe to incident updates on the status page.
 
-**Questions and discussion:** Start a thread in [GitHub Discussions](https://github.com/zaccesss/phaemos/discussions). This is the primary help channel for setup questions, usage questions and feature ideas.
+**Questions and discussion:** Start a thread in [GitHub Discussions](https://github.com/phaemos/phaemos/discussions). This is the primary help channel for setup questions, usage questions and feature ideas.
 
-**Bugs and confirmed issues:** Open an issue on the [GitHub repository](https://github.com/zaccesss/phaemos/issues). Use the bug report template and include reproduction steps.
+**Bugs and confirmed issues:** Open an issue on the [GitHub repository](https://github.com/phaemos/phaemos/issues). Use the bug report template and include reproduction steps.
 
 **Security vulnerabilities:** Do not open a public issue. See [SECURITY.md](SECURITY.md) for the responsible disclosure process.
 

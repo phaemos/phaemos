@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Ask anything about PHAEMOS - setup help, usage questions, architecture curiosity.
-        For bugs, please use the [Issues tracker](https://github.com/zaccesss/phaemos/issues) instead.
+        For bugs, please use the [Issues tracker](https://github.com/phaemos/phaemos/issues) instead.
 
   - type: textarea
     id: question

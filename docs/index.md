@@ -35,15 +35,15 @@ Phaemos connects embedded sensor nodes (ESP32, STM32, Arduino Nano, Raspberry Pi
 
 ## Quick links
 
-- [GitHub repository](https://github.com/zaccesss/phaemos)
+- [GitHub repository](https://github.com/phaemos/phaemos)
 - [Live platform](https://phaemos.com)
 - [Status page](https://status.phaemos.com)
 - [Contact](https://phaemos.com/contact)
-- [Contributing](https://github.com/zaccesss/phaemos/blob/main/CONTRIBUTING.md)
+- [Contributing](https://github.com/phaemos/phaemos/blob/main/CONTRIBUTING.md)
 
 ---
 
 ## Licence
 
-Phaemos is released under the [GNU Affero General Public License v3](https://github.com/zaccesss/phaemos/blob/main/LICENSE).
+Phaemos is released under the [GNU Affero General Public License v3](https://github.com/phaemos/phaemos/blob/main/LICENSE).
 Anyone running a modified version as a network service must publish the source code under the same terms.

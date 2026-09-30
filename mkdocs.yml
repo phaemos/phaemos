@@ -1,8 +1,8 @@
 site_name: Phaemos
 site_description: Industrial IoT predictive maintenance platform - documentation
 site_url: https://docs.phaemos.com
-repo_url: https://github.com/zaccesss/phaemos
-repo_name: zaccesss/phaemos
+repo_url: https://github.com/phaemos/phaemos
+repo_name: phaemos/phaemos
 edit_uri: edit/main/docs/
 
 theme:
@@ -26,7 +26,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/zaccesss/phaemos
+      link: https://github.com/phaemos/phaemos
       name: Phaemos on GitHub
     - icon: fontawesome/brands/patreon
       link: https://www.patreon.com/c/zaccesss

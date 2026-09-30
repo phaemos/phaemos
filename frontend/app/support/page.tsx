@@ -46,7 +46,7 @@ export default function SupportPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
           <a
-            href="https://github.com/zaccesss/phaemos/discussions"
+            href="https://github.com/phaemos/phaemos/discussions"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-xl border border-surface-200 dark:border-surface-800 p-4 hover:border-primary-500 transition-colors space-y-1"
@@ -59,7 +59,7 @@ export default function SupportPage() {
           </a>
 
           <a
-            href="https://github.com/zaccesss/phaemos/issues"
+            href="https://github.com/phaemos/phaemos/issues"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-xl border border-surface-200 dark:border-surface-800 p-4 hover:border-primary-500 transition-colors space-y-1"
@@ -118,7 +118,7 @@ export default function SupportPage() {
         <ul className="list-disc list-inside space-y-2 text-surface-600 dark:text-surface-400">
           <li>
             <a
-              href="https://github.com/zaccesss/phaemos/blob/main/README.md"
+              href="https://github.com/phaemos/phaemos/blob/main/README.md"
               target="_blank" rel="noopener noreferrer"
               className="text-primary-400 hover:underline"
             >README.md</a>{' '}
@@ -126,7 +126,7 @@ export default function SupportPage() {
           </li>
           <li>
             <a
-              href="https://github.com/zaccesss/phaemos/blob/main/docs/deployment.md"
+              href="https://github.com/phaemos/phaemos/blob/main/docs/deployment.md"
               target="_blank" rel="noopener noreferrer"
               className="text-primary-400 hover:underline"
             >docs/deployment.md</a>{' '}
@@ -134,7 +134,7 @@ export default function SupportPage() {
           </li>
           <li>
             <a
-              href="https://github.com/zaccesss/phaemos/blob/main/docs/api-reference.md"
+              href="https://github.com/phaemos/phaemos/blob/main/docs/api-reference.md"
               target="_blank" rel="noopener noreferrer"
               className="text-primary-400 hover:underline"
             >docs/api-reference.md</a>{' '}
@@ -142,7 +142,7 @@ export default function SupportPage() {
           </li>
           <li>
             <a
-              href="https://github.com/zaccesss/phaemos/blob/main/docs/sensor_reference.md"
+              href="https://github.com/phaemos/phaemos/blob/main/docs/sensor_reference.md"
               target="_blank" rel="noopener noreferrer"
               className="text-primary-400 hover:underline"
             >docs/sensor_reference.md</a>{' '}

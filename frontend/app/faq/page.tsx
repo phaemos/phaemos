@@ -92,7 +92,7 @@ const FAQ_SECTIONS = [
             <span className="mt-2 block">
               See the{' '}
               <a
-                href="https://github.com/zaccesss/phaemos/blob/main/docs/sensor_reference.md"
+                href="https://github.com/phaemos/phaemos/blob/main/docs/sensor_reference.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-400 hover:underline"
@@ -114,7 +114,7 @@ const FAQ_SECTIONS = [
             before posting to the API. No additional library is needed on the ESP32 side - plain{' '}
             {code('Serial2.readStringUntil(\'\\n\')')} is sufficient. See{' '}
             <a
-              href="https://github.com/zaccesss/phaemos/blob/main/firmware/stm32_blackpill/README.md"
+              href="https://github.com/phaemos/phaemos/blob/main/firmware/stm32_blackpill/README.md"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-400 hover:underline"
@@ -354,7 +354,7 @@ export default function FaqPage() {
         <p className="text-surface-600 dark:text-surface-400">
           Frequently asked questions about PHAEMOS. Can&apos;t find what you need?{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/discussions"
+            href="https://github.com/phaemos/phaemos/discussions"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary-400 hover:underline"
@@ -392,7 +392,7 @@ export default function FaqPage() {
         <p className="text-sm text-surface-600 dark:text-surface-400">
           Ask in{' '}
           <a
-            href="https://github.com/zaccesss/phaemos/discussions"
+            href="https://github.com/phaemos/phaemos/discussions"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary-400 hover:underline"

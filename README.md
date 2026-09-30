@@ -1,7 +1,7 @@
 # PHAEMOS
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Discussions](https://img.shields.io/github/discussions/zaccesss/phaemos)](https://github.com/zaccesss/phaemos/discussions)
+[![Discussions](https://img.shields.io/github/discussions/phaemos/phaemos)](https://github.com/phaemos/phaemos/discussions)
 
 I built PHAEMOS as a smart maintenance platform: it collects real-time sensor data from ESP32, STM32 and Arduino hardware nodes, shows it on a live dashboard, fires alerts when readings cross a threshold and uses machine learning to flag anomalies before they turn into failures.
 
@@ -280,8 +280,8 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branc
 
 ## Community
 
-- [GitHub Discussions](https://github.com/zaccesss/phaemos/discussions): questions, ideas and show-and-tell
-- [GitHub Issues](https://github.com/zaccesss/phaemos/issues): bug reports and feature requests
+- [GitHub Discussions](https://github.com/phaemos/phaemos/discussions): questions, ideas and show-and-tell
+- [GitHub Issues](https://github.com/phaemos/phaemos/issues): bug reports and feature requests
 
 ## Contact and support
 

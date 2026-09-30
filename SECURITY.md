@@ -13,7 +13,7 @@ Only the latest commit on `main` is actively maintained.
 
 **Do not open a public issue for security vulnerabilities.**
 
-Report vulnerabilities privately via [GitHub Security Advisories](https://github.com/zaccesss/phaemos/security/advisories/new). This keeps the disclosure private until a fix is ready.
+Report vulnerabilities privately via [GitHub Security Advisories](https://github.com/phaemos/phaemos/security/advisories/new). This keeps the disclosure private until a fix is ready.
 
 If you cannot use Security Advisories, email [dev@phaemos.com](mailto:dev@phaemos.com) with:
 
