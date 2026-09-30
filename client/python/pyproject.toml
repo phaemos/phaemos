@@ -1,0 +1,36 @@
+[project]
+name = "phaemos-client"
+version = "0.1.0"
+description = "Python client for the PHAEMOS API and a telemetry simulator for the four sensor nodes"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.12"
+dependencies = ["httpx>=0.28"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.4", "ruff>=0.14", "mypy>=1.18"]
+
+[project.scripts]
+phaemos-sim = "phaemos_client.simulator:main"
+
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["phaemos_client*"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+packages = ["phaemos_client"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

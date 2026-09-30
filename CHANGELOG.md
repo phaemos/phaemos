@@ -18,6 +18,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `client/`: the `phaemos-client` Python SDK, the `phaemos-sim` simulator for all four node types with injectable faults and `phaemosctl`, a Go tool for status checks, sending readings and ingest load testing
+- `edge/`: `phaemos-edge`, a Rust gateway that spools readings to disk and forwards them in order, so an outage loses nothing (ADR 020)
 - `infra/` holds the Compose stack, the Prometheus and Grafana overlay and the SQL queries and seed data, published to its own repository. A root `docker-compose.yml` includes it, so every existing command still works from the root
 - `backend`, `frontend`, `firmware` and `hardware` are published to their own read-only repositories on every merge to `main` (`split.yml`), each with its own licence and a note pointing back to the monorepo
 - GitHub Sponsors added to `.github/FUNDING.yml` as first entry; order updated to github, buy_me_a_coffee, patreon
