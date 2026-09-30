@@ -2,6 +2,9 @@
 
 All hardware documentation for the 4-node Phaemos system.
 
+> [!NOTE]
+> This folder is published to [phaemos/hardware](https://github.com/phaemos/hardware) as a read-only copy. Open issues and pull requests on [phaemos/phaemos](https://github.com/phaemos/phaemos).
+
 | Folder | What it contains |
 |---|---|
 | [wiring/](wiring/) | Pin assignment and wiring guides for each node |
