@@ -2,6 +2,9 @@
 
 Next.js 15 App Router - the PHAEMOS dashboard web application.
 
+> [!NOTE]
+> This folder is published to [phaemos/frontend](https://github.com/phaemos/frontend) as a read-only copy. Open issues and pull requests on [phaemos/phaemos](https://github.com/phaemos/phaemos).
+
 | Folder | Purpose |
 |---|---|
 | [app/](app/) | Pages and layouts (Next.js App Router) |
