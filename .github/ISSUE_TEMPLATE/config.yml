@@ -5,10 +5,10 @@ contact_links:
     url: https://status.phaemos.com
     about: Check here first during an outage before opening an issue.
   - name: Questions and discussion
-    url: https://github.com/zaccesss/phaemos/discussions
+    url: https://github.com/phaemos/phaemos/discussions
     about: Setup questions, usage questions and feature ideas.
   - name: Security vulnerability
-    url: https://github.com/zaccesss/phaemos/security/policy
+    url: https://github.com/phaemos/phaemos/security/policy
     about: Report privately following SECURITY.md, never a public issue.
   - name: Contact form
     url: https://phaemos.com/contact

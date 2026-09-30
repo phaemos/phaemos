@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         > **This category is for discussing bugs, not reporting them.**
-        > To report a confirmed bug, please [open an Issue](https://github.com/zaccesss/phaemos/issues/new/choose)
+        > To report a confirmed bug, please [open an Issue](https://github.com/phaemos/phaemos/issues/new/choose)
         > where it can be triaged and tracked properly.
 
         Use this Discussion category if you are unsure whether something is a bug,
