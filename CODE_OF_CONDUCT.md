@@ -26,8 +26,8 @@ Behaviour that is not acceptable includes:
 
 ## Enforcement
 
-Instances of unacceptable behaviour may be reported by opening a private issue
-or contacting the maintainer directly. All reports will be reviewed and
+Instances of unacceptable behaviour may be reported by emailing
+[contact@phaemos.com](mailto:contact@phaemos.com). All reports will be reviewed and
 investigated promptly and fairly.
 
 ## Attribution

@@ -27,6 +27,8 @@ The threshold of -0.1 is configurable via alert rules. Teams running older or di
 
 ## What features go into the model
 
+> **Update, October 2026:** the model now scores six features: `temperature`, `humidity`, `vibration_x`, `vibration_y`, `vibration_z` and `light_level`. The list below reflects the original plan.
+
 The model scores each telemetry reading using these features:
 
 - `temperature` - ambient and surface temperature from the NTC thermistors

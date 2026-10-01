@@ -32,8 +32,8 @@
 
 ## Common issues
 
-**Backend crashes on startup after `docker compose down`:**
-The Postgres data volume is wiped by `docker compose down`. Use `docker compose stop` to preserve data. After a wipe, re-run migrations with `make migrate`.
+**Database empty after `docker compose down -v`:**
+The `-v` flag deletes the `postgres_data` volume. Plain `docker compose down` and `docker compose stop` both keep it. After a wipe, re-run migrations with `make migrate`.
 
 **Login blocked after 5 failed attempts:**
 The account is locked for 15 minutes. Wait or ask an admin to clear the `locked_until` column in the database directly.
@@ -46,7 +46,7 @@ echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > frontend/.env.local
 ```
 
 **Contact form not sending emails:**
-Check that `SMTP_HOST`, `SMTP_USER` and `SMTP_PASS` are set in `.env`. The contact endpoint is a silent no-op when `smtp_host` is empty - no error is returned but no email is sent.
+Check that `SMTP_HOST`, `SMTP_USER` and `SMTP_PASS` are set in `.env`. The contact endpoint is a silent no-op when either `SMTP_HOST` or `SMTP_USER` is empty - no error is returned but no email is sent.
 
 **Rate limit hit on login:**
 The login endpoint is limited to 5 requests per minute per IP. Wait one minute and try again. If you are behind a shared NAT, the limit is per the shared IP.

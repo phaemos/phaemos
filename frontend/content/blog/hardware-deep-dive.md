@@ -7,6 +7,8 @@ excerpt: "A tour of the four firmware nodes at the core of PHAEMOS - ESP32 telem
 
 # Hardware Deep Dive: 4 Nodes, 11 Sensors, One Platform
 
+> **Update, October 2026:** the node line-up has changed since this post was written. The Raspberry Pi Pico 2W is now the ambient node (BME280, LDR and an OLED) and the Arduino Nano reads a BME280, an LDR and an FC-28, sending CSV to the ESP32 at 9600 baud. The current design is in the [hardware README](https://github.com/phaemos/phaemos/blob/main/hardware/README.md).
+
 PHAEMOS is built around four microcontroller nodes, each chosen for a specific role. Here is what each one does and why.
 
 ## ESP32 - Wi-Fi telemetry hub
