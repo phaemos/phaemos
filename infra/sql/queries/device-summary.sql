@@ -19,7 +19,7 @@ SELECT
     t.recorded_at                           AS last_reading_at
 FROM devices d
 LEFT JOIN LATERAL (
-    -- Use a lateral join to fetch only the most recent telemetry row per device
+    -- use a lateral join to fetch only the most recent telemetry row per device
     -- without a slow correlated subquery.
     SELECT *
     FROM telemetry

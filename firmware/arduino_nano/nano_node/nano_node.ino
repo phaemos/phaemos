@@ -1,7 +1,7 @@
 // nano_node.ino - Arduino Nano secondary node main sketch
 //
-// Reads BME280, LDR and FC-28 moisture sensor.
-// Outputs one CSV line every 2 seconds over Serial at 9600 baud.
+// reads BME280, LDR and FC-28 moisture sensor.
+// outputs one CSV line every 2 seconds over Serial at 9600 baud.
 //
 // CSV over Serial is used rather than JSON or a binary protocol because:
 //   - It requires no library on either end - Serial.print() on the Nano and
@@ -13,24 +13,24 @@
 //     to the ESP32, where higher baud rates can introduce framing errors
 //     without proper shielding.
 //
-// Example output:
+// example output:
 //   TEMP:28.5,HUM:55.2,PRES:1013.2,LIGHT:340,MOIST:210,WATER:0
 //   TEMP:-1,HUM:-1,PRES:-1,LIGHT:512,MOIST:301,WATER:1   <- if BME absent
 
 #include <Wire.h>
 #include "sensors.h"
 
-// Use a named constant for the interval rather than a magic number so it
+// use a named constant for the interval rather than a magic number so it
 // is easy to adjust during testing without hunting through the loop() body.
 static const unsigned long REPORT_INTERVAL_MS = 2000UL;
 
-// Track the last report time with millis() rather than delay() so the
+// track the last report time with millis() rather than delay() so the
 // Nano's CPU is not blocked during the 2-second window - useful if we add
 // interrupt-driven sensor features later.
 static unsigned long last_report_ms = 0;
 
 void setup() {
-    // Initialise Serial before Wire so any I2C errors during initBME280Nano
+    // initialise Serial before Wire so any I2C errors during initBME280Nano
     // can be observed on the serial monitor during bring-up.
     Serial.begin(9600);
     Wire.begin();
@@ -40,7 +40,7 @@ void setup() {
 void loop() {
     unsigned long now = millis();
 
-    // Use (now - last_report_ms) rather than comparing to a target time
+    // use (now - last_report_ms) rather than comparing to a target time
     // to handle millis() overflow gracefully - unsigned subtraction wraps
     // correctly at the 49-day rollover boundary.
     if (now - last_report_ms >= REPORT_INTERVAL_MS) {
@@ -52,7 +52,7 @@ void loop() {
         int        water = isWaterDetected(moist) ? 1 : 0;
 
         if (bme.ok) {
-            // Normal path: all sensors healthy
+            // normal path: all sensors healthy
             Serial.print("TEMP:");
             Serial.print(bme.temperature, 1);
             Serial.print(",HUM:");
@@ -62,7 +62,7 @@ void loop() {
         } else {
             // BME280 not found or read failed - send sentinel values so the
             // upstream ESP32 parser can flag a sensor fault without crashing.
-            // Use -1 rather than 0 because 0 is a plausible real temperature
+            // use -1 rather than 0 because 0 is a plausible real temperature
             // and would be harder to distinguish from a valid reading.
             Serial.print("TEMP:-1,HUM:-1,PRES:-1");
         }

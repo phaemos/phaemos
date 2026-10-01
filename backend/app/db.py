@@ -3,26 +3,26 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import settings
 
-# Use create_engine to build the connection pool that talks to the PostgreSQL database
+# use create_engine to build the connection pool that talks to the PostgreSQL database
 engine = create_engine(settings.database_url)
 
-# Use sessionmaker to return a factory class; every call to SessionLocal() gives a fresh DB session
+# use sessionmaker to return a factory class; every call to SessionLocal() gives a fresh DB session
 # autocommit=False means changes are only saved when db.commit() is called explicitly
 # autoflush=False prevents SQLAlchemy from automatically syncing pending changes before every query
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# Use DeclarativeBase - the modern SQLAlchemy 2.x way to define ORM models as plain Python classes
+# use DeclarativeBase - the modern SQLAlchemy 2.x way to define ORM models as plain Python classes
 class Base(DeclarativeBase):
     pass
 
 
-# Act as a FastAPI dependency - hand a DB session to a route handler then clean up afterwards
+# act as a FastAPI dependency - hand a DB session to a route handler then clean up afterwards
 def get_db():
     db = SessionLocal()
     try:
-        # Use 'yield' to turn this into a generator; FastAPI pauses here while the route runs
+        # use 'yield' to turn this into a generator; FastAPI pauses here while the route runs
         yield db
     finally:
-        # Always close the session, even if the route raised an exception, to release the connection
+        # always close the session, even if the route raised an exception, to release the connection
         db.close()

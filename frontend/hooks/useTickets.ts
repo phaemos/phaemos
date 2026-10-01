@@ -1,6 +1,6 @@
 'use client';
 
-// Poll on an interval rather than fetching once so the ticket list stays
+// poll on an interval rather than fetching once so the ticket list stays
 // current when other users create or update tickets during a long-running session.
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,7 +25,7 @@ export function useTickets(
   const fetchTickets = useCallback(async () => {
     try {
       const params: Record<string, string> = {};
-      // Only add the status param when it is provided so a missing value
+      // only add the status param when it is provided so a missing value
       // does not send ?status=undefined to the API.
       if (status) params.status = status;
 

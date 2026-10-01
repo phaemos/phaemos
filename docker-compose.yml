@@ -1,4 +1,4 @@
-# The stack lives in infra/docker-compose.yml. Including it here keeps
+# the stack lives in infra/docker-compose.yml. Including it here keeps
 # `docker compose up` and the Makefile working from the repository root.
 
 name: phaemos

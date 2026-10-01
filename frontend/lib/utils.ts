@@ -1,4 +1,4 @@
-// Keep all pure formatting helpers in one place so components stay thin
+// keep all pure formatting helpers in one place so components stay thin
 // and the same formatting logic is never duplicated across the codebase.
 
 /**

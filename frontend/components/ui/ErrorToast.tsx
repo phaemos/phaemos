@@ -22,7 +22,7 @@ export default function ErrorToast({
       onDismiss();
     }, autoDismissMs);
 
-    // Clean up the timeout so if the parent unmounts before the timer fires
+    // clean up the timeout so if the parent unmounts before the timer fires
     // we do not call onDismiss on an unmounted component and trigger a warning.
     return () => {
       clearTimeout(timerId);

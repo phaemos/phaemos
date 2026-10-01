@@ -1,1 +1,1 @@
-# Keep this file empty intentionally - Pydantic schemas are imported directly by routes
+# keep this file empty intentionally - Pydantic schemas are imported directly by routes

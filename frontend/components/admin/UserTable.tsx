@@ -12,7 +12,7 @@ export default function UserTable() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch once on mount - the user list does not change often enough
+    // fetch once on mount - the user list does not change often enough
     // to warrant polling and an admin can refresh the page to see new users.
     api.get<User[]>('/auth/users')
       .then((r) => setUsers(r.data))
