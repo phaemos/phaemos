@@ -138,7 +138,7 @@ CREATE TABLE users (
   id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name                   VARCHAR(100),
   email                  VARCHAR(150) UNIQUE NOT NULL,
-  password_hash          VARCHAR(255) NOT NULL,
+  password_hash          VARCHAR(255),                       -- NULL for accounts created through OAuth (migration 005)
   role                   VARCHAR(20) DEFAULT 'viewer',       -- admin/technician/viewer
   created_at             TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   last_login             TIMESTAMP WITH TIME ZONE,
@@ -150,7 +150,9 @@ CREATE TABLE users (
   phone_number           VARCHAR(30),                        -- optional, used for SMS alerts
   totp_secret            VARCHAR(64),                        -- TOTP shared secret (set when 2FA enabled)
   totp_enabled           BOOLEAN NOT NULL DEFAULT FALSE,     -- whether 2FA is active for this user
-  permissions            JSONB                                -- per-user permission overrides, NULL = role defaults only (migration 009)
+  permissions            JSONB,                               -- per-user permission overrides, NULL = role defaults only (migration 009)
+  token_version          INTEGER NOT NULL DEFAULT 0,          -- raised to end every session for the user (migration 010)
+  totp_last_step         BIGINT                               -- last accepted TOTP time step, so no code is accepted twice (migration 010)
 );
 ```
 

@@ -16,11 +16,14 @@ lint:
 	ruff check backend/
 	cd frontend && npm run lint
 
-# apply the latest SQL migration manually on the running DB container
+# apply every SQL migration in order to the running DB container. Each file is
+# guarded with IF NOT EXISTS, so re-running is safe.
 migrate:
 	export PATH="/Applications/Docker.app/Contents/Resources/bin:$$PATH" && \
-	docker exec phaemos-db-1 psql -U postgres -d phaemos \
-		-f /docker-entrypoint-initdb.d/001_initial_schema.sql
+	for f in backend/migrations/*.sql; do \
+		echo "applying $$f"; \
+		docker exec -i phaemos-db-1 psql -v ON_ERROR_STOP=1 -U postgres -d phaemos < "$$f" || exit 1; \
+	done
 
 # build the Next.js frontend for production
 build:

@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     # accept a comma-separated list of frontend URLs allowed to call this API via CORS
     allowed_origins: str = "http://localhost:3000"
+    # addresses allowed to set X-Real-IP, normally the reverse proxy. The private
+    # ranges cover Nginx reaching the API through Docker's network or the host.
+    trusted_proxies: str = "127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
     environment: str = "development"
 
     # -- OAuth providers --

@@ -5,10 +5,10 @@ for a specific device without polling.
 
 import uuid
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
-from jose import JWTError
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query
 
-from app.config import settings
+from app.db import SessionLocal
+from app.routes.auth import decode_token, user_for_token
 from app.services.ws_manager import subscribe, unsubscribe
 
 router = APIRouter()
@@ -27,16 +27,16 @@ async def telemetry_ws(
         await websocket.close(code=1008)
         return
 
+    # only a live access token opens the feed. Refresh, invite and sign-in
+    # challenge tokens are refused, as are tokens from a session that has ended.
+    db = SessionLocal()
     try:
-        from jose import jwt
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
-        if not payload.get("sub"):
-            raise JWTError
-    except JWTError:
+        user_for_token(db, decode_token(token, "access"))
+    except HTTPException:
         await websocket.close(code=1008)
         return
+    finally:
+        db.close()
 
     await websocket.accept()
     key = str(device_id)

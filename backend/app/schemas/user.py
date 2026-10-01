@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 from pydantic import BaseModel, EmailStr, field_validator
 
@@ -94,11 +94,31 @@ class TokenResponse(BaseModel):
     token_type:   str = "bearer"
 
 
+# --- LoginResponse ---
+# a finished sign-in returns an access token. An account with two-factor
+# authentication gets mfa_required and a short-lived mfa_token instead, which
+# only POST /auth/2fa/verify accepts.
+class LoginResponse(BaseModel):
+    access_token: str | None = None
+    token_type:   str = "bearer"
+    mfa_required: bool = False
+    mfa_token:    str | None = None
+
+
+# --- TotpVerify ---
+# body for POST /auth/2fa/verify. mfa_token may be left out after an OAuth
+# sign-in, which sets it as a cookie instead.
+class TotpVerify(BaseModel):
+    code:      str
+    mfa_token: str | None = None
+
+
 # --- InviteCreate ---
 # body for POST /auth/invite (admin creates an invite for a new user).
 class InviteCreate(BaseModel):
     email: EmailStr
-    role:  str = "viewer"  # default to least privilege
+    # only the three real roles, so an invite can never mint an unknown one.
+    role:  Literal["admin", "technician", "viewer"] = "viewer"
 
 
 # --- AcceptInvite ---

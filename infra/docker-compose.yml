@@ -11,8 +11,10 @@ services:
       POSTGRES_DB: phaemos
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+    # every port listens on localhost only. Docker's published ports bypass a host
+    # firewall, so binding to all interfaces would expose them to the internet.
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -20,13 +22,13 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
 
   backend:
     build: ../backend
     restart: unless-stopped
     ports:
-      - '8000:8000'
+      - '127.0.0.1:8000:8000'
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/phaemos
       REDIS_URL: redis://redis:6379
@@ -45,7 +47,7 @@ services:
     build: ../frontend
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:

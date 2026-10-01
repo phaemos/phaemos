@@ -93,19 +93,25 @@ sequenceDiagram
     participant A as FastAPI
 
     U->>A: POST /api/v1/auth/login with email and password
-    A-->>U: 15-minute access token, plus a 7-day refresh token in an httpOnly cookie
+    alt account without two-factor authentication
+        A-->>U: 15-minute access token and a 7-day refresh cookie
+    else account with two-factor authentication
+        A-->>U: 5-minute sign-in challenge, no session yet
+        U->>A: POST /api/v1/auth/2fa/verify with the challenge and a code
+        A-->>U: 15-minute access token and a 7-day refresh cookie
+    end
     U->>A: Requests with Authorization: Bearer
     U->>A: POST /api/v1/auth/refresh (cookie only)
     A-->>U: New 15-minute access token
-    U->>A: POST /api/v1/auth/logout
-    A-->>U: Refresh cookie cleared
 ```
 
-- **Lockout:** five failed sign-ins lock an account for 15 minutes. The lockout path runs even for unknown emails, so responses do not reveal which emails are registered.
-- **OAuth:** Google and GitHub through `/api/v1/auth/{provider}` and `/api/v1/auth/{provider}/callback`, matching users by email. Apple sign-in is reserved and returns 501 until it is set up.
-- **Two-factor:** users can enrol a TOTP authenticator from their profile.
-- **Invites:** an admin invites a user by email (sent through Resend) and the invite link creates the account.
-- **Devices:** every node sends a per-device `X-API-Key`. A key is replaced with `POST /api/v1/devices/{device_id}/rotate-key`.
+- **Token types:** access, refresh and sign-in challenge tokens each carry their purpose and are only accepted for it. The WebSocket accepts access tokens only.
+- **Sessions:** every token carries the account's session version. Changing the password or turning two-factor authentication on or off raises it, which ends every other session while the current browser receives a fresh one.
+- **Two-factor:** TOTP from an authenticator app, required at every sign-in once enrolled, including OAuth. Each code is accepted once. Enrolment cannot restart while two-factor authentication is on.
+- **Lockout:** five failed attempts, wrong passwords and wrong codes alike, lock an account for 15 minutes. The lockout path runs even for unknown emails, so responses do not reveal which emails are registered.
+- **OAuth:** Google and GitHub through `/api/v1/auth/{provider}` and `/api/v1/auth/{provider}/callback`. A random `state` ties each callback to the browser that started it. Only an email the provider reports as verified can sign in or link to an existing account. No token ever appears in a URL: the dashboard exchanges the refresh cookie for an access token. Apple sign-in is reserved and returns 501 until it is set up.
+- **Invites:** an admin invites a user by email (sent through Resend) with one of the three roles, and the invite link creates the account.
+- **Devices:** every node sends a per-device `X-API-Key`. A key is replaced with `POST /api/v1/devices/{device_id}/rotate-key` by an admin or the technician who manages the device.
 
 ## API surface
 
@@ -189,9 +195,9 @@ Setup steps are in [deployment.md](deployment.md).
 
 - **Devices:** `X-API-Key` on every telemetry ingest.
 - **Users:** a 15-minute JWT bearer token on every protected route, refreshed from a 7-day httpOnly cookie scoped to the refresh path.
-- **Roles:** `admin`, `technician` or `viewer` (the default) checked on every protected endpoint, with per-user permission overrides stored as JSONB.
+- **Roles:** `admin`, `technician` or `viewer` (the default) checked on every protected endpoint, with per-user permission overrides stored as JSONB. Admins manage every device, technicians manage their own or unassigned devices and viewers are read-only.
 - **Passwords:** bcrypt through passlib.
-- **Rate limits:** per IP with slowapi, for example sign-in at 5 a minute, registration at 10 an hour and the contact form at 3 an hour. The client IP is read from Nginx's `X-Real-IP` header.
+- **Rate limits:** per IP with slowapi, for example sign-in at 5 a minute, registration at 10 an hour and the contact form at 3 an hour. The client IP comes from Nginx's `X-Real-IP` header, which is only trusted when the request arrives from an address in `TRUSTED_PROXIES`.
 - **Queries:** the ORM handles almost every query. The few raw SQL statements (the audit log and the retention task) use bound parameters, so input never becomes SQL.
 
 ## Licence
