@@ -1,5 +1,5 @@
 -- device-summary.sql
--- I use this query to get a quick overview of all devices: their current status,
+-- Use this query to get a quick overview of all devices: their current status,
 -- last reading values and how recently they were seen.
 -- safe to run on production (read-only).
 
@@ -19,7 +19,7 @@ SELECT
     t.recorded_at                           AS last_reading_at
 FROM devices d
 LEFT JOIN LATERAL (
-    -- I use a lateral join to fetch only the most recent telemetry row per device
+    -- Use a lateral join to fetch only the most recent telemetry row per device
     -- without a slow correlated subquery.
     SELECT *
     FROM telemetry

@@ -1,4 +1,4 @@
-// I use #pragma once for the same reason as every other header here.
+// Use #pragma once for the same reason as every other header here.
 #pragma once
 
 // initDS18B20 must be called in setup() to start the OneWire bus and set

@@ -1,7 +1,7 @@
-// I use #pragma once for the same reason as every other header in this project.
+// Use #pragma once for the same reason as every other header in this project.
 #pragma once
 
-// I include WString.h (pulled in by Arduino.h) here indirectly through String
+// Include WString.h (pulled in by Arduino.h) here indirectly through String
 // so callers can use Arduino String without a separate include.
 #include <Arduino.h>
 

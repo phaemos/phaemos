@@ -3,7 +3,7 @@
 // Reads BME280, LDR and FC-28 moisture sensor.
 // Outputs one CSV line every 2 seconds over Serial at 9600 baud.
 //
-// I chose CSV over Serial rather than JSON or a binary protocol because:
+// CSV over Serial is used rather than JSON or a binary protocol because:
 //   - It requires no library on either end - Serial.print() on the Nano and
 //     String.indexOf()/substring() on the ESP32 parser are both built-in.
 //   - Each field has a named prefix (TEMP:, HUM:, etc.) so the ESP32 can
@@ -20,17 +20,17 @@
 #include <Wire.h>
 #include "sensors.h"
 
-// I use a named constant for the interval rather than a magic number so it
+// Use a named constant for the interval rather than a magic number so it
 // is easy to adjust during testing without hunting through the loop() body.
 static const unsigned long REPORT_INTERVAL_MS = 2000UL;
 
-// I track the last report time with millis() rather than delay() so the
+// Track the last report time with millis() rather than delay() so the
 // Nano's CPU is not blocked during the 2-second window - useful if we add
 // interrupt-driven sensor features later.
 static unsigned long last_report_ms = 0;
 
 void setup() {
-    // I initialise Serial before Wire so any I2C errors during initBME280Nano
+    // Initialise Serial before Wire so any I2C errors during initBME280Nano
     // can be observed on the serial monitor during bring-up.
     Serial.begin(9600);
     Wire.begin();
@@ -40,7 +40,7 @@ void setup() {
 void loop() {
     unsigned long now = millis();
 
-    // I use (now - last_report_ms) rather than comparing to a target time
+    // Use (now - last_report_ms) rather than comparing to a target time
     // to handle millis() overflow gracefully - unsigned subtraction wraps
     // correctly at the 49-day rollover boundary.
     if (now - last_report_ms >= REPORT_INTERVAL_MS) {
@@ -62,7 +62,7 @@ void loop() {
         } else {
             // BME280 not found or read failed - send sentinel values so the
             // upstream ESP32 parser can flag a sensor fault without crashing.
-            // I use -1 rather than 0 because 0 is a plausible real temperature
+            // Use -1 rather than 0 because 0 is a plausible real temperature
             // and would be harder to distinguish from a valid reading.
             Serial.print("TEMP:-1,HUM:-1,PRES:-1");
         }

@@ -1,6 +1,6 @@
 'use client';
 
-// I convert this to a client component so I can use hooks (useState, useEffect,
+// Convert this to a client component so it can use hooks (useState, useEffect,
 // useTelemetry) to fetch device data and stream live telemetry.
 // in Next.js 15 App Router, params is a Promise even in client components;
 // React.use() unwraps it synchronously within the render so the page can read
@@ -56,7 +56,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
 
   const isAdmin = getTokenRole() === 'admin';
 
-  // I fetch only device metadata here - the latest reading comes from the
+  // Fetch only device metadata here - the latest reading comes from the
   // useTelemetry poll below so the sensor grid auto-updates every 5 seconds.
   useEffect(() => {
     api.get<Device>(`/devices/${id}`)
@@ -68,7 +68,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // I fetch the user list once so the owner picker dropdown is populated.
+  // Fetch the user list once so the owner picker dropdown is populated.
   // only admins see this picker so this request is skipped for other roles.
   useEffect(() => {
     if (!isAdmin) return;
@@ -115,7 +115,7 @@ export default function DeviceDetailPage({ params }: PageProps) {
     }
   };
 
-  // I poll GET /telemetry/{id}/latest every 5s and pass data[0] to SensorGrid
+  // Poll GET /telemetry/{id}/latest every 5s and pass data[0] to SensorGrid
   // so operators see live readings without a page refresh.
   const { data: liveReadings } = useTelemetry(id, { limit: 1 }, 5000);
 

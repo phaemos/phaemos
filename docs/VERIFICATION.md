@@ -226,7 +226,7 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 
 - [x] AGPL-3.0 licence (LICENSE file at repo root)
 - [x] NOTICE file (copyright line)
-- [x] CONTRIBUTING.md (branch prefixes, UK English, email alias table, AGPL statement)
+- [x] CONTRIBUTING.md (branch prefixes, email alias table, AGPL statement)
 - [x] CHANGELOG.md
 - [x] SECURITY.md (responsible disclosure via GitHub Security Advisories)
 - [x] SUPPORT.md (Discussions first, status.phaemos.com, contact form)

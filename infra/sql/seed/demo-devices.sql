@@ -1,5 +1,5 @@
 -- demo-devices.sql
--- I use this script to insert demo devices and alert rules for local development and demos.
+-- Use this script to insert demo devices and alert rules for local development and demos.
 -- run ONLY on a local or development database - never on production.
 --
 -- prerequisites: the devices, alert_rules tables must exist.
@@ -7,7 +7,7 @@
 
 BEGIN;
 
--- I insert three demo devices representing different machine types.
+-- Insert three demo devices representing different machine types.
 INSERT INTO devices (id, name, location, type, api_key, status)
 VALUES
     ('11111111-1111-1111-1111-111111111111', 'Motor A',       'Factory Floor',  'esp32',   'demo-key-motor-a',   'online'),
@@ -15,7 +15,7 @@ VALUES
     ('33333333-3333-3333-3333-333333333333', 'Conveyor Belt', 'Warehouse',      'arduino', 'demo-key-conveyor',  'warning')
 ON CONFLICT (id) DO NOTHING;
 
--- I insert alert rules for each demo device.
+-- Insert alert rules for each demo device.
 INSERT INTO alert_rules (device_id, metric, condition, threshold, severity)
 VALUES
     -- motor A: alert if temperature exceeds 80C

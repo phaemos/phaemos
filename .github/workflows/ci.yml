@@ -71,7 +71,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      # I pull the image explicitly so transient Docker Hub timeouts can be retried.
+      # Pull the image explicitly so transient Docker Hub timeouts can be retried.
       # service containers start before any steps and cannot be retried on failure.
       - name: Pull PostgreSQL image
         run: |

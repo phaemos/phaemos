@@ -89,7 +89,7 @@ This document records the development history of PHAEMOS in chronological phases
 - Vercel Analytics and GA4 (consent-gated)
 - phaemos.io to phaemos.com domain sweep (PR 114)
 - AGPL-3.0 LICENSE file and NOTICE (PR 123)
-- CONTRIBUTING.md - branch prefixes, UK English, email alias table, AGPL statement (PR 124)
+- CONTRIBUTING.md - branch prefixes, email alias table, AGPL statement (PR 124)
 - Contact page with Cloudflare Turnstile verification (PR 125)
 - CodeQL code scanning - Python + JavaScript, push/PR/weekly schedule (PR 127)
 - Stale issue workflow - 60-day threshold, security/pinned/in-progress labels exempt (PR 127)

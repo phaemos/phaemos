@@ -23,7 +23,7 @@ class User(Base):
     role = Column(String(20), default="viewer")  # admin / technician / viewer
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True))
-    # I track consecutive failed attempts so I can lock the account after 5 failures
+    # Track consecutive failed attempts so the account can be locked after 5 failures
     # and prevent brute-force attacks without rate-limiting every single request.
     failed_login_attempts = Column(Integer, nullable=False, default=0, server_default="0")
     locked_until = Column(DateTime(timezone=True), nullable=True)

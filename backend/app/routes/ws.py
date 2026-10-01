@@ -20,7 +20,7 @@ async def telemetry_ws(
     device_id: uuid.UUID,
     token: str | None = Query(default=None),
 ):
-    # I validate the JWT before calling accept() so unauthenticated clients are
+    # Validate the JWT before calling accept() so unauthenticated clients are
     # rejected at the handshake stage and never enter the subscriber list.
     # close code 1008 (Policy Violation) is the standard signal for auth failure.
     if not token:

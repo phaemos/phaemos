@@ -19,6 +19,6 @@ class Ticket(Base):
     created_by  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at    = Column(DateTime(timezone=True), server_default=func.now())
     updated_at    = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    # I keep ticket_number nullable so existing rows remain valid before the
+    # Keep ticket_number nullable so existing rows remain valid before the
     # migration adds the SERIAL column; new rows get the sequence value automatically.
     ticket_number = Column(Integer, nullable=True, unique=True)

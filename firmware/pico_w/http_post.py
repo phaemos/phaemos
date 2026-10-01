@@ -6,7 +6,7 @@ import json
 try:
     import urequests as requests
 except ImportError:
-    # I keep this fallback so the module can be imported in a CPython test
+    # Keep this fallback so the module can be imported in a CPython test
     # environment (e.g. unit tests on a dev machine) without crashing.
     import requests
 
@@ -32,7 +32,7 @@ def post_telemetry(url, payload_dict, api_key):
     try:
         body = json.dumps(payload_dict)
 
-        # I set Content-Type explicitly to application/json because urequests
+        # Set Content-Type explicitly to application/json because urequests
         # does not infer the content type from the body automatically - without
         # this header some server frameworks reject the request with 415.
         headers = {
@@ -43,7 +43,7 @@ def post_telemetry(url, payload_dict, api_key):
         response = requests.post(url, data=body, headers=headers)
         status = response.status_code
 
-        # I close the response immediately after reading the status code to
+        # Close the response immediately after reading the status code to
         # release the socket back to the MicroPython network stack.  Leaving
         # sockets open causes "OSError: [Errno 12] ENOMEM" after a few
         # iterations on the Pico's constrained socket pool.
@@ -52,7 +52,7 @@ def post_telemetry(url, payload_dict, api_key):
         return status
 
     except Exception as e:
-        # I print the exception here so it appears in Thonny's output pane
+        # Print the exception here so it appears in Thonny's output pane
         # during debugging, but the function still returns -1 so the main
         # loop can continue collecting sensor data.
         print("http_post error:", e)

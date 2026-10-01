@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import precision_recall_fscore_support
 
-# I force the non-interactive Agg backend so matplotlib does not try to open a
+# Force the non-interactive Agg backend so matplotlib does not try to open a
 # display window when running on headless CI or server environments.
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -38,7 +38,7 @@ def load_model(model_path: str) -> Any:
 
 def evaluate_precision_recall(model: Any, X_test: Any, y_true: Any) -> dict:
     raw = model.predict(X_test)
-    # I remap IsolationForest's convention (-1=anomaly, 1=normal) to binary (1=anomaly, 0=normal)
+    # Remap IsolationForest's convention (-1=anomaly, 1=normal) to binary (1=anomaly, 0=normal)
     # so standard sklearn metrics work without caller-side remapping.
     y_pred = np.where(raw == -1, 1, 0)
     y_true_arr = np.asarray(y_true)
@@ -88,7 +88,7 @@ def generate_report(model_path: str, data_path: str, output_path: str) -> None:
 
     metrics = evaluate_precision_recall(model, X, y_true)
 
-    # I use decision_function scores for the distribution plot when available because
+    # Use decision_function scores for the distribution plot when available because
     # they are continuous, making the histogram more informative than binary predict().
     if hasattr(model, "decision_function"):
         scores = model.decision_function(X).tolist()
