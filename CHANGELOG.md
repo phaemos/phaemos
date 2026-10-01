@@ -35,6 +35,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Tidied code comments and the contributor guide.
+- The README and `docs/architecture.md` are redrawn with Mermaid diagrams and checked against the code: versions, the ingest order, the role of Redis, notifications and the full API surface. The README now explains the name. The docs site renders Mermaid diagrams.
+- The hardware docs describe Proteus for circuit simulation and KiCad for the schematics and PCB layouts. The Pico 2W's chip is named correctly as the RP2350.
 - Hardware designs in `hardware/` are now licensed under the CERN Open Hardware Licence v2, Strongly Reciprocal (CERN-OHL-S-2.0), matching MELOPHOS. Everything else stays AGPL-3.0-or-later. `NOTICE.md` now explains which licence covers what and lists every dependency manifest. The README and docs licence sections say the same
 - `CONTRIBUTING.md` rewritten: where to start, the branch, commit and style conventions, the email addresses and how to report a vulnerability, with callouts for the read-only component copies and security reports
 - `hardware/README.md` rewritten with the correct firmware folders, the MPU6050 on the STM32 node, a warning about the Nano's 5 V logic and its own licence section

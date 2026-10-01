@@ -140,6 +140,6 @@ while True:
             print("POST failed (status={}) - will retry next interval".format(status))
 
     # sleep 1 second between OLED refreshes rather than running flat-out to
-    # reduce RP2040 power draw and I2C bus activity.  The 1s sleep is much
+    # reduce RP2350 power draw and I2C bus activity.  The 1s sleep is much
     # shorter than TELEMETRY_INTERVAL so it does not significantly delay posts.
     time.sleep(1)

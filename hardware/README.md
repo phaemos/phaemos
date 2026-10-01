@@ -8,7 +8,7 @@ The hardware behind PHAEMOS: wiring, schematics, PCB layouts and the parts inven
 | Folder | What it contains |
 | --- | --- |
 | [`wiring/`](wiring/) | Pin assignments and wiring guides for each node |
-| [`schematics/`](schematics/) | Proteus schematic projects for each node |
+| [`schematics/`](schematics/) | Proteus simulation projects for each node, with the KiCad schematics alongside once they are drawn |
 | [`pcb/`](pcb/) | PCB layout notes and Gerber export guidance per node |
 | [`inventory/`](inventory/) | Parts owned and parts still to buy |
 
@@ -29,8 +29,8 @@ Every sensor with its interface, address and expected range is in the [sensor re
 ## Phase plan
 
 - **Phase 1 (current):** breadboard prototyping, getting all four nodes posting data and verifying every sensor
-- **Phase 2:** schematic capture in Proteus for all four nodes
-- **Phase 3:** PCB layout in Proteus, with boards ordered from JLCPCB or PCBWay
+- **Phase 2:** circuit simulation in Proteus for all four nodes, then schematic capture in KiCad
+- **Phase 3:** PCB layout in KiCad, with boards ordered from JLCPCB or PCBWay
 - **Phase 4:** enclosures, 3D printed, laser cut or CNC machined depending on the node
 
 The tasks for each phase are in the [Hardware milestone](https://github.com/phaemos/phaemos/milestone/4).
