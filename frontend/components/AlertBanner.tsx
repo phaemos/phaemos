@@ -39,7 +39,7 @@ export default function AlertBanner({ alert }: Props) {
       </div>
 
       {modalOpen && (
-        // Close on backdrop click so the operator can dismiss without submitting.
+        // close on backdrop click so the operator can dismiss without submitting.
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setModalOpen(false)}

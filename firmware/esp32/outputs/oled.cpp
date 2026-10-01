@@ -1,4 +1,4 @@
-// Include Wire.h first because Adafruit_SSD1306 needs it initialised before
+// include Wire.h first because Adafruit_SSD1306 needs it initialised before
 // any I2C transaction can happen and include order matters on Arduino.
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -7,19 +7,19 @@
 #include "../config.h"
 #include "oled.h"
 
-// Allocate the display object at file scope so it persists across calls and
+// allocate the display object at file scope so it persists across calls and
 // does not eat stack space inside each function.
 static Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
 // -1 means no reset pin is wired, which is the standard for most breakout boards.
 
 void initOLED() {
-    // Pass OLED_ADDR from config.h so the address is defined in exactly one
+    // pass OLED_ADDR from config.h so the address is defined in exactly one
     // place and changing hardware only requires editing config.h.
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
-        // Print to Serial here because the OLED is not yet usable - this
+        // print to Serial here because the OLED is not yet usable - this
         // gives the developer something to see on the monitor during debugging.
         Serial.println(F("OLED init failed"));
-        // Do not halt the program on OLED failure because the rest of the
+        // do not halt the program on OLED failure because the rest of the
         // firmware (sensors, telemetry) can still operate without a display.
         return;
     }
@@ -30,12 +30,12 @@ void initOLED() {
 void displaySplash(const char* title, const char* subtitle) {
     display.clearDisplay();
 
-    // Use text size 2 for the title so it is readable across the room
+    // use text size 2 for the title so it is readable across the room
     // during installation and bench-testing.
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
 
-    // Centre the title by measuring its pixel width at size 2 (6 px per
+    // centre the title by measuring its pixel width at size 2 (6 px per
     // character * 2 = 12 px per char) and halving the remaining space.
     int16_t titleLen = strlen(title);
     int16_t titleX   = (OLED_WIDTH - titleLen * 12) / 2;
@@ -43,7 +43,7 @@ void displaySplash(const char* title, const char* subtitle) {
     display.setCursor(titleX, 10);
     display.print(title);
 
-    // Use text size 1 for the subtitle to keep both lines on screen at once.
+    // use text size 1 for the subtitle to keep both lines on screen at once.
     display.setTextSize(1);
     int16_t subLen = strlen(subtitle);
     int16_t subX   = (OLED_WIDTH - subLen * 6) / 2;
@@ -53,7 +53,7 @@ void displaySplash(const char* title, const char* subtitle) {
 
     display.display();
 
-    // Hold the splash for 2 s so the user can confirm the device has booted
+    // hold the splash for 2 s so the user can confirm the device has booted
     // before telemetry overwrites the screen.
     delay(2000);
 }
@@ -64,8 +64,8 @@ void displayTelemetry(BME280Reading bme, MPU6050Reading mpu, INA219Reading ina,
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
 
-    // Line 1 - environmental data from BME280.
-    // Keep it short (T/H/P) because all three values must fit on 128 px.
+    // line 1 - environmental data from BME280.
+    // keep it short (T/H/P) because all three values must fit on 128 px.
     display.setCursor(0, 0);
     display.print(F("T:"));
     display.print(bme.temperature, 1);
@@ -74,8 +74,8 @@ void displayTelemetry(BME280Reading bme, MPU6050Reading mpu, INA219Reading ina,
     display.print(F(" P:"));
     display.print(bme.pressure, 0);
 
-    // Line 2 - vibration axes from MPU6050.
-    // Show Vx/Vy/Vz using one decimal place to fit within the line width.
+    // line 2 - vibration axes from MPU6050.
+    // show Vx/Vy/Vz using one decimal place to fit within the line width.
     display.setCursor(0, 16);
     display.print(F("Vx:"));
     display.print(mpu.accel_x, 1);
@@ -84,8 +84,8 @@ void displayTelemetry(BME280Reading bme, MPU6050Reading mpu, INA219Reading ina,
     display.print(F(" Vz:"));
     display.print(mpu.accel_z, 1);
 
-    // Line 3 - power rail health from INA219.
-    // Show voltage and current together because they are always read as a pair.
+    // line 3 - power rail health from INA219.
+    // show voltage and current together because they are always read as a pair.
     display.setCursor(0, 32);
     display.print(F("V:"));
     display.print(ina.bus_voltage, 2);
@@ -93,7 +93,7 @@ void displayTelemetry(BME280Reading bme, MPU6050Reading mpu, INA219Reading ina,
     display.print(ina.current_ma, 0);
     display.print(F("mA"));
 
-    // Line 4 - alert flags on the bottom row where the operator can see them
+    // line 4 - alert flags on the bottom row where the operator can see them
     // at a glance. Use abbreviated labels to fit within 128 px.
     display.setCursor(0, 48);
     display.print(F("D:"));

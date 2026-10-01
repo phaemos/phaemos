@@ -26,7 +26,7 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
         .all()
     )
 
-    # Skip all alert processing while the device is in an active maintenance window
+    # skip all alert processing while the device is in an active maintenance window
     # so planned downtime does not generate noise that technicians would have to dismiss.
     if is_in_maintenance(db, device.id):
         return
@@ -48,7 +48,7 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
                 severity=rule.severity,
                 resolved=False,
             )
-            # Only notify on warning/critical - info alerts stay silent to avoid noise.
+            # only notify on warning/critical - info alerts stay silent to avoid noise.
             notify_service.send_discord_alert(alert.message, rule.severity)
             notify_service.send_email_alert(
                 subject=f"PHAEMOS [{rule.severity.upper()}] {device.name}",
@@ -61,7 +61,7 @@ def evaluate_rules(device: Device, reading: dict, db: Session) -> None:
                 "threshold":   rule.threshold,
                 "severity":    rule.severity,
             })
-            # Only send SMS for critical alerts - warning/info would generate too much noise
+            # only send SMS for critical alerts - warning/info would generate too much noise
             # on a paid SMS channel. The owner's phone number is fetched lazily from the DB
             # so the query only happens when there is actually a critical alert to send.
             if rule.severity == "critical" and device.owner_id:

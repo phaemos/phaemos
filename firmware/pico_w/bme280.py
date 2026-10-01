@@ -1,7 +1,7 @@
 # firmware/pico_w/bme280.py
 # full MicroPython BME280 driver - no external library required.
 #
-# Include the full compensation math here rather than returning raw ADC
+# include the full compensation math here rather than returning raw ADC
 # values because the Pico does not have the precision integer math limitations
 # of an 8-bit AVR.  The RP2040 handles 32-bit and 64-bit integer arithmetic
 # natively, so the Bosch-specified compensation formulas run correctly without
@@ -50,7 +50,7 @@ class BME280:
         self._addr = addr
 
         # verify chip identity before attempting calibration reads.
-        # Check the chip ID so a wiring error produces a clear error message
+        # check the chip ID so a wiring error produces a clear error message
         # instead of silently reading garbage calibration data.
         chip_id = self._read_byte(self._REG_ID)
         if chip_id not in (0x60, 0x58):
@@ -175,7 +175,7 @@ class BME280:
         var1 = (1.0 + var1 / 32768.0) * self.dig_P1
 
         if var1 == 0.0:
-            # Guard against division by zero here exactly as the Bosch
+            # guard against division by zero here exactly as the Bosch
             # reference implementation does - if var1 is 0 the pressure
             # formula would produce infinity or a crash.
             pressure = 0

@@ -1,4 +1,4 @@
-// Use #pragma once consistently across all sensor headers in this project.
+// use #pragma once consistently across all sensor headers in this project.
 #pragma once
 
 // INA219Reading groups voltage, current and derived power in one struct

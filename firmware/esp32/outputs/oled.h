@@ -1,8 +1,8 @@
-// Use #pragma once to avoid double-inclusion without the noise of a manual
+// use #pragma once to avoid double-inclusion without the noise of a manual
 // #ifndef guard - every compiler this project targets supports it.
 #pragma once
 
-// Pull in the sensor structs here so callers only need one include to drive
+// pull in the sensor structs here so callers only need one include to drive
 // displayTelemetry - no risk of struct definitions getting out of sync.
 #include "../sensors/bme280.h"
 #include "../sensors/mpu6050.h"

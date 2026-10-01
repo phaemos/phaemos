@@ -1,4 +1,4 @@
-// Use #pragma once to match the style of every other header in this folder.
+// use #pragma once to match the style of every other header in this folder.
 #pragma once
 
 // readFC28 fills both output parameters in one call because they are always

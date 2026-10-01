@@ -13,14 +13,14 @@
 // checkAndApplyOTA() is declared and defined in ota.ino.
 
 void setup() {
-  // Use a higher baud rate to keep debug logging responsive while posting over Wi-Fi.
+  // use a higher baud rate to keep debug logging responsive while posting over Wi-Fi.
   Serial.begin(115200);
 
-  // Initialise each sensor subsystem once.
+  // initialise each sensor subsystem once.
   initDHT();
   initMPU();
 
-  // Connect to Wi-Fi
+  // connect to Wi-Fi
   Serial.print("Connecting to Wi-Fi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
@@ -29,25 +29,25 @@ void setup() {
   }
   Serial.println("\nWi-Fi connected. IP: " + WiFi.localIP().toString());
 
-  // Check for a firmware update once on boot before starting the sensor loop.
+  // check for a firmware update once on boot before starting the sensor loop.
   checkAndApplyOTA();
 }
 
 void loop() {
-  // Collect one frame of environment and vibration data.
+  // collect one frame of environment and vibration data.
   float temperature, humidity;
   float vx, vy, vz;
 
-  // Let the sensor helper functions fill these by reference.
+  // let the sensor helper functions fill these by reference.
   readDHT(temperature, humidity);
   readMPU(vx, vy, vz);
 
-  // Read the LDR on the analog pin.
+  // read the LDR on the analog pin.
   int rawLight  = analogRead(LDR_PIN);
-  // Keep this as a float to match the backend schema type.
+  // keep this as a float to match the backend schema type.
   float lightLevel = (float)rawLight;
 
-  // Build the JSON payload.
+  // build the JSON payload.
   // 256 bytes is enough for this flat payload and avoids heap fragmentation.
   StaticJsonDocument<256> doc;
   doc["device_id"]   = DEVICE_ID;
@@ -62,7 +62,7 @@ void loop() {
   serializeJson(doc, payload);
 
   if (WiFi.status() == WL_CONNECTED) {
-    // Create a short-lived HTTP client each cycle to keep state simple.
+    // create a short-lived HTTP client each cycle to keep state simple.
     HTTPClient http;
     http.begin(API_URL);
     http.addHeader("Content-Type", "application/json");
@@ -73,12 +73,12 @@ void loop() {
     Serial.print("POST response: ");
     Serial.println(responseCode);
 
-    // Always close the connection to release sockets and memory on the ESP32.
+    // always close the connection to release sockets and memory on the ESP32.
     http.end();
   } else {
     Serial.println("Wi-Fi disconnected - skipping POST");
   }
 
-  // Wait for the configured sensor polling interval.
+  // wait for the configured sensor polling interval.
   delay(POLL_INTERVAL_MS);
 }

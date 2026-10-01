@@ -1,13 +1,13 @@
-//! Validation of readings arriving from the sensor nodes.
+//! validation of readings arriving from the sensor nodes.
 
 use serde_json::Value;
 
-/// Parses one line from a node. A reading must be a JSON object with a non-empty
+/// parses one line from a node. A reading must be a JSON object with a non-empty
 /// string `device_id`, matching what the API's telemetry ingest expects.
 ///
 /// # Errors
 ///
-/// Returns a description of the problem when the line is not a valid reading.
+/// returns a description of the problem when the line is not a valid reading.
 pub fn parse_line(line: &str) -> Result<Value, String> {
     let value: Value = serde_json::from_str(line.trim()).map_err(|e| format!("not JSON: {e}"))?;
     let object = value.as_object().ok_or("reading must be a JSON object")?;

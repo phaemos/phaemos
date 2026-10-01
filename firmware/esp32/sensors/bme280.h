@@ -1,4 +1,4 @@
-// Use #pragma once instead of an #ifndef guard because it is simpler and
+// use #pragma once instead of an #ifndef guard because it is simpler and
 // universally supported by every compiler this project targets.
 #pragma once
 

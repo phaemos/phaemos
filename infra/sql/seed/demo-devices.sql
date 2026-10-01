@@ -7,7 +7,7 @@
 
 BEGIN;
 
--- Insert three demo devices representing different machine types.
+-- insert three demo devices representing different machine types.
 INSERT INTO devices (id, name, location, type, api_key, status)
 VALUES
     ('11111111-1111-1111-1111-111111111111', 'Motor A',       'Factory Floor',  'esp32',   'demo-key-motor-a',   'online'),
@@ -15,7 +15,7 @@ VALUES
     ('33333333-3333-3333-3333-333333333333', 'Conveyor Belt', 'Warehouse',      'arduino', 'demo-key-conveyor',  'warning')
 ON CONFLICT (id) DO NOTHING;
 
--- Insert alert rules for each demo device.
+-- insert alert rules for each demo device.
 INSERT INTO alert_rules (device_id, metric, condition, threshold, severity)
 VALUES
     -- motor A: alert if temperature exceeds 80C

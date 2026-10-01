@@ -1,7 +1,7 @@
 /**
  * uart_output.h - UART formatting layer for the vibration node
  *
- * Keep UART formatting in its own translation unit so that if the output
+ * keep UART formatting in its own translation unit so that if the output
  * protocol changes (e.g. switching to JSON or MQTT framing) only this file
  * and its .c companion need to be touched, leaving all sensor and DSP code
  * untouched.
@@ -21,10 +21,10 @@
  * @magnitude:    RMS vector magnitude of the acceleration (g)
  * @fft_peak_hz:  dominant vibration frequency from the DFT (Hz)
  *
- * Output format (CRLF terminated):
+ * output format (CRLF terminated):
  *   "VIB:%.2f,%.2f,%.2f,MAG:%.2f,FFT_PEAK:%.1fHz\r\n"
  *
- * Example:
+ * example:
  *   "VIB:0.02,-0.01,1.01,MAG:1.01,FFT_PEAK:12.5Hz\r\n"
  */
 void UART_SendVibrationData(UART_HandleTypeDef *huart,
