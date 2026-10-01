@@ -9,7 +9,7 @@ from app.config import settings
 from app.models.device import Device
 from app.models.user import User
 from app.routes.auth import (
-    _identity, _oauth_finish, create_access_token, create_mfa_token, create_refresh_token,
+    _identity, _oauth_finish, create_access_token, create_challenge_token, create_refresh_token,
 )
 
 _pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -91,7 +91,7 @@ def test_wrong_codes_lock_the_account(client, db):
 
 def test_only_access_tokens_reach_protected_routes(client, db):
     user = _user(db, "types@example.com")
-    for token in (create_refresh_token(_identity(user)), create_mfa_token(_identity(user))):
+    for token in (create_refresh_token(_identity(user)), create_challenge_token(_identity(user))):
         res = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
         assert res.status_code == 401
 
@@ -176,7 +176,7 @@ def test_oauth_sign_in_still_asks_for_the_code(db):
     res = _oauth_finish(db, user)
     assert res.headers["location"].endswith("/login?step=mfa")
     cookies = res.headers.get("set-cookie", "")
-    assert "mfa_token=" in cookies
+    assert "signin_challenge=" in cookies
     assert "refresh_token=" not in cookies
 
 
@@ -187,7 +187,7 @@ def test_websocket_refuses_tokens_that_are_not_access_tokens(client, db):
     device = Device(name="WS", location="Lab", type="esp32", api_key=secrets.token_urlsafe(32))
     db.add(device)
     db.flush()
-    for token in (create_refresh_token(_identity(user)), create_mfa_token(_identity(user))):
+    for token in (create_refresh_token(_identity(user)), create_challenge_token(_identity(user))):
         with pytest.raises(WebSocketDisconnect):
             with client.websocket_connect(f"/ws/telemetry/{device.id}?token={token}") as ws:
                 ws.receive_text()

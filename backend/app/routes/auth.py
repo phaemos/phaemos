@@ -79,9 +79,9 @@ _REFRESH_PATH = "/api/v1/auth/refresh"
 # the challenge issued after a correct password, or after OAuth, when the
 # account has two-factor authentication. It only works at /2fa/verify and
 # expires quickly so an unfinished sign-in cannot be resumed later.
-_MFA_MINUTES = 5
-_MFA_COOKIE = "mfa_token"
-_MFA_PATH = "/api/v1/auth/2fa/verify"
+_CHALLENGE_MINUTES = 5
+_CHALLENGE_COOKIE = "signin_challenge"
+_CHALLENGE_PATH = "/api/v1/auth/2fa/verify"
 
 # the OAuth state lives in a short-lived cookie scoped to the auth routes, so
 # a callback is only accepted from a sign-in this browser actually started.
@@ -125,8 +125,8 @@ def create_refresh_token(data: dict) -> str:
     return _encode(data, "refresh", timedelta(days=_REFRESH_DAYS))
 
 
-def create_mfa_token(data: dict) -> str:
-    return _encode(data, "mfa", timedelta(minutes=_MFA_MINUTES))
+def create_challenge_token(data: dict) -> str:
+    return _encode(data, "challenge", timedelta(minutes=_CHALLENGE_MINUTES))
 
 
 def decode_token(token: str, token_type: str = "access") -> dict:
@@ -201,7 +201,7 @@ def _session_response(user: User, body: dict | None = None) -> JSONResponse:
         content.update(body)
     response = JSONResponse(content=content)
     _set_refresh_cookie(response, user)
-    _clear_cookie(response, _MFA_COOKIE, _MFA_PATH)
+    _clear_cookie(response, _CHALLENGE_COOKIE, _CHALLENGE_PATH)
     return response
 
 
@@ -293,7 +293,7 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
     # authentication: hand back a short-lived challenge that only /2fa/verify
     # accepts instead of a session.
     if user.totp_enabled:
-        return {"mfa_required": True, "mfa_token": create_mfa_token(_identity(user)), "token_type": "mfa"}
+        return {"mfa_required": True, "mfa_token": create_challenge_token(_identity(user)), "token_type": "mfa"}
 
     return _complete_sign_in(db, user)
 
@@ -320,7 +320,7 @@ def refresh(
 @router.post("/logout", status_code=204)
 def logout(response: Response):
     _clear_cookie(response, _REFRESH_COOKIE, _REFRESH_PATH)
-    _clear_cookie(response, _MFA_COOKIE, _MFA_PATH)
+    _clear_cookie(response, _CHALLENGE_COOKIE, _CHALLENGE_PATH)
 
 
 # ── Profile management ────────────────────────────────────────────────────────
@@ -462,16 +462,16 @@ def totp_confirm(
 def totp_verify(
     request: Request,
     payload: TotpVerify,
-    mfa_cookie: str | None = Cookie(default=None, alias=_MFA_COOKIE),
+    challenge_cookie: str | None = Cookie(default=None, alias=_CHALLENGE_COOKIE),
     db: Session = Depends(get_db),
 ):
     # the second step of every sign-in. It needs the challenge issued after the
     # first step, from the request body (password sign-in) or from the cookie
     # set by an OAuth callback, so a code on its own never signs anyone in.
-    raw = payload.mfa_token or mfa_cookie
+    raw = payload.mfa_token or challenge_cookie
     if not raw:
         raise HTTPException(status_code=401, detail="Sign in again to continue")
-    user = user_for_token(db, decode_token(raw, "mfa"))
+    user = user_for_token(db, decode_token(raw, "challenge"))
     if not user.totp_enabled:
         raise HTTPException(status_code=401, detail="Sign in again to continue")
     _check_lockout(user)
@@ -545,7 +545,7 @@ def _oauth_finish(db: Session, user: User) -> RedirectResponse:
         # the provider proves the first factor only. The challenge travels in a
         # cookie that only /2fa/verify reads and the login page asks for the code.
         response = RedirectResponse(url=f"{frontend}/login?step=mfa")
-        _set_cookie(response, _MFA_COOKIE, create_mfa_token(_identity(user)), _MFA_PATH, _MFA_MINUTES * 60)
+        _set_cookie(response, _CHALLENGE_COOKIE, create_challenge_token(_identity(user)), _CHALLENGE_PATH, _CHALLENGE_MINUTES * 60)
     else:
         user.last_login = datetime.now(timezone.utc)
         db.commit()
