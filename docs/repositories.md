@@ -23,7 +23,8 @@ files live in [phaemos/.github](https://github.com/phaemos/.github).
 
 The `Publish components` workflow (`.github/workflows/split.yml`) runs on every push to `main`. For each
 folder it takes that folder's history with `git subtree split` and pushes it to the component's `main`
-branch, so each published repository carries the real commit history of its own files.
+branch, so each published repository carries the real commit history of its own files. In the copies, each
+commit is credited to the project's automation account, while its message and date stay the same.
 
 > [!IMPORTANT]
 > The published repositories are read-only. Anything pushed to them directly is overwritten on the next
