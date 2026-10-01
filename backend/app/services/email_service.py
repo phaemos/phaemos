@@ -15,7 +15,7 @@ _UNSET = {"", "placeholder"}
 def send_invite(to_email: str, invite_link: str, role: str) -> None:
     """Send an invitation email via Resend. Falls back to logging the link when unconfigured."""
     if settings.resend_api_key in _UNSET:
-        # I log the invite link at INFO so developers can still test the flow
+        # Log the invite link at INFO so developers can still test the flow
         # locally without needing a Resend account.
         _log.info(
             "Resend not configured - invite link for %s (%s): %s",
@@ -25,7 +25,7 @@ def send_invite(to_email: str, invite_link: str, role: str) -> None:
         )
         return
 
-    # I import resend lazily so a missing package does not crash the app on startup.
+    # Import resend lazily so a missing package does not crash the app on startup.
     try:
         import resend  # type: ignore[import]
     except ImportError:

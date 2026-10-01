@@ -107,6 +107,6 @@ def test_webhook(
     wh = db.query(Webhook).filter(Webhook.id == webhook_id).first()
     if not wh:
         raise HTTPException(status_code=404, detail="Webhook not found")
-    # I run the test delivery in a background task so the response is instant.
+    # Run the test delivery in a background task so the response is instant.
     ok = webhook_service.test_webhook(wh)
     return {"success": ok}

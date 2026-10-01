@@ -3,7 +3,7 @@
 import Script from 'next/script';
 import { useEffect, useState } from 'react';
 
-// I defer GA4 loading until consent is confirmed - loading unconditionally
+// Defer GA4 loading until consent is confirmed - loading unconditionally
 // would fire before the cookie banner is dismissed and breach GDPR.
 export default function GoogleAnalytics() {
   const [consented, setConsented] = useState(false);

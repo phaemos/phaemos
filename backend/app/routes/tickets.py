@@ -37,7 +37,7 @@ def create_ticket(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # I set created_by from the authenticated user so the audit trail is accurate.
+    # Set created_by from the authenticated user so the audit trail is accurate.
     ticket = Ticket(**payload.model_dump(), created_by=current_user.id)
     db.add(ticket)
     db.commit()
@@ -96,7 +96,7 @@ def update_ticket(
     # audit_service.log_action() commits its own transaction which expires ORM objects.
     response = TicketResponse.model_validate(ticket)
 
-    # I only log when fields actually changed - empty PATCH calls should not pollute the audit log.
+    # Only log when fields actually changed - empty PATCH calls should not pollute the audit log.
     if updates:
         detail = f"fields={list(updates.keys())}"
         if "status" in updates and updates["status"] != old_status:

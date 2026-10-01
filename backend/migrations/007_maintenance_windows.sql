@@ -1,5 +1,5 @@
 -- migration 007: maintenance windows
--- I use IF NOT EXISTS guards so this migration is safe to rerun on a
+-- Use IF NOT EXISTS guards so this migration is safe to rerun on a
 -- partially migrated database without raising duplicate-object errors.
 
 CREATE TABLE IF NOT EXISTS maintenance_windows (

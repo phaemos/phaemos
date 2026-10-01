@@ -1,4 +1,4 @@
-// I use #pragma once to match the style of every other header in this folder.
+// Use #pragma once to match the style of every other header in this folder.
 #pragma once
 
 // initMQ2 configures the digital pin mode so the alert logic works correctly.

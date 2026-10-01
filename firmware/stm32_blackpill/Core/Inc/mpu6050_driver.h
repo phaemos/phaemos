@@ -1,7 +1,7 @@
 /**
  * mpu6050_driver.h - MPU6050 IMU driver header for STM32F411CEU6 (Black Pill)
  *
- * I target the STM32F4 HAL here because the Black Pill ships with an F411CEU6
+ * Target the STM32F4 HAL here because the Black Pill ships with an F411CEU6
  * and STM32CubeIDE generates HAL-based projects by default, so staying in HAL
  * avoids mixing abstraction layers and keeps the project portable to other
  * F4-series chips.
@@ -14,7 +14,7 @@
 
 /* ---------------------------------------------------------------------
  * I2C address
- * I shift left by 1 because STM32 HAL uses 8-bit I2C addresses (the 7-bit
+ * Shift left by 1 because STM32 HAL uses 8-bit I2C addresses (the 7-bit
  * address occupies bits [7:1] and the R/W bit is bit 0 which HAL manages).
  * AD0 tied to GND means the 7-bit address is 0x68.
  * --------------------------------------------------------------------- */
@@ -22,7 +22,7 @@
 
 /* ---------------------------------------------------------------------
  * Register map - only the registers this driver touches
- * I define these as macros rather than an enum so they can be passed
+ * Define these as macros rather than an enum so they can be passed
  * directly to HAL_I2C_Mem_Read without a cast.
  * --------------------------------------------------------------------- */
 #define MPU6050_PWR_MGMT_1      0x6B    /* Power management - write 0x00 to wake */
@@ -34,7 +34,7 @@
 
 /* ---------------------------------------------------------------------
  * Data structure
- * I pack all six axes into one struct so callers can pass a single pointer
+ * Pack all six axes into one struct so callers can pass a single pointer
  * and avoid managing six separate variables in the main sampling loop.
  * --------------------------------------------------------------------- */
 typedef struct {
@@ -62,7 +62,7 @@ HAL_StatusTypeDef MPU6050_Init(I2C_HandleTypeDef *hi2c);
  * @hi2c:  pointer to HAL I2C handle
  * @data:  output struct (only accel_x/y/z are written; gyro fields untouched)
  * Returns HAL_OK on success.
- * I provide this lighter function for the vibration node's 100Hz ISR where
+ * Provide this lighter function for the vibration node's 100Hz ISR where
  * reading only 6 bytes instead of 14 reduces the I2C bus time per interrupt.
  */
 HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data);
@@ -72,7 +72,7 @@ HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data)
  * @hi2c:  pointer to HAL I2C handle
  * @data:  output struct (all six fields written)
  * Returns HAL_OK on success.
- * I burst-read all 14 bytes (accel + temp + gyro) in one Mem_Read call to
+ * Burst-read all 14 bytes (accel + temp + gyro) in one Mem_Read call to
  * minimise I2C overhead and ensure all axes are sampled at the same instant.
  */
 HAL_StatusTypeDef MPU6050_ReadAll(I2C_HandleTypeDef *hi2c, MPU6050_Data *data);

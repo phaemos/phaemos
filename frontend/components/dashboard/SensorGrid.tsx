@@ -1,6 +1,6 @@
 'use client';
 
-// I group sensors by category rather than listing all fields flat because the
+// Group sensors by category rather than listing all fields flat because the
 // dashboard operator needs to quickly locate the relevant group during an alert
 // - scanning a grouped card layout is much faster than reading a single long list.
 
@@ -23,7 +23,7 @@ interface SensorCategory {
   fields: SensorField[];
 }
 
-// I build the category list inside the component rather than at module level
+// Build the category list inside the component rather than at module level
 // so it is recalculated on every render and always reflects the latest reading.
 function buildCategories(r: Telemetry): SensorCategory[] {
   return [
@@ -77,7 +77,7 @@ function buildCategories(r: Telemetry): SensorCategory[] {
       title: 'Gas (MQ-2)',
       fields: [
         { label: 'Gas Level', value: formatSensorValue(r.gas_level, 'raw', 0) },
-        // I use a sentinel alert field for gas_alert so the card can render a
+        // Use a sentinel alert field for gas_alert so the card can render a
         // red badge inline rather than a plain text value.
         {
           label: 'Gas Alert',
@@ -137,7 +137,7 @@ function buildCategories(r: Telemetry): SensorCategory[] {
 
 export default function SensorGrid({ reading }: Props) {
   if (!reading) {
-    // I show the skeleton at grid layout so the placeholder occupies the same
+    // Show the skeleton at grid layout so the placeholder occupies the same
     // visual space as the real grid, preventing layout shift on load.
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

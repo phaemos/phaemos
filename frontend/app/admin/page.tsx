@@ -31,7 +31,7 @@ export default function AdminPage() {
     setUploading(true);
     setFwStatus(null);
 
-    // I use FormData to send the binary file as a multipart upload.
+    // Use FormData to send the binary file as a multipart upload.
     const form = new FormData();
     form.append('file', fwFile);
 

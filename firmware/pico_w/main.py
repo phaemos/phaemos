@@ -19,12 +19,12 @@ import http_post
 # ---- Hardware setup --------------------------------------------------------
 
 # I2C bus shared by BME280 and SSD1306.
-# I use software-flexible I2C rather than hardware I2C0/I2C1 here because
+# Use software-flexible I2C rather than hardware I2C0/I2C1 here because
 # config.py specifies the pin numbers and MicroPython's machine.I2C can use
 # any GPIO pair when freq is set explicitly.
 i2c = I2C(0, sda=Pin(config.I2C_SDA), scl=Pin(config.I2C_SCL), freq=400_000)
 
-# I initialise BME280 first so any sensor fault is visible on the REPL before
+# Initialise BME280 first so any sensor fault is visible on the REPL before
 # the display is ready, making wiring errors easier to diagnose.
 sensor = bme280_mod.BME280(i2c)
 
@@ -32,18 +32,18 @@ sensor = bme280_mod.BME280(i2c)
 # I2C address 0x3C is the default for most common SSD1306 breakout boards.
 oled = ssd1306.SSD1306_I2C(128, 64, i2c, addr=0x3C)
 
-# LDR connected to GP26 (ADC0).  I use ADC directly rather than gpio.Pin
+# LDR connected to GP26 (ADC0).  Use ADC directly rather than gpio.Pin
 # because the ADC class handles the pin mode configuration automatically.
 ldr_adc = ADC(Pin(config.LDR_PIN))
 
 # ---- Wi-Fi connection -------------------------------------------------------
 
-# I connect at startup rather than lazily because the OLED shows "PHAEMOS"
+# Connect at startup rather than lazily because the OLED shows "PHAEMOS"
 # immediately and users expect the node to be online before the first reading.
 try:
     wifi_connect.connect_wifi(config.WIFI_SSID, config.WIFI_PASS)
 except RuntimeError as e:
-    # I print the error and continue rather than halting so sensor data still
+    # Print the error and continue rather than halting so sensor data still
     # appears on the OLED and UART even when the network is unavailable.
     print("WARNING: Wi-Fi failed -", e)
 
@@ -55,7 +55,7 @@ def read_sensor():
     t_raw, p_raw, h_raw = sensor.read_compensated_data()
     temp_c       = t_raw / 100.0
     humidity_pct = h_raw / 1024.0
-    # I divide by 25600 (256 * 100) to convert from 1/256 Pa to hPa directly.
+    # Divide by 25600 (256 * 100) to convert from 1/256 Pa to hPa directly.
     pressure_hpa = p_raw / 25600.0
     return temp_c, humidity_pct, pressure_hpa
 
@@ -104,7 +104,7 @@ def build_payload(temp, humidity, pressure, light):
 
 # ---- Main loop -------------------------------------------------------------
 
-# I use ticks_ms / ticks_diff for timing rather than subtracting absolute
+# Use ticks_ms / ticks_diff for timing rather than subtracting absolute
 # millis values because the Pico's 32-bit millisecond timer overflows back to
 # 0 after ~49 days.  Simple subtraction (now - last) produces a large positive
 # number at the overflow boundary, causing a ~49-day skip.  ticks_diff()
@@ -122,7 +122,7 @@ while True:
 
     # POST telemetry every TELEMETRY_INTERVAL seconds
     now = time.ticks_ms()
-    # I use ticks_diff(now, last_post_ticks) and compare to interval_ms rather
+    # Use ticks_diff(now, last_post_ticks) and compare to interval_ms rather
     # than comparing ticks directly because ticks_diff() performs the correct
     # modular subtraction described above.
     interval_ms = config.TELEMETRY_INTERVAL * 1000
@@ -139,7 +139,7 @@ while True:
         else:
             print("POST failed (status={}) - will retry next interval".format(status))
 
-    # I sleep 1 second between OLED refreshes rather than running flat-out to
+    # Sleep 1 second between OLED refreshes rather than running flat-out to
     # reduce RP2040 power draw and I2C bus activity.  The 1s sleep is much
     # shorter than TELEMETRY_INTERVAL so it does not significantly delay posts.
     time.sleep(1)

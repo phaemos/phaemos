@@ -40,12 +40,12 @@
 // expanded from one ESP32 + Arduino Uno to four nodes with 11+ sensors.
 
 // Wi-Fi timeout
-// I cap the connection wait at 10 s so the node doesn't hang indefinitely on boot.
+// Cap the connection wait at 10 s so the node doesn't hang indefinitely on boot.
 #define WIFI_TIMEOUT_MS         10000
 
 // API path (the base URL above is the host; this is the ingest endpoint path)
 #define API_TELEMETRY           "/api/v1/telemetry"
-// I use a separate API_KEY for the v2 multi-node setup; DEVICE_API_KEY remains for OTA.
+// Use a separate API_KEY for the v2 multi-node setup; DEVICE_API_KEY remains for OTA.
 #define API_KEY                 "esp32-key-placeholder"
 
 // ─── I2C bus (named aliases - same GPIO as MPU6050_SDA/SCL above) ─────────────
@@ -81,7 +81,7 @@
 #define DS18B20_RESOLUTION      12
 
 // ─── Output pin definitions ───────────────────────────────────────────────────
-// I keep outputs on high-drive GPIOs that are not shared with the I2C/ADC bus.
+// Keep outputs on high-drive GPIOs that are not shared with the I2C/ADC bus.
 #define BUZZER_PIN              25
 #define RGB_LED_PIN             26
 #define RGB_LED_COUNT           30
@@ -94,7 +94,7 @@
 #define LED_AMBER_PIN           0
 
 // ─── Serial ports for Nano and STM32 ─────────────────────────────────────────
-// I use UART1 for the Nano and UART2 for the STM32 to avoid conflicts with
+// Use UART1 for the Nano and UART2 for the STM32 to avoid conflicts with
 // the debug serial port (UART0) used by Serial.begin(115200).
 #define NANO_RX_PIN             16
 #define NANO_TX_PIN             17
@@ -109,7 +109,7 @@
 #define SERIAL_POLL_MS          100
 
 // ─── Alert thresholds ─────────────────────────────────────────────────────────
-// I set conservative thresholds here; real-world calibration should tighten them.
+// Set conservative thresholds here; real-world calibration should tighten them.
 #define TEMP_WARNING_C          40.0
 #define TEMP_CRITICAL_C         60.0
 #define HUMIDITY_WARNING_PCT    80.0
