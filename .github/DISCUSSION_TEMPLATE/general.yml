@@ -1,22 +1,8 @@
-title: "[Question] "
-labels: []
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Ask anything about PHAEMOS - setup help, usage questions, architecture curiosity.
-        For bugs, please use the [Issues tracker](https://github.com/phaemos/phaemos/issues) instead.
-
   - type: textarea
-    id: question
+    id: message
     attributes:
-      label: Your question
-      description: What would you like to know?
+      label: What's on your mind
+      description: Introductions, the machines you work with, questions about the project's direction or anything else.
     validations:
       required: true
-
-  - type: textarea
-    id: context
-    attributes:
-      label: Context (optional)
-      description: What are you trying to accomplish? Any relevant config, firmware type or deployment setup?

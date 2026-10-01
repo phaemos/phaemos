@@ -10,7 +10,7 @@ A record of key architectural and technical decisions made during development.
 **Status:** Accepted
 
 **Context:**
-The system starts with no labeled fault data. We cannot use a supervised classifier (e.g. Random Forest, SVM) without a dataset of labeled normal/fault readings.
+The system starts with no labelled fault data. We cannot use a supervised classifier (e.g. Random Forest, SVM) without a dataset of labelled normal/fault readings.
 
 **Decision:**
 Use Isolation Forest from scikit-learn. It is an unsupervised algorithm that learns what "normal" looks like and flags readings that deviate from it.
@@ -19,7 +19,7 @@ Use Isolation Forest from scikit-learn. It is an unsupervised algorithm that lea
 
 - Can train immediately once 1-2 weeks of normal data is collected
 - No manual labeling required
-- Phase 3 upgrade path: LSTM on labeled historical data once faults have been observed and logged
+- Phase 3 upgrade path: LSTM on labelled historical data once faults have been observed and logged
 
 ---
 
@@ -362,7 +362,7 @@ GitHub Discussions for questions and ideas; GitHub Issues for confirmed bugs and
 **Status:** Accepted
 
 **Context:**
-Several features require real sensor readings that cannot be simulated: Isolation Forest model training (needs 1-2 weeks of genuine fault/normal data), hardware testing across all 4 nodes and the node enclosure design (needs breadboard prototyping to confirm fitment). These items are tracked in suggestions/README.md (local only, gitignored) and docs/VERIFICATION.md.
+Several features require real sensor readings that cannot be simulated: Isolation Forest model training (needs 1-2 weeks of genuine fault/normal data), hardware testing across all 4 nodes and the node enclosure design (needs breadboard prototyping to confirm fitment). These items are tracked in the [Hardware milestone](https://github.com/phaemos/phaemos/milestone/4) and docs/VERIFICATION.md.
 
 **Decision:**
 Do not attempt these items until all four physical nodes (ESP32, STM32 Black Pill, Arduino Nano, Raspberry Pi Pico 2W) are assembled and producing real telemetry. No software workaround will substitute for this.
@@ -387,12 +387,12 @@ Do not attempt these items until all four physical nodes (ESP32, STM32 Black Pil
 **Status:** Accepted
 
 **Context:**
-PHAEMOS had two empty repositories, `client` and `infra`, and no way to feed or test the server without physical nodes beyond a single smoke script. Industrial sites also lose connectivity, and a node that posts straight to the API drops every reading taken during an outage.
+PHAEMOS had two empty repositories (`client` and `infra`) and no way to feed or test the server without physical nodes beyond a single smoke script. Industrial sites also lose connectivity. A node that posts straight to the API drops every reading taken during an outage.
 
 **Decision:**
 
 - **Python** for the client SDK and the telemetry simulator. It shares the backend's field names and is what integrators expect to `pip install`.
-- **Go** for `phaemosctl`. A single static binary suits operations work, and goroutines make an honest load generator for the ingest latency budget.
+- **Go** for `phaemosctl`. A single static binary suits operations work. Goroutines make an honest load generator for the ingest latency budget.
 - **Rust** for `phaemos-edge`, a store-and-forward gateway. It runs unattended on small ARM hardware, where memory safety and a runtime-free binary matter most.
 
 **Consequences:**

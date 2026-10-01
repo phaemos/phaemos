@@ -1,38 +1,29 @@
 name: Feature request
-description: Propose a new capability or improvement
-title: "feat: "
+description: Suggest something PHAEMOS should do.
 labels: ["enhancement"]
-assignees:
-  - zaccesss
 body:
   - type: textarea
-    id: what
+    id: problem
     attributes:
-      label: What
-      description: A short sentence explaining what this issue covers.
+      label: The problem
+      description: What are you trying to do that PHAEMOS makes hard today?
     validations:
       required: true
   - type: textarea
-    id: why
+    id: idea
     attributes:
-      label: Why
-      description: Why does this need doing? What problem does it solve?
+      label: The idea
+      description: How you would like it to work.
     validations:
       required: true
   - type: textarea
-    id: acceptance
+    id: alternatives
     attributes:
-      label: Acceptance criteria
-      description: What must be true when this is done?
-      placeholder: |
-        - [ ]
-        - [ ]
-    validations:
-      required: true
-  - type: textarea
-    id: notes
+      label: Alternatives considered
+  - type: checkboxes
+    id: checks
     attributes:
-      label: Notes
-      description: Links, related issues, edge cases to watch for.
-    validations:
-      required: false
+      label: Before submitting
+      options:
+        - label: I checked the [roadmap](https://github.com/orgs/phaemos/projects/1) and existing issues.
+          required: true

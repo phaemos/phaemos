@@ -1,56 +1,57 @@
 name: Bug report
-description: Report something that is broken or behaving incorrectly
-title: "fix: "
+description: Something in PHAEMOS does not work as documented.
 labels: ["bug"]
-assignees:
-  - zaccesss
 body:
-  - type: textarea
-    id: what
+  - type: dropdown
+    id: component
     attributes:
-      label: What
-      description: A short description of what is broken.
+      label: Component
+      options:
+        - Backend (API, alerts, tickets, anomaly scoring)
+        - Frontend (dashboard and public pages)
+        - Firmware (ESP32, STM32, Arduino Nano or Pico 2W)
+        - Hardware (wiring, schematics, PCBs)
+        - Edge gateway
+        - Client (SDK, simulator or CLI)
+        - Infra (Docker, monitoring, SQL)
+        - Docs
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, including any error message or log output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce
-      description: Numbered steps to reliably trigger the bug.
       placeholder: |
-        1.
-        2.
-        3.
+        1. Start the stack with make dev
+        2. Register a device and post a reading
+        3. ...
     validations:
       required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected behaviour
-    validations:
-      required: true
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual behaviour
-    validations:
-      required: true
-  - type: textarea
+  - type: input
     id: environment
     attributes:
       label: Environment
-      description: Fill in whichever of these are relevant.
-      placeholder: |
-        OS:
-        Browser / client (if frontend):
-        Python version (if backend):
-        Node version (if frontend):
-    validations:
-      required: false
-  - type: textarea
-    id: notes
+      description: Commit or release, operating system and browser, plus the board if it involves hardware.
+      placeholder: main at 1a2b3c4, macOS 15, Chrome 130, ESP32 DevKit V1
+  - type: checkboxes
+    id: checks
     attributes:
-      label: Notes
-      description: Logs, screenshots or related issues.
-    validations:
-      required: false
+      label: Before submitting
+      options:
+        - label: I searched existing issues and discussions for this problem.
+          required: true
+        - label: I have read the [Code of Conduct](https://github.com/phaemos/phaemos/blob/main/CODE_OF_CONDUCT.md).
+          required: true

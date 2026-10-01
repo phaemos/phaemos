@@ -26,5 +26,4 @@ jobs:
         with:
           globs: |
             **/*.md
-            !logs/**
           config: '.markdownlint.json'
