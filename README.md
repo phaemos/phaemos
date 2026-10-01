@@ -78,7 +78,7 @@ The docs live in [`docs/`](docs/) and build into a site with `make docs`. Start 
 
 ## Licence
 
-PHAEMOS is licensed under the GNU Affero General Public License v3.0, see [LICENSE](LICENSE). Anyone running a modified version as a network service must publish its source under the same terms. [NOTICE.md](NOTICE.md) lists the third-party packages and their own licences.
+Software is licensed under the GNU Affero General Public License v3.0 or later, see [LICENSE](LICENSE). Hardware designs in `hardware/` are licensed under the CERN Open Hardware Licence v2, Strongly Reciprocal, see [hardware/LICENSE](hardware/LICENSE). [NOTICE.md](NOTICE.md) explains exactly which licence covers what.
 
 ## Contributing and support
 

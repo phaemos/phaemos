@@ -55,7 +55,7 @@
     /ml                - anomaly score endpoint + retrain
     /webhooks          - Slack/Discord/Teams webhook management
     /maintenance       - maintenance windows CRUD
-    /health            - fleet health summary
+    /health/summary    - fleet health summary
     /audit-logs        - paginated audit log + CSV export
     /contact           - contact form with Turnstile verification
     /status            - public health check (no auth)
@@ -181,4 +181,4 @@ When a critical alert fires, the webhook service iterates all enabled webhook re
 
 ## Licence
 
-PHAEMOS is released under the [GNU Affero General Public License v3](../LICENSE). Anyone running a modified version as a network service must publish the source under the same terms.
+Software is released under the [GNU Affero General Public License v3](../LICENSE) or later and the hardware designs under the [CERN Open Hardware Licence v2, Strongly Reciprocal](../hardware/LICENSE). [NOTICE.md](../NOTICE.md) explains which licence covers what.

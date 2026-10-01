@@ -1,21 +1,24 @@
-## Summary
+## Description
 
-<!-- One or two sentences explaining what this PR does. -->
+<!-- What changed and why. -->
 
-## Changes
+## Closes
 
-## <!-- Short bullet point for each meaningful change. -->
+<!-- Closes #N -->
 
-## How to test
+## Components touched
 
-<!-- Step-by-step instructions for verifying the change works. -->
+- [ ] backend
+- [ ] frontend
+- [ ] firmware
+- [ ] hardware
+- [ ] edge
+- [ ] client
+- [ ] infra
+- [ ] docs
 
-1.
+## Checked
 
-## Related issue
-
-closes #
-
-## Notes
-
-<!-- Trade-offs, things left out, follow-up work. Remove if not needed. -->
+- [ ] `make lint` and `make test` pass for every component touched
+- [ ] User-facing changes have an entry in `CHANGELOG.md`
+- [ ] I have read [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) and [CONTRIBUTING.md](../CONTRIBUTING.md)

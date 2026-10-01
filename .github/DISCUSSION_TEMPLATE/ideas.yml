@@ -1,31 +1,15 @@
 title: "[Idea] "
-labels: []
+labels: ["idea"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Share a feature idea or improvement suggestion. Describe the problem you are
-        trying to solve rather than jumping straight to a solution - it helps evaluate
-        whether the idea fits the project direction.
-
-  - type: textarea
-    id: problem
-    attributes:
-      label: Problem or gap
-      description: What is missing or frustrating about the current behaviour?
-    validations:
-      required: true
-
   - type: textarea
     id: idea
     attributes:
-      label: Proposed idea
-      description: What would you like to see? How would it work?
+      label: The idea
+      description: What would make monitoring machines or building on PHAEMOS better?
     validations:
       required: true
-
   - type: textarea
-    id: alternatives
+    id: why
     attributes:
-      label: Alternatives considered (optional)
-      description: Have you worked around this in another way?
+      label: Who it helps
+      description: The problem it solves and who runs into it.

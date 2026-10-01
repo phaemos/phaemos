@@ -58,5 +58,4 @@ detection before a failure becomes visible.
 
 ## Licence
 
-PHAEMOS is released under the [GNU Affero General Public License v3](https://github.com/phaemos/phaemos/blob/main/LICENSE).
-Anyone running a modified version as a network service must publish its source under the same terms.
+Software is released under the [GNU Affero General Public License v3](https://github.com/phaemos/phaemos/blob/main/LICENSE) or later. The hardware designs are released under the [CERN Open Hardware Licence v2, Strongly Reciprocal](https://github.com/phaemos/phaemos/blob/main/hardware/LICENSE). The [licensing notice](https://github.com/phaemos/phaemos/blob/main/NOTICE.md) explains which licence covers what.

@@ -22,7 +22,7 @@ Scale when you observe any of the following:
 
 - `docker stats` shows the backend container consistently above 80% CPU
 - Postgres `pg_stat_activity` shows more than 80 active connections
-- Telemetry ingest latency climbs above 500ms (check via the `/health` response time)
+- Telemetry ingest latency climbs above 500ms (check via the `/status` response time)
 - Redis memory usage above 75% of available RAM
 - More than ~500 concurrent dashboard users
 

@@ -25,6 +25,9 @@ make dev
 | API | `http://localhost:8000` |
 | Interactive API docs | `http://localhost:8000/docs` |
 
+> [!WARNING]
+> `docker compose down` deletes the database volume along with the containers. Use `docker compose stop` to keep your data. After a wipe, `make migrate` and `make seed` rebuild it.
+
 Without Make, `docker compose up --build` starts the whole stack. The root `docker-compose.yml` includes
 `infra/docker-compose.yml`, so it works from the repository root.
 

@@ -29,13 +29,6 @@ Firmware for all 4 Phaemos nodes. Each node has its own subfolder.
 
 ---
 
-## Legacy / v1 code
-
-- `arduino/` - original v1 Arduino sketch (pre-modular refactor). Kept for reference.
-- `stm32/` - original v1 STM32 sketch. Kept for reference. Use `stm32_blackpill/` for active development.
-
----
-
 ## Flashing
 
 | Board | Tool | Notes |

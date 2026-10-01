@@ -1,29 +1,30 @@
-# PHAEMOS
+# Licensing notice
+
+PHAEMOS mixes software and hardware designs, so it carries two licences. This file explains which one applies where.
+
+| Path | Licence | Licence file |
+| --- | --- | --- |
+| `hardware/` | CERN Open Hardware Licence v2, Strongly Reciprocal (CERN-OHL-S-2.0) | [`hardware/LICENSE`](hardware/LICENSE) |
+| Everything else | GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later) | [`LICENSE`](LICENSE) |
+
+Each published component repository carries the licence file for its own folder, so a copy of `phaemos/hardware` is covered by CERN-OHL-S-2.0 and every other component repository by AGPL-3.0-or-later.
 
 Copyright (C) 2024-2026 Isaac Adjei <https://isaacadjei.me/> & <https://phaemos.com/>
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+## What the two licences mean in practice
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License along with this
-program. If not, see [gnu.org/licenses](https://www.gnu.org/licenses/).
+- **Software (AGPL-3.0-or-later).** Anyone can use, study, modify and self-host PHAEMOS. Anyone who runs a modified version as a network service must make their modified source available to that service's users.
+- **Hardware (CERN-OHL-S-2.0).** Anyone can build, modify, manufacture and sell boards made from these designs. Anyone who distributes a product based on a modified design must share the modified design files under the same licence.
 
 ## Third-party dependencies
 
-PHAEMOS depends on third-party open-source packages that are not vendored into this
-repository but are pulled in at build and run time. They are declared in:
+PHAEMOS depends on third-party open-source packages that are pulled in at build time and are not vendored into this repository. They are declared in:
 
-- `backend/requirements.txt` (Python packages)
-- `frontend/package.json` (npm packages)
+- `backend/requirements.txt` (Python packages for the API)
+- `frontend/package.json` (npm packages for the dashboard)
+- `client/python/pyproject.toml` (Python packages for the SDK and simulator)
+- `client/go/go.mod` (Go modules for `phaemosctl`)
+- `edge/Cargo.toml` (Rust crates for the edge gateway)
+- the firmware sources, which name their Arduino, STM32 HAL and MicroPython libraries in each node's README
 
-Each of those packages is distributed under its own licence by its own authors and those
-licences govern the packages themselves. To produce the full dependency licence list, run
-`pip-licenses` against the installed Python environment and `license-checker` against the
-installed npm environment.
+Each package is distributed under its own licence by its own authors.

@@ -112,7 +112,7 @@ export default function AuditLog() {
             Previous
           </button>
           <span className="text-xs text-surface-400 dark:text-surface-600">
-            Showing {skip + 1}–{skip + entries.length}
+            Showing {skip + 1} to {skip + entries.length}
           </span>
           <button
             type="button"

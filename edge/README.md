@@ -12,7 +12,7 @@
 3. Appends it to a spool file on disk and syncs it before doing anything else.
 4. Forwards spooled readings to the API in order. On failure it keeps them and retries with backoff (1, 2, 4 seconds and so on, capped at one minute).
 
-A crash, reboot or outage leaves the spool intact, and forwarding resumes where it stopped.
+A crash, reboot or outage leaves the spool intact. Forwarding resumes where it stopped.
 
 ## Running it
 

@@ -1,0 +1,35 @@
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Backend
+        - Frontend (dashboard)
+        - Firmware
+        - Hardware
+        - Edge gateway
+        - Client (SDK, simulator or CLI)
+        - Infra and deployment
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Setup and versions
+      description: Commit or release, how you run it and any boards or sensors involved.
+      placeholder: main at 1a2b3c4, Docker on Ubuntu 24.04, ESP32 DevKit V1 with a BME280
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: Steps you already took, with any output or error messages.

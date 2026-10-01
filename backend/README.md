@@ -83,7 +83,7 @@ Ensure `DATABASE_URL` and `REDIS_URL` point at running local instances before st
 
 | Method | Path | Auth | Description |
 | ------ | ---- | ---- | ----------- |
-| GET | `/health` | None | Liveness check |
+| GET | `/` | None | Liveness check |
 | GET | `/status` | None | Public health check - API, database, Redis status |
 | **Auth** | | | |
 | POST | `/api/v1/auth/register` | None | Create account (10/hr rate limit) |
