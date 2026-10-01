@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Boolean, Column, JSON, String, DateTime, Integer, func
+from sqlalchemy import BigInteger, Boolean, Column, JSON, String, DateTime, Integer, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -38,6 +38,12 @@ class User(Base):
     # TOTP 2FA - secret stored encrypted-at-rest by the DB; flag tracks enrolment state
     totp_secret  = Column(String(64), nullable=True)
     totp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
+    # the last accepted TOTP time step, so a one-time code is never accepted twice.
+    totp_last_step = Column(BigInteger, nullable=True)
+
+    # every token carries this number. Raising it ends all of the user's
+    # sessions, for example after a password or two-factor change.
+    token_version = Column(Integer, nullable=False, default=0, server_default="0")
 
     # granular RBAC overrides - JSON dict of per-user capability flags and device scope.
     # NULL means "use role defaults only". Non-null entries take precedence over the role
