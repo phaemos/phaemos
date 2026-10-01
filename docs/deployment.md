@@ -120,7 +120,7 @@ docker compose exec backend bash -c "
 ### Verify the backend is running
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/
 # Expected: {"status":"ok","service":"PHAEMOS API","environment":"production",...}
 ```
 
@@ -216,7 +216,7 @@ For `phaemos.com` itself (the Next.js app), follow the custom domain steps in Se
 2. Create a new status page named **Phaemos Status**.
 3. Add two components:
    - **Platform** - monitors `https://phaemos.com` (HTTP, 60s interval)
-   - **API** - monitors `https://api.phaemos.com/health`, keyword match `ok` (HTTP, 60s interval)
+   - **API** - monitors `https://api.phaemos.com/status`, keyword match `operational` (HTTP, 60s interval)
 4. Under **Settings** -> **Domain**, add `status.phaemos.com` as the custom domain.
 5. Instatus provides a CNAME target - add it to your DNS as a `status CNAME <instatus-target>` record.
 6. Enable email and/or Slack notifications for incidents.

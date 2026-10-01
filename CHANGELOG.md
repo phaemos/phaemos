@@ -18,6 +18,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A **Docs update** issue form and a **Q&A** discussion form
 - `assets/brand/`: the PHAEMOS logo and emblem in light and dark versions with transparent backgrounds, the single-colour emblem, a 1280 by 640 social preview card and the full brand board, with the colours, type and usage rules
 - New docs pages: `development.md` (running locally, the smoke test, the simulator and the test commands), `releases.md`, `tech-stack.md` and `repositories.md` (the monorepo layout and how publishing works), all in the docs site navigation
 - `client/`: the `phaemos-client` Python SDK, the `phaemos-sim` simulator for all four node types with injectable faults and `phaemosctl`, a Go tool for status checks, sending readings and ingest load testing
@@ -32,6 +33,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Hardware designs in `hardware/` are now licensed under the CERN Open Hardware Licence v2, Strongly Reciprocal (CERN-OHL-S-2.0), matching MELOPHOS. Everything else stays AGPL-3.0-or-later. `NOTICE.md` now explains which licence covers what and lists every dependency manifest. The README and docs licence sections say the same
+- `CONTRIBUTING.md` rewritten: where to start, the branch, commit and style conventions, the email addresses and how to report a vulnerability, with callouts for the read-only component copies and security reports
+- `hardware/README.md` rewritten with the correct firmware folders, the MPU6050 on the STM32 node, a warning about the Nano's 5 V logic and its own licence section
+- Issue, discussion and pull request templates rebuilt: bug reports and questions ask for the component, both bug and feature forms ask to search first and the pull request template lists every component
+- Callouts where a mistake costs something: private vulnerability reports in `SECURITY.md`, the Nano level shifter, the ESP32 LED strip power budget and `docker compose down` wiping the database
 - README rewritten in full around the brand logo, which switches between its light and dark versions with the viewer's theme. It now covers what PHAEMOS does, a short architecture diagram, a table of every component folder and the repository it publishes to, a two-command quickstart and the simulator. The detail it used to carry moved into the docs: running without Docker, the smoke test and the test commands into `development.md`, the release flow into `releases.md`, the tech stack and boards into `tech-stack.md` and the folder tree into `repositories.md`. The docs home page lists every page and uses the current board names
 - Auto-merge is now ecosystem-aware: patch and minor Dependabot bumps and major GitHub Actions bumps auto-merge once CI passes, but major `npm` and `pip` bumps are held for manual review since a breaking runtime change could pass lint and build yet still deploy; previously major bumps were skipped entirely
 - README rewritten: dropped the leftover animated capsule-render footer banner, switched the prose to first person, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it has been live since Phase 2, only real hardware data is still pending), verified every doc link and image still resolves
@@ -39,8 +45,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Frontend migrated to Tailwind CSS v4: `@tailwindcss/postcss` replaces the old `tailwindcss` + `autoprefixer` PostCSS plugins, `globals.css` uses a single `@import "tailwindcss"` instead of the three `@tailwind` directives and the existing `tailwind.config.ts` stays in effect via `@config` rather than migrating its theme into CSS
 - Frontend migrated to ESLint 9's flat config for `eslint-config-next` 16: `.eslintrc.cjs` replaced by `eslint.config.mjs` importing the package's native flat config export directly; `next lint` (deprecated, crashes on ESLint 9 with a circular-JSON error) replaced by calling the `eslint` CLI directly in the `lint` script
 
+### Removed
+
+- Ignore rules for local working folders that no longer exist. The work they listed is tracked in the [roadmap issues](https://github.com/phaemos/phaemos/milestones)
+- The Bugs discussion form, which had no matching discussion category. Q&A covers questions about unexpected behaviour
+- `firmware/arduino/` and `firmware/stm32/`, the v1 sketches replaced by `arduino_nano/` and `stm32_blackpill/`. Nothing built or documented them and they gave the published firmware repository two STM32 folders. Git history keeps them
+
 ### Fixed
 
+- `.github/CODEOWNERS` read `- @zaccesss` instead of `* @zaccesss`, so no pull request requested a review. It now carries the standard header and rule
+- UK spelling and sentence joins in `docs/decisions.md`, `edge/README.md` and the audit log page range
+- The STM32 driver READMEs called the MPU6050 driver an SPI driver. It talks to the sensor over I2C1, as the node README's wiring section shows
+- Health check docs pointed at `/health`, which the API does not serve. Liveness is `GET /` and the public check is `GET /status`, which uptime monitors match on `operational`
 - `SUPPORT.md`, `CONTRIBUTING.md` and the new issue page no longer link to phaemos.com, its status page or its docs site, none of which resolve before the Launch milestone. The new issue page links the roadmap board and `SUPPORT.md` instead
 - `.github/dependabot.yml` had `open-pull-requests-limit: 0` on all three ecosystems, silently blocking every Dependabot PR since the pause was added; raised back to 5 on each ecosystem to match the limit already used in repo-ops and mirror-ops
 - The `pydantic` bump to 2.13 split `email-validator` into an optional extra; schemas here use `EmailStr`, so bare `pydantic` no longer shipped it, added `pydantic[email]` to requirements.txt

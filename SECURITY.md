@@ -11,7 +11,8 @@ Only the latest commit on `main` is actively maintained.
 
 ## Reporting a Vulnerability
 
-**Do not open a public issue for security vulnerabilities.**
+> [!IMPORTANT]
+> Do not open a public issue for a security vulnerability. Report it privately so it stays undisclosed until a fix is ready.
 
 Report vulnerabilities privately via [GitHub Security Advisories](https://github.com/phaemos/phaemos/security/advisories/new). This keeps the disclosure private until a fix is ready.
 

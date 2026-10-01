@@ -1,0 +1,22 @@
+name: Docs update
+description: Something missing or wrong in docs/ or a folder README. A setup problem you solved also belongs here.
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What was missing or wrong
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: The fix or the missing information
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Where it should go
+      description: The file or folder README this belongs in.
+      placeholder: docs/development.md

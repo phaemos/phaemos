@@ -26,7 +26,7 @@ Use this checklist before every production deployment.
 - [ ] If the PR includes a new migration file, run it:
   - [ ] `docker compose exec backend psql $DATABASE_URL < migrations/NNN_description.sql`
 - [ ] Health endpoint returns expected response:
-  - [ ] `curl https://api.phaemos.com/health` returns `{"status":"ok",...}`
+  - [ ] `curl https://api.phaemos.com/status` returns `{"status":"operational",...}`
   - [ ] `status=ok`
   - [ ] `service=PHAEMOS API`
   - [ ] `environment=production`
