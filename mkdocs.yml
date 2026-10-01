@@ -56,6 +56,9 @@ nav:
     - Verification: VERIFICATION.md
   - Monitoring: instatus.md
 
+exclude_docs: |
+  README.md
+
 markdown_extensions:
   - admonition
   - pymdownx.details

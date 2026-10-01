@@ -19,6 +19,8 @@ PHAEMOS takes the opposite approach: measure everything continuously, model what
 
 **Ticket workflow** - An alert is only useful if someone acts on it. PHAEMOS connects alerts directly to a ticket system with priority, assignment and status tracking. Alerts can create tickets in one click. Nothing gets lost in a Slack thread.
 
+> **Update, October 2026:** the node line-up has changed since this post was written. The Raspberry Pi Pico 2W is now the ambient node (BME280, LDR and an OLED) and the Arduino Nano reads a BME280, an LDR and an FC-28, sending CSV to the ESP32 at 9600 baud. The current design is in the [hardware README](https://github.com/phaemos/phaemos/blob/main/hardware/README.md).
+
 **Four-node hardware** - The platform is built for real hardware: an ESP32 running Wi-Fi telemetry, an STM32 BlackPill for FFT-heavy vibration processing, a Raspberry Pi Pico W for power monitoring and temperature and an Arduino Nano for legacy sensor bridging. All four nodes ship firmware from the same repository and report to the same backend.
 
 ## Versus the alternatives
