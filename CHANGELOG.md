@@ -47,14 +47,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 
-- The `logs/` folder and `.github/WORKFLOW.md`, which described git hooks the repository no longer has
 - Ignore rules for local working folders that no longer exist. The work they listed is tracked in the [roadmap issues](https://github.com/phaemos/phaemos/milestones)
 - The Bugs discussion form, which had no matching discussion category. Q&A covers questions about unexpected behaviour
+- `firmware/arduino/` and `firmware/stm32/`, the v1 sketches replaced by `arduino_nano/` and `stm32_blackpill/`. Nothing built or documented them and they gave the published firmware repository two STM32 folders. Git history keeps them
 
 ### Fixed
 
 - `.github/CODEOWNERS` read `- @zaccesss` instead of `* @zaccesss`, so no pull request requested a review. It now carries the standard header and rule
 - UK spelling and sentence joins in `docs/decisions.md`, `edge/README.md` and the audit log page range
+- The STM32 driver READMEs called the MPU6050 driver an SPI driver. It talks to the sensor over I2C1, as the node README's wiring section shows
 - Health check docs pointed at `/health`, which the API does not serve. Liveness is `GET /` and the public check is `GET /status`, which uptime monitors match on `operational`
 - `SUPPORT.md`, `CONTRIBUTING.md` and the new issue page no longer link to phaemos.com, its status page or its docs site, none of which resolve before the Launch milestone. The new issue page links the roadmap board and `SUPPORT.md` instead
 - `.github/dependabot.yml` had `open-pull-requests-limit: 0` on all three ecosystems, silently blocking every Dependabot PR since the pause was added; raised back to 5 on each ecosystem to match the limit already used in repo-ops and mirror-ops
@@ -122,7 +123,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `docs/architecture.md` updated for v2 hardware, Next.js 15 and DigitalOcean deployment (PR 135)
 - `docs/api-reference.md` expanded with all endpoints added since v2.2.0 (PR 135)
 - All em dashes in source comments replaced with hyphens per project style guide (PR 135)
-- `suggestions/README.md` updated: all software backlog items marked complete; only hardware-blocked items remain (PR 135)
 
 ### Fixed
 
@@ -160,7 +160,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `alerts.resolved` ORM column changed from `Column(String)` to `Column(Boolean)`. `str(resolved)` cast removed from list-alerts filter - DB schema was already BOOLEAN so no migration required (PR 82)
 - Alert rule evaluation now receives all v2 sensor fields. The ingest route previously built `reading` from 6 hardcoded fields; rules on `gas_level`, `shaft_rpm` etc. would never fire (PR 79)
 - `/ml/score` endpoint fixed to use `payload.model_dump()` instead of same 6-field hardcoded dict (PR 80)
-- `.githooks/commit-msg` and `.githooks/prepare-commit-msg` execute bit committed; hooks were silently ignored on fresh clones (PR 78)
 
 ## [2.1.0] - 2026-06-01
 
@@ -259,7 +258,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `docs/deployment.md`: Render + Vercel + Docker self-hosted deployment guide
 - `docs/week_by_week.md`: updated 12-week implementation plan
 - `docs/VERIFICATION.md`: living checklist tracking verified vs pending features
-- Engineering session log `logs/2026-05-30.md`
 - Repo settings: auto-merge enabled, auto-delete-branch-on-merge enabled
 - Branch protection on main requiring all 4 CI checks to pass before merge
 
