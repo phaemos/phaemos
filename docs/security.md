@@ -37,9 +37,9 @@ Last updated: 2026-10-01
 | 25 | Cookie consent - GDPR-compliant banner, GA4 loads only after accept, consent stored in localStorage | Frontend | Done | PR 114 |
 | 26 | GDPR - DELETE /auth/me anonymises tickets and wipes personal data; GET /auth/me/export returns full JSON bundle | Backend | Done | PR 94 |
 | 27 | Input validation - Pydantic Field(max_length=...) on all string inputs in device, ticket and webhook schemas prevents storage exhaustion | Backend | Done | PR 135 |
-| 28 | Session versioning - every token carries the account's session version; changing the password or two-factor settings ends every other session | Backend | Done | PR_NUMBER |
-| 29 | Device permissions - admins manage every device, technicians their own or unassigned devices, viewers are read-only; key rotation follows the same rule | Backend | Done | PR_NUMBER |
-| 30 | Container ports bound to 127.0.0.1 so only Nginx faces the internet, since Docker's published ports bypass a host firewall | Infra | Done | PR_NUMBER |
+| 28 | Session versioning - every token carries the account's session version; changing the password or two-factor settings ends every other session | Backend | Done | PR 310 |
+| 29 | Device permissions - admins manage every device, technicians their own or unassigned devices, viewers are read-only; key rotation follows the same rule | Backend | Done | PR 310 |
+| 30 | Container ports bound to 127.0.0.1 so only Nginx faces the internet, since Docker's published ports bypass a host firewall | Infra | Done | PR 310 |
 
 ---
 
