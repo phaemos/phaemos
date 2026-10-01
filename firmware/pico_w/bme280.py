@@ -3,7 +3,7 @@
 #
 # include the full compensation math here rather than returning raw ADC
 # values because the Pico does not have the precision integer math limitations
-# of an 8-bit AVR.  The RP2040 handles 32-bit and 64-bit integer arithmetic
+# of an 8-bit AVR.  The RP2350 handles 32-bit and 64-bit integer arithmetic
 # natively, so the Bosch-specified compensation formulas run correctly without
 # the workarounds needed on Arduino.
 #
