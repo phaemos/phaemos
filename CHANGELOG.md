@@ -48,6 +48,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Backend `redis` bumped to 8.1.0, `pandas` to 3.0.5 and `bcrypt` to 5.0.0; frontend `tailwind-merge` bumped to 3.6.0, `react`/`react-dom` to 19 and `eslint`/`eslint-config-next` to 9/16, each held for manual review as a major bump and verified individually rather than merged blind
 - Frontend migrated to Tailwind CSS v4: `@tailwindcss/postcss` replaces the old `tailwindcss` + `autoprefixer` PostCSS plugins, `globals.css` uses a single `@import "tailwindcss"` instead of the three `@tailwind` directives and the existing `tailwind.config.ts` stays in effect via `@config` rather than migrating its theme into CSS
 - Frontend migrated to ESLint 9's flat config for `eslint-config-next` 16: `.eslintrc.cjs` replaced by `eslint.config.mjs` importing the package's native flat config export directly; `next lint` (deprecated, crashes on ESLint 9 with a circular-JSON error) replaced by calling the `eslint` CLI directly in the `lint` script
+- Bumped backend `uvicorn` to 0.54.0. SQLAlchemy stays on 2.0.x and Dependabot now ignores 2.1 and later, since 2.1 switches a bare `postgresql://` URL to the `psycopg` driver while the backend uses `psycopg2-binary`.
+- Tidied punctuation in the comments of `deploy.yml`, the monitoring compose file and the discussion templates.
 
 ### Removed
 
@@ -57,6 +59,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The pull request template's links, the conduct reporting route and two support answers now match the project. Older blog posts note where the hardware or the model has changed since they were written. The docs site builds with no warnings.
 - `.github/CODEOWNERS` read `- @zaccesss` instead of `* @zaccesss`, so no pull request requested a review. It now carries the standard header and rule
 - UK spelling and sentence joins in `docs/decisions.md`, `edge/README.md` and the audit log page range
 - The STM32 driver READMEs called the MPU6050 driver an SPI driver. It talks to the sensor over I2C1, as the node README's wiring section shows
@@ -68,11 +71,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Tests asserting 403 for a missing Authorization header were updated to 401, matching newer `starlette`'s `HTTPBearer` behaviour; role-guard 403s for an authenticated but unauthorised user are unaffected
 - `passlib` (unmaintained since around 2020) is incompatible with `bcrypt` 4.1+ in two ways: it reads a version attribute bcrypt 4.1+ removed and its own internal self-test hashes a deliberately 255-byte probe string that bcrypt 4.1+ now correctly rejects instead of silently truncating. Restored both the version attribute and the old truncate-rather-than-raise behaviour at the `bcrypt.hashpw`/`checkpw` boundary; real passwords are separately capped at 72 bytes in the password strength validator
 - 18 existing call sites across several hooks and components were newly flagged by stricter `react-hooks` rules aimed at React Compiler compatibility, bundled with the `eslint-config-next` 16 upgrade. One (`app/faq/page.tsx`) was a genuine issue, a running counter mutated during render, replaced with a precomputed per-section offset. The other 17 are legitimate, documented patterns (syncing state from an external source on mount, an intentional ref read to batch WebSocket pushes between polls, a standard recursive-reconnect closure) that this new rule set is unable to distinguish from unsafe code; each is annotated with a scoped, justified `eslint-disable` rather than rewritten
-
-### Changed
-
-- Bumped backend `uvicorn` to 0.54.0. SQLAlchemy stays on 2.0.x and Dependabot now ignores 2.1 and later, since 2.1 switches a bare `postgresql://` URL to the `psycopg` driver while the backend uses `psycopg2-binary`.
-- Tidied punctuation in the comments of `deploy.yml`, the monitoring compose file and the discussion templates.
 
 ## [2.3.0] - 2026-06-03
 
@@ -310,7 +308,3 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - STM32 high-frequency vibration firmware
 - Docker Compose local development stack
 - Initial project documentation
-
-[Unreleased]: https://github.com/zaccesss/phaemos/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/zaccesss/phaemos/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/zaccesss/phaemos/releases/tag/v0.1.0

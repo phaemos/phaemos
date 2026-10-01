@@ -21,4 +21,4 @@
 
 - [ ] `make lint` and `make test` pass for every component touched
 - [ ] User-facing changes have an entry in `CHANGELOG.md`
-- [ ] I have read [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) and [CONTRIBUTING.md](../CONTRIBUTING.md)
+- [ ] I have read [CODE_OF_CONDUCT.md](https://github.com/phaemos/phaemos/blob/main/CODE_OF_CONDUCT.md) and [CONTRIBUTING.md](https://github.com/phaemos/phaemos/blob/main/CONTRIBUTING.md)
