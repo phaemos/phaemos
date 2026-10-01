@@ -106,7 +106,7 @@ Point `DATABASE_URL` at PgBouncer (port 6432) instead of Postgres directly.
 PostgreSQL streaming replication adds one or more read replicas. Direct read-heavy queries (telemetry history, exports, ML training data) to the replica:
 
 ```python
-# I use a separate read-only engine for queries that don't need the primary.
+# a separate read-only engine serves queries that don't need the primary.
 read_engine = create_engine(settings.database_url_replica)
 ```
 

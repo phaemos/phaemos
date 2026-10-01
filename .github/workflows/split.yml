@@ -1,6 +1,8 @@
 # publishes each component folder to its own read-only repository.
-# git subtree split is deterministic, so every publish is a fast-forward and
-# the published history keeps each commit's original author and message.
+# git subtree split and the author rewrite are both deterministic, so every
+# publish is a fast-forward.
+# the copies credit the automation account, since the monorepo is where each
+# change is reviewed and attributed; messages and dates stay as they are.
 
 name: Publish components
 
@@ -38,6 +40,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.token.outputs.present == 'true'
         with:
+          # the latest main rather than the pushed commit, so a late push event never publishes stale history.
+          ref: main
           fetch-depth: 0
           persist-credentials: false
       - name: Split and push
@@ -45,6 +49,15 @@ jobs:
         env:
           SPLIT_TOKEN: ${{ secrets.SPLIT_TOKEN }}
           FOLDER: ${{ matrix.folder }}
+          FILTER_BRANCH_SQUELCH_WARNING: "1"
         run: |
           git subtree split --prefix="$FOLDER" --branch "publish-$FOLDER"
+          git filter-branch --env-filter '
+            if [ "$GIT_AUTHOR_EMAIL" = "code@isaacadjei.me" ]; then
+              export GIT_AUTHOR_NAME="Zac Bot" GIT_AUTHOR_EMAIL="automation@isaacadjei.me"
+            fi
+            if [ "$GIT_COMMITTER_EMAIL" = "code@isaacadjei.me" ]; then
+              export GIT_COMMITTER_NAME="Zac Bot" GIT_COMMITTER_EMAIL="automation@isaacadjei.me"
+            fi
+          ' "publish-$FOLDER"
           git push "https://x-access-token:${SPLIT_TOKEN}@github.com/phaemos/${FOLDER}.git" "publish-$FOLDER:main"
