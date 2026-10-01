@@ -69,6 +69,15 @@ def db(setup_database):
     connection.close()
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limits():
+    # the limiter is shared by the whole session, so clear it before each test
+    # rather than letting earlier tests use up a later test's allowance.
+    from app.limiter import limiter
+    limiter.reset()
+    yield
+
+
 @pytest.fixture
 def client(db):
     # override FastAPI's get_db dependency so every request in a test uses

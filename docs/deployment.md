@@ -101,13 +101,15 @@ ENVIRONMENT=production
 
 All other variables (SMTP, Resend, Brevo, Turnstile, etc.) are optional - the app starts without them and the relevant features degrade gracefully.
 
+`TRUSTED_PROXIES` lists the addresses allowed to set `X-Real-IP` for rate limiting. The default covers Nginx on the same host or in Docker, so leave it unset unless the proxy reaches the API from a public address.
+
 ### Start the stack
 
 ```bash
 docker compose up -d
 ```
 
-This starts four containers: `backend` (port 8000), `postgres` (port 5432), `redis` (port 6379) and `frontend` (port 3000). In production, only Nginx faces the internet - the container ports are not exposed publicly.
+This starts four containers: `backend` (port 8000), `postgres` (port 5432), `redis` (port 6379) and `frontend` (port 3000). Every container port is bound to `127.0.0.1`, so only Nginx faces the internet. Docker's published ports bypass `ufw`, which is why the binding matters.
 
 ### Run database migrations
 
