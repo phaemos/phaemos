@@ -13,4 +13,4 @@
 
 `codeql.yml`, `markdownlint.yml` and `biweekly-security-issue.yml` are runnable manually via `workflow_dispatch` from the Actions tab. The rest only run on their triggers above.
 
-`split.yml` needs a `SPLIT_TOKEN` secret: a fine-grained token with contents write access to the four component repositories. Without it the workflow succeeds and publishes nothing.
+`split.yml` needs a `SPLIT_TOKEN` secret: a fine-grained token with contents write access to the seven component repositories. Without it the workflow succeeds and publishes nothing.

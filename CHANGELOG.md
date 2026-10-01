@@ -35,6 +35,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The published component repositories credit the project's automation account for each commit. Messages and dates are unchanged.
 - Tidied code comments and the contributor guide.
 - The README and `docs/architecture.md` are redrawn with Mermaid diagrams and checked against the code: versions, the ingest order, the role of Redis, notifications and the full API surface. The README now explains the name. The docs site renders Mermaid diagrams.
 - The hardware docs describe Proteus for circuit simulation and KiCad for the schematics and PCB layouts. The Pico 2W's chip is named correctly as the RP2350.
