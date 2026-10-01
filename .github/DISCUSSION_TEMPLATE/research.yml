@@ -1,0 +1,20 @@
+title: "[Research] "
+labels: ["research"]
+body:
+  - type: textarea
+    id: topic
+    attributes:
+      label: The question or finding
+      description: What you want to find out or what you found, for example a modelling approach, a sensor choice or a failure mode.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Papers, datasets or repositories behind it, with links.
+  - type: textarea
+    id: relevance
+    attributes:
+      label: Why it matters for PHAEMOS
+      description: The part of the platform it would change or confirm.

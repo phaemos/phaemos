@@ -66,7 +66,7 @@ Never put a personal email address anywhere in this repository.
 
 ## Questions and discussion
 
-Use [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for setup questions, architecture questions, feature ideas and anything you have built with PHAEMOS. Issues are for confirmed bugs and accepted feature work.
+Use [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for setup questions, architecture questions, feature ideas, research and anything you have built with PHAEMOS. Issues are for confirmed bugs and accepted feature work.
 
 ## Reporting bugs
 
