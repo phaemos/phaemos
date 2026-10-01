@@ -16,22 +16,22 @@ export default function DashboardPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [nodeType, setNodeType] = useState<string>('all');
-  // I track whether the user has manually picked a device so polling never
+  // Track whether the user has manually picked a device so polling never
   // auto-selects the first device and overrides their choice.
   const [userSelected, setUserSelected] = useState(false);
 
-  // I poll devices and active alerts every 5 seconds - they change infrequently
+  // Poll devices and active alerts every 5 seconds - they change infrequently
   // so polling is fine. Only telemetry gets the real-time WebSocket treatment.
   useEffect(() => {
     const load = async () => {
-      // I use allSettled so a failing alerts query never blocks device cards from rendering.
+      // Use allSettled so a failing alerts query never blocks device cards from rendering.
       const [devResult, alertResult] = await Promise.allSettled([
         api.get<Device[]>('/devices'),
         api.get<Alert[]>('/alerts?resolved=false'),
       ]);
       if (devResult.status === 'fulfilled') {
         setDevices(devResult.value.data);
-        // I only auto-select the first device on the very first load, never on
+        // Only auto-select the first device on the very first load, never on
         // subsequent polls - otherwise the selection resets every 5 seconds.
         setSelected((prev) => {
           if (prev || userSelected) return prev;

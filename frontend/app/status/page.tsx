@@ -48,7 +48,7 @@ export default function StatusPage() {
     // (react.dev/learn/synchronizing-with-effects#fetching-data).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStatus();
-    // I poll every 30s so the page stays current without a manual refresh.
+    // Poll every 30s so the page stays current without a manual refresh.
     const id = setInterval(fetchStatus, 30_000);
     return () => clearInterval(id);
   }, []);

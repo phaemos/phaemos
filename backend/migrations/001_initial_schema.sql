@@ -1,12 +1,12 @@
 -- 001_initial_schema.sql
--- I number migrations so they run in a deterministic order and so it is obvious
+-- Number migrations so they run in a deterministic order and so it is obvious
 -- at a glance how far a given environment has been migrated.
 -- run with: psql $DATABASE_URL -f migrations/001_initial_schema.sql
 
 
 -- ---------------------------------------------------------------------------
 -- devices
--- I use UUID PKs throughout because devices may be provisioned across multiple
+-- Use UUID PKs throughout because devices may be provisioned across multiple
 -- regions before being synced to a central DB - integer sequences would collide.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS devices (
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS devices (
     location         VARCHAR(200),
     type             VARCHAR(50),
     -- api_key is the shared secret a physical node presents on every telemetry POST.
-    -- I make it UNIQUE so a duplicate key cannot be registered by accident.
+    -- Make it UNIQUE so a duplicate key cannot be registered by accident.
     api_key          VARCHAR(100) UNIQUE NOT NULL,
     status           VARCHAR(20) DEFAULT 'offline',
     last_seen        TIMESTAMP WITH TIME ZONE,
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS devices (
 -- ---------------------------------------------------------------------------
 -- users
 -- stores human operators and API service accounts.
--- I use gen_random_uuid() as the default so rows inserted without an explicit
+-- Use gen_random_uuid() as the default so rows inserted without an explicit
 -- id still get a proper UUID without requiring application-side generation.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email           VARCHAR(255) UNIQUE NOT NULL,
     name            VARCHAR(100),
-    -- I store hashed_password rather than password - bcrypt hash goes here.
+    -- Store hashed_password rather than password - bcrypt hash goes here.
     hashed_password VARCHAR(255) NOT NULL,
     -- role controls what the UI shows and what API endpoints are accessible.
     -- allowed values: 'admin', 'operator', 'viewer'
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- ---------------------------------------------------------------------------
 -- telemetry
 -- central time-series table. Every sensor reading from every node lands here.
--- I include all v2 sensor columns even if a given node only populates a subset -
+-- Include all v2 sensor columns even if a given node only populates a subset -
 -- NULL means "sensor not present on this node", not "bad reading".
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS telemetry (
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS telemetry (
 -- ---------------------------------------------------------------------------
 -- alert_rules
 -- user-defined threshold rules evaluated server-side on each telemetry insert.
--- I keep rules in the DB rather than config files so operators can change them
+-- Keep rules in the DB rather than config files so operators can change them
 -- via the UI without redeploying anything.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS alert_rules (
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS alert_rules (
 
 -- ---------------------------------------------------------------------------
 -- alerts
--- each row is one fired alert event. I keep resolved alerts in the same table
+-- each row is one fired alert event. Resolved alerts stay in the same table
 -- (rather than archiving them) so we can query resolution time distributions.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS alerts (
@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 -- ---------------------------------------------------------------------------
 -- audit_log
--- append-only record of every state-changing API call. I use VARCHAR for
+-- append-only record of every state-changing API call. VARCHAR is used for
 -- user_id and resource_id rather than UUID FKs so the table survives user
 -- or resource deletion without orphan issues - the audit trail must be
 -- immutable even when the referenced entities are gone.
@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 -- ---------------------------------------------------------------------------
 -- indexes
--- I create these after all tables are defined to keep the schema section clean.
+-- Create these after all tables are defined to keep the schema section clean.
 -- each index is justified by a specific query pattern in the application.
 -- ---------------------------------------------------------------------------
 
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 CREATE INDEX IF NOT EXISTS idx_telemetry_device_id   ON telemetry (device_id);
 -- DESC because the dashboard always fetches the N most recent readings.
 CREATE INDEX IF NOT EXISTS idx_telemetry_recorded_at ON telemetry (recorded_at DESC);
--- I index is_anomaly so the ML dashboard can filter anomalous rows without a full scan.
+-- Index is_anomaly so the ML dashboard can filter anomalous rows without a full scan.
 CREATE INDEX IF NOT EXISTS idx_telemetry_is_anomaly  ON telemetry (is_anomaly);
 
 -- alerts are almost always filtered by device on the device detail page.

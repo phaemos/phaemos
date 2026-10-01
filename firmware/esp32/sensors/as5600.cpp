@@ -1,4 +1,4 @@
-// I include config.h first to get AS5600_ADDR, I2C_SDA and I2C_SCL without
+// Include config.h first to get AS5600_ADDR, I2C_SDA and I2C_SCL without
 // hard-coding the values in this file.
 #include "../config.h"
 #include "as5600.h"
@@ -6,12 +6,12 @@
 #include <Arduino.h>
 
 // AS5600 raw angle registers - high byte at 0x0C, low byte at 0x0D.
-// I define them here rather than in config.h because they are hardware
+// Define them here rather than in config.h because they are hardware
 // constants from the AS5600 datasheet, not project-specific pin assignments.
 #define AS5600_REG_ANGLE_HIGH  0x0C
 #define AS5600_REG_ANGLE_LOW   0x0D
 
-// I keep the previous angle and timestamp at file scope so RPM can be
+// Keep the previous angle and timestamp at file scope so RPM can be
 // calculated across successive calls without an extra parameter.
 static float    s_prevAngle    = 0.0F;
 static uint32_t s_prevTime     = 0;
@@ -22,19 +22,19 @@ static bool     s_firstRead    = true;
 static uint16_t readRawAngle() {
     Wire.beginTransmission(AS5600_ADDR);
     Wire.write(AS5600_REG_ANGLE_HIGH);
-    Wire.endTransmission(false); // I use repeated-start (false) to keep the bus alive
+    Wire.endTransmission(false); // Use repeated-start (false) to keep the bus alive
 
     Wire.requestFrom((uint8_t)AS5600_ADDR, (uint8_t)2);
     uint8_t hi = Wire.available() ? Wire.read() : 0;
     uint8_t lo = Wire.available() ? Wire.read() : 0;
 
-    // I mask hi to 4 bits because the top 4 bits of register 0x0C are unused
+    // Mask hi to 4 bits because the top 4 bits of register 0x0C are unused
     // per the AS5600 datasheet and leaving them in would corrupt the angle.
     return ((uint16_t)(hi & 0x0F) << 8) | lo;
 }
 
 void initAS5600() {
-    // I do a quick probe to make sure the sensor is on the bus before
+    // Do a quick probe to make sure the sensor is on the bus before
     // the main loop starts relying on its data.
     Wire.beginTransmission(AS5600_ADDR);
     uint8_t err = Wire.endTransmission();
@@ -61,7 +61,7 @@ void readAS5600(float* angle, float* rpm) {
     *angle = deg;
 
     if (s_firstRead) {
-        // I skip RPM on the very first call because there is no previous
+        // Skip RPM on the very first call because there is no previous
         // sample to diff against - returning 0 is safer than garbage.
         *rpm       = 0.0F;
         s_firstRead = false;
@@ -69,7 +69,7 @@ void readAS5600(float* angle, float* rpm) {
         float dtSec = (now - s_prevTime) / 1000.0F;
 
         if (dtSec > 0.0F) {
-            // I compute the shortest angular delta to handle wrap-around
+            // Compute the shortest angular delta to handle wrap-around
             // at the 0/360 boundary correctly.
             float delta = deg - s_prevAngle;
             if (delta >  180.0F) delta -= 360.0F;

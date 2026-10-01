@@ -1,6 +1,6 @@
 'use client';
 
-// I fetch the device list once on mount so users can pick from named devices
+// Fetch the device list once on mount so users can pick from named devices
 // rather than typing raw UUIDs. The chart columns are driven by the selected IDs.
 
 import { useState, useEffect } from 'react';

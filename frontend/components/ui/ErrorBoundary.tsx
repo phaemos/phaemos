@@ -10,7 +10,7 @@ interface State {
   hasError: boolean;
 }
 
-// I use a class component here because React error boundaries require
+// Use a class component here because React error boundaries require
 // componentDidCatch / getDerivedStateFromError, which have no hook equivalent.
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {

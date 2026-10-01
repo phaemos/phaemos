@@ -1,7 +1,7 @@
 # firmware/pico_w/ssd1306.py
 # MicroPython SSD1306 OLED driver for I2C.
 #
-# I write my own minimal driver rather than relying on the MicroPython
+# Use a minimal local driver rather than relying on the MicroPython
 # standard library's ssd1306.py because not all MicroPython builds for the
 # pico 2W include it in the frozen modules and keeping dependencies local
 # means the firmware is self-contained and does not require an internet
@@ -14,7 +14,7 @@ class SSD1306_I2C:
     """SSD1306 128x64 (or 128x32) OLED display over I2C."""
 
     # SSD1306 command bytes used in the init sequence.
-    # I define them as class constants rather than inline magic numbers so the
+    # Define them as class constants rather than inline magic numbers so the
     # init sequence below reads like the datasheet command names.
     _CMD_DISPLAY_OFF        = 0xAE
     _CMD_DISPLAY_ON         = 0xAF
@@ -51,7 +51,7 @@ class SSD1306_I2C:
         self._i2c   = i2c
         self._addr  = addr
 
-        # I allocate the framebuffer as a bytearray of width * height / 8
+        # Allocate the framebuffer as a bytearray of width * height / 8
         # bytes because the SSD1306 uses 1 bit per pixel packed into bytes.
         # framebuf.MONO_VLSB means column 0 row 0 is bit 0 of byte 0, which
         # matches the SSD1306's native memory layout in horizontal address mode.

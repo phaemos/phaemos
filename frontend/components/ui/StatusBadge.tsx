@@ -1,6 +1,6 @@
 'use client';
 
-// I accept both device status strings and alert severity strings so this
+// Accept both device status strings and alert severity strings so this
 // component works in both device cards and alert rows without needing two
 // separate badge components.
 

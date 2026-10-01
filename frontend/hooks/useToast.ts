@@ -54,7 +54,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (type: ToastType, message: string) => {
       const id = crypto.randomUUID();
       dispatch({ type: 'ADD', toast: { id, type, message } });
-      // I auto-dismiss after 4s so toasts never pile up unattended.
+      // Auto-dismiss after 4s so toasts never pile up unattended.
       setTimeout(() => removeToast(id), 4000);
     },
     [removeToast],

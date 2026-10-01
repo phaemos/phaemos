@@ -1,9 +1,9 @@
-// I keep all pure formatting helpers in one place so components stay thin
+// Keep all pure formatting helpers in one place so components stay thin
 // and the same formatting logic is never duplicated across the codebase.
 
 /**
  * formatDate
- * I format ISO strings to "DD MMM YYYY HH:mm" because the dashboard
+ * Format ISO strings to "DD MMM YYYY HH:mm" because the dashboard
  * operators are used to reading day-first dates and the 24-hour clock
  * avoids AM/PM ambiguity during night shifts.
  */
@@ -19,7 +19,7 @@ export function formatDate(iso: string): string {
 
 /**
  * formatSensorValue
- * I return "-- unit" when value is null so every sensor field always renders
+ * Return "-- unit" when value is null so every sensor field always renders
  * a string - components never need to guard against undefined display values.
  */
 export function formatSensorValue(
@@ -35,7 +35,7 @@ export function formatSensorValue(
 
 /**
  * severityColor
- * I return a Tailwind text-color class rather than a raw hex so the palette
+ * Return a Tailwind text-color class rather than a raw hex so the palette
  * stays consistent with the rest of the UI and respects Tailwind's purge list.
  */
 export function severityColor(
@@ -55,7 +55,7 @@ export function severityColor(
 
 /**
  * clamp
- * I provide clamp as a named utility rather than inlining Math.min/Math.max
+ * Provide clamp as a named utility rather than inlining Math.min/Math.max
  * so the intent is obvious at every call site.
  */
 export function clamp(value: number, min: number, max: number): number {
@@ -64,7 +64,7 @@ export function clamp(value: number, min: number, max: number): number {
 
 /**
  * nodeTypeLabel
- * I map the raw node_type string from firmware to a human-readable label
+ * Map the raw node_type string from firmware to a human-readable label
  * so operators see descriptive board names rather than internal identifiers.
  */
 export function nodeTypeLabel(nodeType: string | null): string {

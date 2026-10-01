@@ -1,5 +1,5 @@
 -- telemetry-export.sql
--- I use this query to export all telemetry data to a CSV file for ML model training.
+-- Use this query to export all telemetry data to a CSV file for ML model training.
 -- run from psql: \copy (SELECT ...) TO '/tmp/telemetry.csv' WITH CSV HEADER
 -- or: psql $DATABASE_URL -f sql/queries/telemetry-export.sql
 --

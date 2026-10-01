@@ -25,7 +25,7 @@ _engine = create_engine(os.environ["DATABASE_URL"])
 _pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # audit_log is a raw-SQL table (not an ORM model) so Base.metadata.create_all
-# does not create it. I create it explicitly here so audit_service.log_action()
+# does not create it, so create it explicitly here so audit_service.log_action()
 # does not fail in tests, which would roll back the outer transaction and corrupt
 # the test state that follows.
 _AUDIT_LOG_DDL = """
@@ -108,7 +108,7 @@ def admin_user(db):
 
 @pytest.fixture
 def auth_headers(admin_user):
-    # I generate a real JWT here so tests exercise the actual token-validation path
+    # Generate a real JWT here so tests exercise the actual token-validation path
     # rather than mocking it - any regression in the auth dependency will surface
     # in these tests rather than only in manual testing.
     from app.routes.auth import create_access_token

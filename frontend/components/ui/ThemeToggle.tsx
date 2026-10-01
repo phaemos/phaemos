@@ -1,6 +1,6 @@
 'use client';
 
-// I read the current theme from the html element's class list (set by the
+// Read the current theme from the html element's class list (set by the
 // inline script in layout.tsx) so the button reflects the real state even
 // before React hydration completes.
 
@@ -10,7 +10,7 @@ export default function ThemeToggle() {
   const [dark, setDark] = useState(true);
 
   useEffect(() => {
-    // I sync with the class applied by the pre-hydration script so the initial
+    // Sync with the class applied by the pre-hydration script so the initial
     // button label matches what the user already sees. Synchronizing with the
     // external DOM class, the documented effect pattern
     // (react.dev/learn/synchronizing-with-effects).

@@ -1,6 +1,6 @@
 'use client';
 
-// I use setInterval rather than polling with setTimeout chains because setInterval
+// Use setInterval rather than polling with setTimeout chains because setInterval
 // keeps a stable cadence even if the fetch takes slightly longer than expected.
 
 import { useState, useEffect, useCallback } from 'react';
@@ -32,7 +32,7 @@ export function useTelemetry(
 
   const { fromTs, toTs, limit = 50, nodeType } = options;
 
-  // I extract the fetch logic into useCallback so the interval handler and the
+  // Extract the fetch logic into useCallback so the interval handler and the
   // manual refetch both call the exact same function without duplicating code.
   const fetchTelemetry = useCallback(async () => {
     try {
@@ -53,7 +53,7 @@ export function useTelemetry(
   }, [deviceId, fromTs, toTs, limit, nodeType]);
 
   useEffect(() => {
-    // I set loading true whenever the deviceId or time range changes so the consumer
+    // Set loading true whenever the deviceId or time range changes so the consumer
     // knows fresh data is incoming rather than displaying stale results.
     // fetching on dependency change, the documented effect pattern
     // (react.dev/learn/synchronizing-with-effects#fetching-data).
@@ -61,11 +61,11 @@ export function useTelemetry(
     setLoading(true);
     fetchTelemetry();
 
-    // I hold a reference to the interval in a closure variable so the visibility
+    // Hold a reference to the interval in a closure variable so the visibility
     // handler can clear and restart it without touching React state.
     let intervalId: ReturnType<typeof setInterval> | null = setInterval(fetchTelemetry, intervalMs);
 
-    // I pause polling while the tab is hidden and restart it the moment the tab
+    // Pause polling while the tab is hidden and restart it the moment the tab
     // becomes visible again so background tabs don't burn API quota and battery.
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {

@@ -1,7 +1,7 @@
 # firmware/pico_w/bme280.py
 # full MicroPython BME280 driver - no external library required.
 #
-# I include the full compensation math here rather than returning raw ADC
+# Include the full compensation math here rather than returning raw ADC
 # values because the Pico does not have the precision integer math limitations
 # of an 8-bit AVR.  The RP2040 handles 32-bit and 64-bit integer arithmetic
 # natively, so the Bosch-specified compensation formulas run correctly without
@@ -9,7 +9,7 @@
 #
 # compensation formulas are taken directly from the BME280 datasheet
 # (BST-BME280-DS002, Section 4.2.3 "Compensation formulas in double precision
-# floating point").  I use the integer variant (Section 4.2.3, code listing 1)
+# floating point").  Use the integer variant (Section 4.2.3, code listing 1)
 # for temperature and pressure to match the datasheet reference implementation,
 # then convert to practical units at the end.
 #
@@ -50,7 +50,7 @@ class BME280:
         self._addr = addr
 
         # verify chip identity before attempting calibration reads.
-        # I check the chip ID so a wiring error produces a clear error message
+        # Check the chip ID so a wiring error produces a clear error message
         # instead of silently reading garbage calibration data.
         chip_id = self._read_byte(self._REG_ID)
         if chip_id not in (0x60, 0x58):
@@ -160,7 +160,7 @@ class BME280:
 
         # ---- Temperature compensation (datasheet 4.2.3, listing 1) ----
         # var1 and var2 use a "t_fine" intermediate value that is also reused
-        # by the pressure compensation - I store it as self._t_fine.
+        # by the pressure compensation - store it as self._t_fine.
         var1 = (adc_T / 16384.0 - self.dig_T1 / 1024.0) * self.dig_T2
         var2 = (adc_T / 131072.0 - self.dig_T1 / 8192.0) ** 2 * self.dig_T3
         self._t_fine = int(var1 + var2)
@@ -175,7 +175,7 @@ class BME280:
         var1 = (1.0 + var1 / 32768.0) * self.dig_P1
 
         if var1 == 0.0:
-            # I guard against division by zero here exactly as the Bosch
+            # Guard against division by zero here exactly as the Bosch
             # reference implementation does - if var1 is 0 the pressure
             # formula would produce infinity or a crash.
             pressure = 0

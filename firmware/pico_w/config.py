@@ -1,5 +1,5 @@
 # firmware/pico_w/config.py
-# I keep all credentials and endpoints in one file so flashing a new Pico
+# Keep all credentials and endpoints in one file so flashing a new Pico
 # only requires updating this single file before copying to the filesystem
 
 WIFI_SSID    = "YourNetworkName"

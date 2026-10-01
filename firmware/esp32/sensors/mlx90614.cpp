@@ -1,10 +1,10 @@
-// I include config.h first so MLX90614_ADDR is available for the constructor.
+// Include config.h first so MLX90614_ADDR is available for the constructor.
 #include "../config.h"
 #include "mlx90614.h"
 #include <Wire.h>
 #include <Adafruit_MLX90614.h>
 
-// I use the default constructor here because Adafruit_MLX90614 always uses
+// Use the default constructor here because Adafruit_MLX90614 always uses
 // the fixed 0x5A address internally - the config macro is kept for documentation.
 static Adafruit_MLX90614 mlx;
 
@@ -17,7 +17,7 @@ void initMLX90614() {
 }
 
 float readMLX90614() {
-    // I read object temperature rather than ambient because the use case
+    // Read object temperature rather than ambient because the use case
     // is non-contact surface measurement, not air temperature.
     return mlx.readObjectTempC();
 }

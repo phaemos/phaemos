@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class TicketCreate(BaseModel):
     device_id:   UUID | None = None
     alert_id:    UUID | None = None
-    # I cap title and description to prevent storage exhaustion from oversized payloads.
+    # Cap title and description to prevent storage exhaustion from oversized payloads.
     title:       str = Field(max_length=200)
     description: str | None = Field(default=None, max_length=5000)
     priority:    str | None = Field(default=None, max_length=20)   # low / medium / high / critical

@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 # --- DeviceCreate ---
 # used when a client (e.g. admin UI or POST /devices) registers a new device.
 class DeviceCreate(BaseModel):
-    # I cap string lengths to prevent storage exhaustion from oversized payloads.
+    # Cap string lengths to prevent storage exhaustion from oversized payloads.
     name:     str = Field(max_length=200)
     location: str | None = Field(default=None, max_length=200)
     type:     str | None = Field(default=None, max_length=50)
-    # I allow owner_id at creation time so an admin can assign a device to a
+    # Allow owner_id at creation time so an admin can assign a device to a
     # technician in a single request rather than needing a follow-up PATCH.
     owner_id: UUID | None = None
 
@@ -23,7 +23,7 @@ class DeviceUpdate(BaseModel):
     status:           str | None = Field(default=None, max_length=50)
     firmware_version: str | None = Field(default=None, max_length=100)
     owner_id:         UUID | None = None
-    # I cap individual tag length to prevent oversized values in the ARRAY column.
+    # Cap individual tag length to prevent oversized values in the ARRAY column.
     tags:             list[str] | None = None
 
 

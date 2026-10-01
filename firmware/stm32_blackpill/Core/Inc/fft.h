@@ -1,7 +1,7 @@
 /**
  * fft.h - CMSIS-DSP frequency analysis for the vibration node
  *
- * I use arm_rfft_fast_f32 (radix-2 real FFT, O(N log N)) from CMSIS-DSP.
+ * Use arm_rfft_fast_f32 (radix-2 real FFT, O(N log N)) from CMSIS-DSP.
  * This replaces the previous O(N^2) DFT implementation; on a 96 MHz
  * Cortex-M4 with FPU the FFT completes in roughly 128 * log2(128) * 2 cycles
  * (~1,800 cycles, ~19 us) versus ~16,400 cycles (~171 us) for the DFT.
@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include "arm_math.h"
 
-/* I choose 128 because it is a power of two (required by arm_rfft_fast_f32),
+/* Choose 128 because it is a power of two (required by arm_rfft_fast_f32),
  * fits comfortably in the F411's 128 KB SRAM and at 100 Hz gives a
  * frequency resolution of 100/128 = 0.78 Hz - adequate for mechanical
  * vibration diagnostics at this sample rate. */

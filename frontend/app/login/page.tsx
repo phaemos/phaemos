@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // I redirect immediately if already authenticated so logged-in users
+  // Redirect immediately if already authenticated so logged-in users
   // do not see a blank flash of the login form before being sent away.
   useEffect(() => {
     const match = document.cookie.match(/(?:^|; )token=([^;]*)/);
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
       const { access_token } = await res.json();
 
-      // I store the token in both localStorage (for the axios interceptor) and
+      // Store the token in both localStorage (for the axios interceptor) and
       // a plain cookie (for the Next.js edge middleware route guard).
       localStorage.setItem('token', access_token);
       document.cookie = `token=${access_token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;

@@ -32,5 +32,5 @@ psql $DATABASE_URL -f sql/queries/device-summary.sql
 ## Notes
 
 - Never commit credentials in SQL files
-- All files have a first-person header comment explaining when and why to use them
+- All files have a header comment explaining when and why to use them
 - Seed files are for local development only - never run on production data

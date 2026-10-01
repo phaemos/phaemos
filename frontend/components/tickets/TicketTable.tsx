@@ -1,6 +1,6 @@
 'use client';
 
-// I implement sorting as local state because ticket lists are short enough
+// Implement sorting as local state because ticket lists are short enough
 // that client-side sort is instant and avoids a round-trip to the server on
 // every column header click.
 
@@ -22,7 +22,7 @@ function formatTicketNumber(n: number | null): string {
   return `PHM-${n.toString().padStart(4, '0')}`;
 }
 
-// I define priority weight so sorting by priority produces a meaningful
+// Define priority weight so sorting by priority produces a meaningful
 // ordering (critical first) rather than alphabetical.
 const PRIORITY_WEIGHT: Record<string, number> = {
   critical: 0,

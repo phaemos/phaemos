@@ -1,4 +1,4 @@
-// I use #pragma once instead of an #ifndef guard because it is simpler and
+// Use #pragma once instead of an #ifndef guard because it is simpler and
 // universally supported by every compiler this project targets.
 #pragma once
 
@@ -10,7 +10,7 @@ struct BME280Reading {
     float pressure;    // hPa
 };
 
-// I forward-declare these as plain C-style functions so any .cpp file can
+// Forward-declare these as plain C-style functions so any .cpp file can
 // call them without pulling in C++ class headers they do not need.
 void initBME280();
 void readBME280(BME280Reading* r);

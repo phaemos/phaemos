@@ -2,7 +2,7 @@
  * main.c - Vibration node firmware for STM32F411CEU6 (Black Pill)
  *
  * Sampling strategy:
- * I use TIM2 at 100 Hz to drive sampling rather than a HAL_Delay loop because
+ * Use TIM2 at 100 Hz to drive sampling rather than a HAL_Delay loop because
  * a delay-based approach accumulates drift: each I2C read takes a variable
  * ~0.2 ms so a 10 ms delay produces an actual period of ~10.2 ms, yielding
  * an effective sample rate of ~98 Hz instead of 100 Hz.  TIM2 fires at an
@@ -13,7 +13,7 @@
  * STM32CubeIDE note:
  * The SystemClock_Config, MX_GPIO_Init, MX_I2C1_Init, MX_USART1_UART_Init and
  * MX_TIM2_Init functions are stubs here.  STM32CubeIDE generates the full
- * implementations from the .ioc file.  I keep the stubs so this file
+ * implementations from the .ioc file.  Keep the stubs so this file
  * compiles standalone and documents the expected peripheral configuration.
  */
 
@@ -26,7 +26,7 @@
 
 /* ---------------------------------------------------------------------
  * HAL peripheral handles
- * I declare these at file scope so the MX_*_Init stubs and the timer
+ * Declare these at file scope so the MX_*_Init stubs and the timer
  * callback can both access them without passing pointers through every layer.
  * --------------------------------------------------------------------- */
 I2C_HandleTypeDef   hi2c1;
@@ -35,14 +35,14 @@ TIM_HandleTypeDef   htim2;
 
 /* ---------------------------------------------------------------------
  * Sample buffer
- * I store FFT_SIZE (128) accel-Z samples rather than a circular buffer
+ * Store FFT_SIZE (128) accel-Z samples rather than a circular buffer
  * because arm_rfft_fast_f32 requires a complete power-of-two window.
  * At 100 Hz this covers 1.28 seconds per FFT window; the buffer is
  * overwritten each window so memory usage stays constant at 512 bytes.
  * --------------------------------------------------------------------- */
 static float accel_z_buf[FFT_SIZE];
 
-/* I use volatile here because sample_ready is written in the ISR (TIM2
+/* Use volatile here because sample_ready is written in the ISR (TIM2
  * callback) and read in the main loop - without volatile the compiler may
  * cache the read in a register and never see the ISR's update. */
 volatile uint8_t  sample_ready = 0;
@@ -67,7 +67,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     MPU6050_Data imu;
 
-    /* I use ReadAccel (6 bytes) rather than ReadAll (14 bytes) in the ISR
+    /* Use ReadAccel (6 bytes) rather than ReadAll (14 bytes) in the ISR
      * to keep I2C bus time short and reduce jitter in the 100 Hz timer. */
     if (MPU6050_ReadAccel(&hi2c1, &imu) == HAL_OK)
     {
@@ -105,8 +105,8 @@ int main(void)
         Error_Handler();
     }
 
-    /* Start TIM2 in interrupt mode.  I use Base_Start_IT rather than
-     * PWM or OC modes because I only need the period-elapsed interrupt
+    /* Start TIM2 in interrupt mode.  Use Base_Start_IT rather than
+     * PWM or OC modes because only the period-elapsed interrupt is needed
      * to trigger sampling; no output compare or capture is required. */
     if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
     {
@@ -117,7 +117,7 @@ int main(void)
     while (1)
     {
         /* Spin-wait for the ISR to collect 100 samples.
-         * I avoid a WFI/sleep here because the STM32F411 wakes from WFI on
+         * Avoid a WFI/sleep here because the STM32F411 wakes from WFI on
          * any interrupt including SysTick and managing re-entry correctly
          * adds complexity that is not needed at 100 Hz. */
         if (sample_ready)
@@ -125,12 +125,12 @@ int main(void)
             sample_ready = 0;  /* Clear flag before processing to avoid race */
 
             /* Compute per-axis means across the 100-sample window.
-             * I use separate mean variables rather than reusing the buffer
+             * Use separate mean variables rather than reusing the buffer
              * so the FFT still operates on the original Z samples. */
             float sum_x = 0.0f, sum_y = 0.0f, sum_z = 0.0f;
             MPU6050_Data frame;
 
-            /* I re-read a single fresh sample for X and Y means because the
+            /* Re-read a single fresh sample for X and Y means because the
              * sample buffer only stores Z (the primary vibration axis).
              * For a multi-axis FFT upgrade, expand the buffer to 3*100 floats. */
             if (MPU6050_ReadAll(&hi2c1, &frame) == HAL_OK)
@@ -167,13 +167,13 @@ int main(void)
 /* =====================================================================
  * Peripheral init stubs
  * STM32CubeIDE generates the full bodies from the .ioc file.
- * I provide empty stubs so this file compiles and documents pin assignments.
+ * Provide empty stubs so this file compiles and documents pin assignments.
  * ===================================================================== */
 
 /**
  * SystemClock_Config - Configure PLL for 96 MHz system clock.
  * CubeIDE .ioc settings: HSE 25 MHz crystal, PLL M=25, N=192, P=2 -> 96 MHz.
- * I use 96 MHz rather than the maximum 100 MHz because it gives whole-number
+ * Use 96 MHz rather than the maximum 100 MHz because it gives whole-number
  * TIM2 prescaler values for exactly 100 Hz (see README.md for ARR calculation).
  */
 static void SystemClock_Config(void)
@@ -191,7 +191,7 @@ static void MX_GPIO_Init(void)
 
 /**
  * MX_I2C1_Init - Configure I2C1 at 400 kHz on PB6 (SCL) and PB7 (SDA).
- * I use 400 kHz (fast mode) rather than 100 kHz so a 14-byte MPU6050 read
+ * Use 400 kHz (fast mode) rather than 100 kHz so a 14-byte MPU6050 read
  * completes in ~0.4 ms instead of ~1.4 ms, leaving more CPU time per 10 ms
  * TIM2 period.
  */
@@ -203,7 +203,7 @@ static void MX_I2C1_Init(void)
 
 /**
  * MX_USART1_UART_Init - Configure USART1 at 115200 baud on PA9 (TX), PA10 (RX).
- * I use 115200 rather than 9600 so the ~60-byte telemetry line transmits in
+ * Use 115200 rather than 9600 so the ~60-byte telemetry line transmits in
  * ~5 ms rather than ~60 ms, keeping the main loop responsive.
  */
 static void MX_USART1_UART_Init(void)
@@ -220,7 +220,7 @@ static void MX_USART1_UART_Init(void)
  *   Prescaler (PSC) = 9600 - 1  -> timer clock = 96 MHz / 9600 = 10 000 Hz
  *   Auto-reload (ARR) = 100 - 1 -> period = 10 000 / 100 = 100 Hz
  *
- * I subtract 1 from both because TIM2 counts from 0 to ARR inclusive (ARR+1
+ * Subtract 1 from both because TIM2 counts from 0 to ARR inclusive (ARR+1
  * ticks per period) and from 0 to PSC inclusive (PSC+1 source clocks per
  * timer clock tick).
  */
@@ -232,7 +232,7 @@ static void MX_TIM2_Init(void)
 
 /**
  * Error_Handler - Halt on unrecoverable fault.
- * I disable interrupts and loop forever rather than attempting a soft reset
+ * Disable interrupts and loop forever rather than attempting a soft reset
  * because a reset loop could cause repeated I2C bus lockup if the sensor
  * is absent.
  */

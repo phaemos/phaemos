@@ -1,4 +1,4 @@
-// I use #pragma once for the same reason as every other header in this project.
+// Use #pragma once for the same reason as every other header in this project.
 #pragma once
 
 // connectWiFi - joins the given SSID and blocks until connected or until

@@ -1,8 +1,8 @@
-// I use #pragma once to keep this header self-contained without boilerplate
+// Use #pragma once to keep this header self-contained without boilerplate
 // include guards.
 #pragma once
 
-// I use a named enum for relay channels so call sites cannot accidentally pass
+// Use a named enum for relay channels so call sites cannot accidentally pass
 // a raw GPIO number to triggerRelay - the type system catches the mistake.
 enum RelayChannel {
     RELAY_CH1 = 0,

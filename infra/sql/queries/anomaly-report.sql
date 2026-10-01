@@ -1,5 +1,5 @@
 -- anomaly-report.sql
--- I use this query to get a summary of anomaly events per device over a given period.
+-- Use this query to get a summary of anomaly events per device over a given period.
 -- useful for reviewing ML model performance and identifying problem machines.
 -- safe to run on production (read-only).
 --

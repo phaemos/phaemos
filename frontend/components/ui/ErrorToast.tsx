@@ -1,6 +1,6 @@
 'use client';
 
-// I auto-dismiss after 4 seconds because error toasts that require manual
+// Auto-dismiss after 4 seconds because error toasts that require manual
 // dismissal interrupt the operator's attention during a critical alert when
 // they need to be scanning the dashboard, not clicking dismiss buttons.
 
@@ -22,7 +22,7 @@ export default function ErrorToast({
       onDismiss();
     }, autoDismissMs);
 
-    // I clean up the timeout so if the parent unmounts before the timer fires
+    // Clean up the timeout so if the parent unmounts before the timer fires
     // we do not call onDismiss on an unmounted component and trigger a warning.
     return () => {
       clearTimeout(timerId);

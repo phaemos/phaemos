@@ -1,6 +1,6 @@
 'use client';
 
-// I follow the same polling pattern as useTelemetry so both hooks behave
+// Follow the same polling pattern as useTelemetry so both hooks behave
 // consistently and operators see near-real-time alert state without a manual
 // page refresh.
 
@@ -20,7 +20,7 @@ export function useAlerts(intervalMs: number = 5000): UseAlertsResult {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // I only fetch unresolved alerts here because the dashboard alert panel
+  // Only fetch unresolved alerts here because the dashboard alert panel
   // is an active-issues feed - resolved alerts belong in a separate history view.
   const fetchAlerts = useCallback(async () => {
     try {
@@ -47,7 +47,7 @@ export function useAlerts(intervalMs: number = 5000): UseAlertsResult {
 
     const intervalId = setInterval(fetchAlerts, intervalMs);
 
-    // I clear the interval so the hook does not keep firing after the component
+    // Clear the interval so the hook does not keep firing after the component
     // that called it has been removed from the tree.
     return () => {
       clearInterval(intervalId);

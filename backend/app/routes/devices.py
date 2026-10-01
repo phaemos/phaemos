@@ -30,7 +30,7 @@ def list_devices(
     current_user: User = Depends(get_current_user),
 ):
     q = db.query(Device).order_by(Device.created_at.desc())
-    # I apply ownership filtering here rather than in a middleware so the logic
+    # Apply ownership filtering here rather than in a middleware so the logic
     # is explicit and easy to audit: admins and viewers see everything; technicians
     # see only their own devices plus unowned (shared) devices.
     if current_user.role == "technician":
@@ -118,7 +118,7 @@ def rotate_api_key(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # I require auth so only legitimate operators can rotate keys, not
+    # Require auth so only legitimate operators can rotate keys, not
     # unauthenticated callers who might know a device UUID from other sources.
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
@@ -150,7 +150,7 @@ def delete_device(
     db.delete(device)  # mark the object for deletion in the current session
     db.commit()        # execute the DELETE statement and end the transaction
 
-    # I log after commit so the audit row references a device that no longer exists in a
+    # Log after commit so the audit row references a device that no longer exists in a
     # consistent state - logging before commit would record a deletion that might still roll back.
     audit_service.log_action(
         db,
