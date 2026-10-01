@@ -9,7 +9,7 @@ interface MaintenanceWindow {
   end_at: string;
 }
 
-// Poll every 60s - maintenance windows change rarely so tight polling is wasteful.
+// poll every 60s - maintenance windows change rarely so tight polling is wasteful.
 const POLL_MS = 60_000;
 
 export default function MaintenanceBanner() {
@@ -25,7 +25,7 @@ export default function MaintenanceBanner() {
         ) ?? null;
         setActive(current);
       } catch {
-        // Silently ignore errors - a failing banner check must never break the dashboard.
+        // silently ignore errors - a failing banner check must never break the dashboard.
       }
     };
     check();

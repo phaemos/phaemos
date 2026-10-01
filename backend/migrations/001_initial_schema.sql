@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS devices (
     location         VARCHAR(200),
     type             VARCHAR(50),
     -- api_key is the shared secret a physical node presents on every telemetry POST.
-    -- Make it UNIQUE so a duplicate key cannot be registered by accident.
+    -- make it UNIQUE so a duplicate key cannot be registered by accident.
     api_key          VARCHAR(100) UNIQUE NOT NULL,
     status           VARCHAR(20) DEFAULT 'offline',
     last_seen        TIMESTAMP WITH TIME ZONE,
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS devices (
 -- ---------------------------------------------------------------------------
 -- users
 -- stores human operators and API service accounts.
--- Use gen_random_uuid() as the default so rows inserted without an explicit
+-- use gen_random_uuid() as the default so rows inserted without an explicit
 -- id still get a proper UUID without requiring application-side generation.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email           VARCHAR(255) UNIQUE NOT NULL,
     name            VARCHAR(100),
-    -- Store hashed_password rather than password - bcrypt hash goes here.
+    -- store hashed_password rather than password - bcrypt hash goes here.
     hashed_password VARCHAR(255) NOT NULL,
     -- role controls what the UI shows and what API endpoints are accessible.
     -- allowed values: 'admin', 'operator', 'viewer'
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- ---------------------------------------------------------------------------
 -- telemetry
 -- central time-series table. Every sensor reading from every node lands here.
--- Include all v2 sensor columns even if a given node only populates a subset -
+-- include all v2 sensor columns even if a given node only populates a subset -
 -- NULL means "sensor not present on this node", not "bad reading".
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS telemetry (
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS telemetry (
 -- ---------------------------------------------------------------------------
 -- alert_rules
 -- user-defined threshold rules evaluated server-side on each telemetry insert.
--- Keep rules in the DB rather than config files so operators can change them
+-- keep rules in the DB rather than config files so operators can change them
 -- via the UI without redeploying anything.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS alert_rules (
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 CREATE INDEX IF NOT EXISTS idx_telemetry_device_id   ON telemetry (device_id);
 -- DESC because the dashboard always fetches the N most recent readings.
 CREATE INDEX IF NOT EXISTS idx_telemetry_recorded_at ON telemetry (recorded_at DESC);
--- Index is_anomaly so the ML dashboard can filter anomalous rows without a full scan.
+-- index is_anomaly so the ML dashboard can filter anomalous rows without a full scan.
 CREATE INDEX IF NOT EXISTS idx_telemetry_is_anomaly  ON telemetry (is_anomaly);
 
 -- alerts are almost always filtered by device on the device detail page.

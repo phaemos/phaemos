@@ -1,7 +1,7 @@
 // ============================================================
 // PHAEMOS OTA - Over-The-Air firmware update check.
-// Called once from setup() after Wi-Fi connects.
-// If the server has a newer firmware version, download it
+// called once from setup() after Wi-Fi connects.
+// if the server has a newer firmware version, download it
 // and flash it automatically, then reboot.
 // ============================================================
 
@@ -10,11 +10,11 @@
 #include <ArduinoJson.h>
 #include "config.h"
 
-// Hardcode the version string into this build of the firmware.
-// It must match the version uploaded to the backend for comparisons to work.
+// hardcode the version string into this build of the firmware.
+// it must match the version uploaded to the backend for comparisons to work.
 #define FIRMWARE_VERSION "1.0.0"
 
-// Use this callback to log OTA flash progress to serial.
+// use this callback to log OTA flash progress to serial.
 void _otaProgressCb(int cur, int total) {
   Serial.printf("OTA progress: %d / %d bytes\n", cur, total);
 }
@@ -23,7 +23,7 @@ void checkAndApplyOTA() {
   Serial.println("[OTA] Checking for firmware update...");
 
   HTTPClient http;
-  // Ask the backend what the latest available firmware version is.
+  // ask the backend what the latest available firmware version is.
   http.begin(String(API_BASE_URL) + "/api/v1/firmware/latest");
   http.addHeader("X-API-Key", DEVICE_API_KEY);
 
@@ -34,7 +34,7 @@ void checkAndApplyOTA() {
     return;
   }
 
-  // Parse the JSON response to extract the version string.
+  // parse the JSON response to extract the version string.
   StaticJsonDocument<256> doc;
   deserializeJson(doc, http.getString());
   http.end();
@@ -45,7 +45,7 @@ void checkAndApplyOTA() {
     return;
   }
 
-  // Compare version strings; if they match the firmware is already current.
+  // compare version strings; if they match the firmware is already current.
   if (String(serverVersion) == String(FIRMWARE_VERSION)) {
     Serial.println("[OTA] Firmware is up to date.");
     return;
@@ -54,15 +54,15 @@ void checkAndApplyOTA() {
   Serial.printf("[OTA] New version available: %s (current: %s) - updating\n",
                 serverVersion, FIRMWARE_VERSION);
 
-  // Rely on HTTPUpdate to handle the download, CRC check, flash write and rollback
+  // rely on HTTPUpdate to handle the download, CRC check, flash write and rollback
   // on failure - this is the recommended ESP32 OTA mechanism.
   httpUpdate.onProgress(_otaProgressCb);
 
   WiFiClient wifiClient;
-  // Point the updater at the download endpoint.
+  // point the updater at the download endpoint.
   String downloadUrl = String(API_BASE_URL) + "/api/v1/firmware/download";
 
-  // Pass the API key as a custom header so the server can authenticate the device.
+  // pass the API key as a custom header so the server can authenticate the device.
   httpUpdate.setExtraHeaders(("X-API-Key: " + String(DEVICE_API_KEY)).c_str());
 
   t_httpUpdate_return ret = httpUpdate.update(wifiClient, downloadUrl);
@@ -75,7 +75,7 @@ void checkAndApplyOTA() {
       Serial.println("[OTA] Server said no update available.");
       break;
     case HTTP_UPDATE_OK:
-      // The device reboots automatically after a successful flash - this line is never reached.
+      // the device reboots automatically after a successful flash - this line is never reached.
       Serial.println("[OTA] Update successful - rebooting");
       break;
   }

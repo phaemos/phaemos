@@ -26,7 +26,7 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
     setSubmitting(true);
     setError(null);
     try {
-      // Send only fields the user filled in - the backend treats omitted optional
+      // send only fields the user filled in - the backend treats omitted optional
       // fields as null so we do not need to strip them explicitly.
       await api.post('/tickets', {
         title,

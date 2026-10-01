@@ -15,23 +15,23 @@
 // API
 // Base URL of the backend (no trailing slash) - used by OTA to build endpoint paths.
 #define API_BASE_URL     "http://your-backend-url"
-// Telemetry ingest endpoint exposed by the FastAPI backend.
+// telemetry ingest endpoint exposed by the FastAPI backend.
 #define API_URL          "http://your-backend-url/api/v1/telemetry"
-// Generated when creating a device in the admin/API.
-// Sent in the `X-API-Key` header so the backend can authenticate which device is posting data.
+// generated when creating a device in the admin/API.
+// sent in the `X-API-Key` header so the backend can authenticate which device is posting data.
 #define DEVICE_API_KEY   "your-device-api-key-from-admin-panel"
 // UUID of the matching device record in the backend.
-// Included in the JSON body so the backend knows which device row to associate the reading with.
+// included in the JSON body so the backend knows which device row to associate the reading with.
 #define DEVICE_ID        "your-device-uuid"
 
-// Pins
+// pins
 #define DHT_PIN          4     // GPIO4
 // GPIO34 is input-only and has no internal pull-up, making it ideal for ADC (analogue) reads.
 #define LDR_PIN          34    // ADC1 channel (GPIO34)
 #define MPU6050_SDA      21    // I2C SDA
 #define MPU6050_SCL      22    // I2C SCL
 
-// Timing
+// timing
 // Delay in milliseconds between sensor reads; 5000 ms = 5 s gives a balance between data density and battery/bandwidth.
 #define POLL_INTERVAL_MS 5000  // 5 seconds between readings
 
@@ -45,12 +45,12 @@
 
 // API path (the base URL above is the host; this is the ingest endpoint path)
 #define API_TELEMETRY           "/api/v1/telemetry"
-// Use a separate API_KEY for the v2 multi-node setup; DEVICE_API_KEY remains for OTA.
+// use a separate API_KEY for the v2 multi-node setup; DEVICE_API_KEY remains for OTA.
 #define API_KEY                 "esp32-key-placeholder"
 
 // ─── I2C bus (named aliases - same GPIO as MPU6050_SDA/SCL above) ─────────────
 // I2C_SDA/SCL are the canonical bus names used by the v2 sensor modules.
-// They point to the same physical pins as MPU6050_SDA/SCL defined above.
+// they point to the same physical pins as MPU6050_SDA/SCL defined above.
 #define I2C_SDA                 21
 #define I2C_SCL                 22
 

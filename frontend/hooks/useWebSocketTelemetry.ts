@@ -1,8 +1,8 @@
 'use client';
 
-// Use exponential backoff rather than a fixed retry interval because the
+// use exponential backoff rather than a fixed retry interval because the
 // server may be temporarily overloaded - hammering it every second makes that worse.
-// Skip all retries on close code 1008 (auth failure) to avoid an infinite
+// skip all retries on close code 1008 (auth failure) to avoid an infinite
 // loop where an expired or invalid token triggers endless reconnect attempts.
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -12,7 +12,7 @@ const BACKOFF_DELAYS_MS = [1000, 2000, 4000, 8000, 16000];
 
 function buildWsUrl(deviceId: string, token: string): string {
   const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-  // Swap the scheme so the WS connection uses the same host/port as the REST API.
+  // swap the scheme so the WS connection uses the same host/port as the REST API.
   const wsBase = base.replace(/^http/, 'ws');
   return `${wsBase}/api/v1/ws/telemetry/${deviceId}?token=${encodeURIComponent(token)}`;
 }
@@ -25,7 +25,7 @@ interface Options {
 }
 
 export function useWebSocketTelemetry(deviceId: string, { onMessage, onStatusChange }: Options): void {
-  // Hold refs instead of state so reconnect logic can read current values
+  // hold refs instead of state so reconnect logic can read current values
   // without triggering re-renders and without going stale in closure scope.
   const wsRef = useRef<WebSocket | null>(null);
   const attemptRef = useRef(0);

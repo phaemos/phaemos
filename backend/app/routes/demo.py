@@ -17,19 +17,19 @@ from app.routes.auth import require_admin
 
 router = APIRouter()
 
-# Keep a single scheduler instance at module level so start/stop can
+# keep a single scheduler instance at module level so start/stop can
 # reference the same instance without threading it through the request cycle.
 _scheduler = BackgroundScheduler(daemon=True)
 _demo_device_id: str | None = None
 _tick: int = 0
 
-# Create a dedicated SessionLocal here because the background job runs in a
+# create a dedicated SessionLocal here because the background job runs in a
 # thread outside FastAPI's request lifecycle and cannot use Depends(get_db).
 _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def _generate_reading(tick: int) -> dict:
-    # Use a sine wave for temperature and humidity to mimic realistic sensor cycles.
+    # use a sine wave for temperature and humidity to mimic realistic sensor cycles.
     temperature = round(25 + 5 * math.sin(tick * 0.1), 2)
     humidity    = round(50 + 10 * math.sin(tick * 0.05 + 1), 2)
     vib_base    = random.uniform(0.01, 0.05)
@@ -74,7 +74,7 @@ def start_demo(
 ):
     global _demo_device_id, _tick
 
-    # Reuse an existing Demo Node rather than creating duplicates on repeated calls.
+    # reuse an existing Demo Node rather than creating duplicates on repeated calls.
     device = db.query(Device).filter(Device.name == "Demo Node").first()
     if not device:
         device = Device(
@@ -93,7 +93,7 @@ def start_demo(
     if not _scheduler.running:
         _scheduler.start()
 
-    # Remove the existing job before adding to avoid duplicate interval jobs
+    # remove the existing job before adding to avoid duplicate interval jobs
     # if the client calls /demo/start more than once.
     if _scheduler.get_job("demo_ingest"):
         _scheduler.remove_job("demo_ingest")

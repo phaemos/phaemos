@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Run this weekly on Monday at 08:00 UTC so security findings surface
+    # run this weekly on Monday at 08:00 UTC so security findings surface
     # even when there are no commits that week.
     - cron: '0 8 * * 1'
   workflow_dispatch:

@@ -1,6 +1,6 @@
 'use client';
 
-// Fetch devices alongside rules so the form can offer a device picker
+// fetch devices alongside rules so the form can offer a device picker
 // rather than requiring the user to type a raw UUID.
 
 import { useState, useEffect, useCallback } from 'react';

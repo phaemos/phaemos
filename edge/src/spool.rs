@@ -1,6 +1,6 @@
 //! A disk-backed queue of readings waiting to be forwarded.
 //!
-//! Each reading is one line in an append-only file, flushed to disk before it is
+//! each reading is one line in an append-only file, flushed to disk before it is
 //! acknowledged, so a power cut or network outage never loses telemetry.
 
 use std::fs::{self, File, OpenOptions};
@@ -12,11 +12,11 @@ pub struct Spool {
 }
 
 impl Spool {
-    /// Opens the spool file, creating it and its folder if needed.
+    /// opens the spool file, creating it and its folder if needed.
     ///
     /// # Errors
     ///
-    /// Returns any error from creating the folder or the file.
+    /// returns any error from creating the folder or the file.
     pub fn open(path: impl AsRef<Path>) -> io::Result<Self> {
         let path = path.as_ref().to_path_buf();
         if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
@@ -26,22 +26,22 @@ impl Spool {
         Ok(Self { path })
     }
 
-    /// Appends one reading and flushes it to disk.
+    /// appends one reading and flushes it to disk.
     ///
     /// # Errors
     ///
-    /// Returns any error from writing or syncing the file.
+    /// returns any error from writing or syncing the file.
     pub fn push(&self, line: &str) -> io::Result<()> {
         let mut file = OpenOptions::new().append(true).open(&self.path)?;
         writeln!(file, "{}", line.trim())?;
         file.sync_data()
     }
 
-    /// Every reading still waiting, oldest first.
+    /// every reading still waiting, oldest first.
     ///
     /// # Errors
     ///
-    /// Returns any error from reading the file.
+    /// returns any error from reading the file.
     pub fn pending(&self) -> io::Result<Vec<String>> {
         BufReader::new(File::open(&self.path)?)
             .lines()
@@ -49,13 +49,13 @@ impl Spool {
             .collect()
     }
 
-    /// Removes the oldest `count` readings once they have been forwarded. The rest
+    /// removes the oldest `count` readings once they have been forwarded. The rest
     /// is written to a temporary file and renamed over the spool, so a crash mid-way
     /// leaves either the old or the new spool, never a half-written one.
     ///
     /// # Errors
     ///
-    /// Returns any error from reading, writing or renaming the files.
+    /// returns any error from reading, writing or renaming the files.
     pub fn ack(&self, count: usize) -> io::Result<()> {
         if count == 0 {
             return Ok(());

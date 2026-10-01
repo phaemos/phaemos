@@ -21,7 +21,7 @@ router = APIRouter()
 
 
 def get_device_by_api_key(api_key: str, db: Session) -> Device:
-    # Use the device API key as the auth mechanism for firmware ingest requests.
+    # use the device API key as the auth mechanism for firmware ingest requests.
     device = db.query(Device).filter(Device.api_key == api_key).first()
     if not device:
         raise HTTPException(status_code=401, detail="Invalid API key")
@@ -37,12 +37,12 @@ def ingest_telemetry(
 ):
     device = get_device_by_api_key(x_api_key, db)
 
-    # Derive reading from the full payload so alert rules can evaluate any v2
+    # derive reading from the full payload so alert rules can evaluate any v2
     # sensor metric, not just the original 6. device_id is excluded because the
     # device is already resolved to device.id before this point.
     reading = payload.model_dump(exclude={"device_id"})
 
-    # Score first so the row stores both the reading and model decision atomically.
+    # score first so the row stores both the reading and model decision atomically.
     anomaly_score, is_anomaly = score_reading(reading)
 
     row = Telemetry(
@@ -59,7 +59,7 @@ def ingest_telemetry(
     db.commit()
     db.refresh(row)
 
-    # Evaluate alert rules after persistence so alerts reference committed state.
+    # evaluate alert rules after persistence so alerts reference committed state.
     evaluate_rules(device, reading, db)
 
     # serialize before scheduling - the DB session closes after this function returns.
@@ -75,11 +75,11 @@ def export_telemetry(
     device_id: uuid.UUID,
     from_ts: datetime | None = None,
     to_ts: datetime | None = None,
-    # Require auth here to prevent unauthenticated bulk data export.
+    # require auth here to prevent unauthenticated bulk data export.
     _user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Define /export before /{device_id} so FastAPI matches it as a literal
+    # define /export before /{device_id} so FastAPI matches it as a literal
     # path segment rather than treating "export" as a device UUID.
     q = db.query(Telemetry).filter(Telemetry.device_id == device_id)
     if from_ts:
@@ -88,7 +88,7 @@ def export_telemetry(
         q = q.filter(Telemetry.recorded_at <= to_ts)
     rows = q.order_by(Telemetry.recorded_at.asc()).all()
 
-    # Stream the CSV without loading all rows into a Python list at once -
+    # stream the CSV without loading all rows into a Python list at once -
     # io.StringIO acts as an in-memory buffer that csv.writer can write into.
     buf = io.StringIO()
     writer = csv.writer(buf)
@@ -122,7 +122,7 @@ def get_telemetry(
     _user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Use from_ts/to_ts rather than 'from' (reserved keyword) for the query param names.
+    # use from_ts/to_ts rather than 'from' (reserved keyword) for the query param names.
     q = db.query(Telemetry).filter(Telemetry.device_id == device_id)
     if from_ts:
         q = q.filter(Telemetry.recorded_at >= from_ts)

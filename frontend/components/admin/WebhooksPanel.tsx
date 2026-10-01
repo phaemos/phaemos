@@ -144,7 +144,7 @@ export default function WebhooksPanel() {
                 )}
               </div>
 
-              {/* Actions */}
+              {/* actions */}
               <div className="flex gap-2 flex-shrink-0">
                 <button
                   type="button"

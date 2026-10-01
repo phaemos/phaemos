@@ -1,0 +1,582 @@
+.env.example:52: Sender name shown on the recipient's phone (max 11 chars, no spaces)
+.env.example:61: Secret key stays server-side only - never prefix with NEXT_PUBLIC_
+.env.example:63: Destination address for contact form submissions
+.env.example:69: Public API URL that the Next.js frontend calls
+.github/dependabot.yml:1: Dependabot configuration.
+.github/dependabot.yml:51: Remove this once eslint-plugin-react ships v10 support.
+.github/workflows/ci.yml:132: Run ESLint - fails if any error-level rule fires
+.github/workflows/codeql.yml:9: Run this weekly on Monday at 08:00 UTC so security findings surface
+Makefile:3: Start the full local stack (db, redis, backend in Docker; frontend wit
+Makefile:9: Run all backend tests inside Docker
+Makefile:14: Run ruff linter on backend and ESLint on frontend
+Makefile:19: Apply the latest SQL migration manually on the running DB container
+Makefile:25: Build the Next.js frontend for production
+Makefile:29: Serve the MkDocs documentation site locally with hot reload
+Makefile:33: Build the MkDocs site into site/ (output is gitignored; Vercel runs th
+Makefile:37: Seed the database with demo data (useful after docker compose down wip
+backend/.env.example:3: Never commit the real .env file - it is in .gitignore.
+backend/.env.example:24: Require a minimum of 32 characters to meet HS256 security guidelines.
+backend/.env.example:35: Separate multiple origins with commas, e.g. http://localhost:3000,http
+backend/.env.example:58: Use port 587 (STARTTLS) as the default because it is supported by most
+backend/.env.example:81: Both values must be between 0.0 and 1.0.
+backend/app/config.py:4: Extend BaseSettings from Pydantic's BaseModel so each field is type-va
+backend/app/config.py:6: Use SettingsConfigDict to tell pydantic-settings where to load values 
+backend/app/config.py:11: Require this field - no default means the app won't start if it's miss
+backend/app/config.py:13: Make fields with defaults optional; the default applies when the env v
+backend/app/config.py:15: Require secret_key with no default - never hard-code secrets in source
+backend/app/config.py:17: Use HS256 (HMAC-SHA256) as the signing algorithm to create and verify 
+backend/app/config.py:19: Shorten access tokens to 15 minutes so a stolen token has minimal blas
+backend/app/config.py:22: Accept a comma-separated list of frontend URLs allowed to call this AP
+backend/app/config.py:57: Use @property to turn this into a read-only attribute so callers write
+backend/app/config.py:60: Split the comma-separated string into a list and strip any accidental 
+backend/app/config.py:64: Instantiate once at import time; every module that imports 'settings' 
+backend/app/db.py:6: Use create_engine to build the connection pool that talks to the Postg
+backend/app/db.py:9: Use sessionmaker to return a factory class; every call to SessionLocal
+backend/app/db.py:15: Use DeclarativeBase - the modern SQLAlchemy 2.x way to define ORM mode
+backend/app/db.py:20: Act as a FastAPI dependency - hand a DB session to a route handler the
+backend/app/db.py:24: Use 'yield' to turn this into a generator; FastAPI pauses here while t
+backend/app/db.py:27: Always close the session, even if the route raised an exception, to re
+backend/app/limiter.py:7: Read X-Real-IP first because Nginx sets this to the genuine client IP 
+backend/app/limiter.py:20: Instantiate the limiter once here so main.py and individual routes bot
+backend/app/main.py:16: Create all tables on startup - use Alembic migrations for production
+backend/app/main.py:22: Start the retention scheduler here rather than at module level so it
+backend/app/main.py:35: Wire the slowapi limiter onto app.state so @limiter.limit decorators o
+backend/app/main.py:40: Expose a /metrics endpoint that Prometheus scrapes for API performance
+backend/app/main.py:43: Restrict methods and headers explicitly rather than using ["*"] so the
+backend/app/main.py:53: Group route registration by domain to keep API boundaries clear.
+backend/app/main.py:69: Give WebSocket routes a different prefix - no /api/v1 so the WS URL is
+backend/app/models/__init__.py:1: Keep this file empty intentionally - SQLAlchemy models are imported di
+backend/app/models/device.py:32: Keep owner_id nullable so existing unowned devices are valid and techn
+backend/app/models/device.py:35: Use a PostgreSQL ARRAY column rather than a join table because the tag
+backend/app/models/telemetry.py:17: Store node_type so the API can filter readings by which physical board
+backend/app/models/ticket.py:22: Keep ticket_number nullable so existing rows remain valid before the
+backend/app/models/user.py:26: Track consecutive failed attempts so the account can be locked after 5
+backend/app/models/webhook.py:15: Allow a custom message template with {device_name}, {metric}, {value},
+backend/app/routes/__init__.py:1: Keep this file empty intentionally - routes are imported directly by m
+backend/app/routes/alerts.py:65: Serialise to Pydantic BEFORE calling audit_service because audit_servi
+backend/app/routes/audit.py:28: Use raw SQL here to stay consistent with audit_service.py which also u
+backend/app/routes/audit.py:43: Convert Row objects to dicts so FastAPI can serialise them as JSON wit
+backend/app/routes/audit.py:57: Build the WHERE clause dynamically so unused filters add no overhead.
+backend/app/routes/audit.py:95: Sign the response body with an HMAC-SHA256 so recipients can verify
+backend/app/routes/auth.py:63: Use HTTPBearer so FastAPI generates the "Authorise" button in the Open
+backend/app/routes/auth.py:66: Lock accounts for 15 minutes after 5 consecutive failures, matching NI
+backend/app/routes/auth.py:81: Include user identity, role and a short-lived expiration in the payloa
+backend/app/routes/auth.py:90: Add type="refresh" so the /refresh endpoint can reject access tokens
+backend/app/routes/auth.py:100: Expose this as a standalone helper so the WebSocket route can validate
+backend/app/routes/auth.py:117: Factor this into a reusable dependency so any route can require an
+backend/app/routes/auth.py:128: Keep the role guard as a separate dependency so admin-only routes read
+backend/app/routes/auth.py:154: Look up by email first; if the user does not exist, still run through
+backend/app/routes/auth.py:158: Check lockout before verifying the password so a locked account cannot
+backend/app/routes/auth.py:224: Expire the cookie by setting max_age=0 rather than deleting it so the
+backend/app/routes/auth.py:275: Anonymise tickets rather than delete them so the audit trail stays int
+backend/app/routes/auth.py:323: Generate a fresh secret each time so a half-completed enrolment can be
+backend/app/routes/auth.py:364: Accept user_id as a query param rather than a JWT so this endpoint wor
+backend/app/routes/auth.py:408: Update the provider fields on each login so a user who previously
+backend/app/routes/auth.py:446: Build the authorization URL manually rather than using authlib's
+backend/app/routes/auth.py:560: Name the admin dependency _admin (underscore prefix) to signal it is
+backend/app/routes/auth.py:578: Replace the entire permissions dict atomically to avoid partial-update
+backend/app/routes/auth.py:592: Embed the role in the invite token so the accept endpoint can pre-assi
+backend/app/routes/auth.py:614: Build the accept link using the request base URL so it works in both
+backend/app/routes/auth.py:625: Validate the token here so the frontend can show a friendly error
+backend/app/routes/contact.py:26: Verify the Turnstile token server-side so the captcha cannot be bypass
+backend/app/routes/contact.py:42: Only attempt SMTP when credentials are configured - missing creds are 
+backend/app/routes/contact.py:80: Swallow SMTP errors here - the message was valid and a mail
+backend/app/routes/demo.py:20: Keep a single scheduler instance at module level so start/stop can
+backend/app/routes/demo.py:26: Create a dedicated SessionLocal here because the background job runs i
+backend/app/routes/demo.py:32: Use a sine wave for temperature and humidity to mimic realistic sensor
+backend/app/routes/demo.py:77: Reuse an existing Demo Node rather than creating duplicates on repeate
+backend/app/routes/demo.py:96: Remove the existing job before adding to avoid duplicate interval jobs
+backend/app/routes/devices.py:33: Apply ownership filtering here rather than in a middleware so the logi
+backend/app/routes/devices.py:121: Require auth so only legitimate operators can rotate keys, not
+backend/app/routes/devices.py:153: Log after commit so the audit row references a device that no longer e
+backend/app/routes/firmware.py:25: Cap firmware uploads at 2 MB to prevent a malicious or accidental uplo
+backend/app/routes/health.py:66: Import redis lazily so the main app does not fail if the package is ab
+backend/app/routes/ml.py:47: Build a DataFrame from the 6 features the live scorer uses so training
+backend/app/routes/ml.py:65: Compute n_anomalies on training data as a rough quality indicator rath
+backend/app/routes/telemetry.py:24: Use the device API key as the auth mechanism for firmware ingest reque
+backend/app/routes/telemetry.py:40: Derive reading from the full payload so alert rules can evaluate any v
+backend/app/routes/telemetry.py:45: Score first so the row stores both the reading and model decision atom
+backend/app/routes/telemetry.py:62: Evaluate alert rules after persistence so alerts reference committed s
+backend/app/routes/telemetry.py:78: Require auth here to prevent unauthenticated bulk data export.
+backend/app/routes/telemetry.py:82: Define /export before /{device_id} so FastAPI matches it as a literal
+backend/app/routes/telemetry.py:91: Stream the CSV without loading all rows into a Python list at once -
+backend/app/routes/telemetry.py:125: Use from_ts/to_ts rather than 'from' (reserved keyword) for the query 
+backend/app/routes/tickets.py:40: Set created_by from the authenticated user so the audit trail is accur
+backend/app/routes/tickets.py:99: Only log when fields actually changed - empty PATCH calls should not p
+backend/app/routes/webhooks.py:110: Run the test delivery in a background task so the response is instant.
+backend/app/routes/ws.py:23: Validate the JWT before calling accept() so unauthenticated clients ar
+backend/app/schemas/__init__.py:1: Keep this file empty intentionally - Pydantic schemas are imported dir
+backend/app/schemas/device.py:9: Cap string lengths to prevent storage exhaustion from oversized payloa
+backend/app/schemas/device.py:13: Allow owner_id at creation time so an admin can assign a device to a
+backend/app/schemas/device.py:26: Cap individual tag length to prevent oversized values in the ARRAY col
+backend/app/schemas/ticket.py:9: Cap title and description to prevent storage exhaustion from oversized
+backend/app/schemas/user.py:18: Enforce a minimum bar here so weak passwords never reach the DB.
+backend/app/services/__init__.py:1: Keep this file empty intentionally - services are imported directly by
+backend/app/services/alert_service.py:29: Skip all alert processing while the device is in an active maintenance
+backend/app/services/alert_service.py:51: Only notify on warning/critical - info alerts stay silent to avoid noi
+backend/app/services/alert_service.py:64: Only send SMS for critical alerts - warning/info would generate too mu
+backend/app/services/audit_service.py:1: Put audit logging in its own service because it is a cross-cutting con
+backend/app/services/audit_service.py:31: Use a try/except here because audit logging must never crash the main 
+backend/app/services/audit_service.py:49: Use timezone-aware UTC so the timestamp is unambiguous regardless
+backend/app/services/audit_service.py:54: Commit separately here so the audit row is persisted even if the calle
+backend/app/services/audit_service.py:58: Swallow the exception intentionally - see docstring above.
+backend/app/services/audit_service.py:62: Log to stderr anyway so operators can detect if audit logging is broke
+backend/app/services/email_service.py:18: Log the invite link at INFO so developers can still test the flow
+backend/app/services/email_service.py:28: Import resend lazily so a missing package does not crash the app on st
+backend/app/services/ml_service.py:10: Use joblib because it is the standard way to serialise scikit-learn mo
+backend/app/services/ml_service.py:12: Import numpy because scikit-learn models expect a numpy array, not a p
+backend/app/services/ml_service.py:15: Use os.path.dirname(__file__) so the path resolves correctly regardles
+backend/app/services/ml_service.py:17: Classify a reading as anomalous when its normalised score reaches this
+backend/app/services/ml_service.py:19: Keep FEATURE_COLS here so both scoring and retraining use the identica
+backend/app/services/ml_service.py:22: Start with None and populate on first use - lazy loading avoids disk I
+backend/app/services/ml_service.py:29: Only load from disk if not already loaded AND the file exists (model m
+backend/app/services/ml_service.py:43: Return a safe pass-through when the model has not been trained yet
+backend/app/services/ml_service.py:46: Build a 2-D array with shape (1, n_features) - scikit-learn always exp
+backend/app/services/ml_service.py:47: Use FEATURE_COLS so this vector stays identical to what retraining pro
+backend/app/services/ml_service.py:50: Call score_samples which returns a raw score - more negative means mor
+backend/app/services/ml_service.py:53: Normalise to 0-1: adding 0.5 shifts the range, subtracting from 1 flip
+backend/app/services/ml_service.py:58: Round to 4 decimal places to keep API responses clean without losing m
+backend/app/services/ml_service.py:65: Reset to None first so _load_model re-reads the file even if one was a
+backend/app/services/sms_service.py:19: Omit the recipient from this log because phone numbers are PII.
+backend/app/services/sms_service.py:25: Import sib_api_v3_sdk lazily so a missing package does not crash the
+backend/app/services/webhook_service.py:37: Extract only the netloc so downstream checks cannot be fooled by the
+backend/app/tasks/retention.py:15: Create a dedicated SessionLocal here because the background job runs
+backend/app/tasks/retention.py:29: Commit before audit so the deletion is durable even if the audit call 
+backend/app/tasks/retention.py:53: Run at 02:00 UTC daily - off-peak to avoid contention with live ingest
+backend/migrations/001_initial_schema.sql:18: Make it UNIQUE so a duplicate key cannot be registered by accident.
+backend/migrations/001_initial_schema.sql:30: Use gen_random_uuid() as the default so rows inserted without an expli
+backend/migrations/001_initial_schema.sql:37: Store hashed_password rather than password - bcrypt hash goes here.
+backend/migrations/001_initial_schema.sql:51: Include all v2 sensor columns even if a given node only populates a su
+backend/migrations/001_initial_schema.sql:106: Keep rules in the DB rather than config files so operators can change 
+backend/migrations/001_initial_schema.sql:194: Index is_anomaly so the ML dashboard can filter anomalous rows without
+backend/migrations/002_security_hardening.sql:4: Use IF NOT EXISTS / IF EXISTS guards throughout so this script is
+backend/migrations/003_multi_tenant.sql:4: Use IF NOT EXISTS guards so this script is idempotent - safe to run mo
+backend/ml/evaluate.py:15: Force the non-interactive Agg backend so matplotlib does not try to op
+backend/ml/evaluate.py:41: Remap IsolationForest's convention (-1=anomaly, 1=normal) to binary (1
+backend/ml/evaluate.py:91: Use decision_function scores for the distribution plot when available 
+backend/tests/conftest.py:111: Generate a real JWT here so tests exercise the actual token-validation
+backend/tests/test_alerts.py:46: Pass auth_headers because resolve now requires an authenticated user
+backend/tests/test_ml.py:2: Create a real viewer row so get_current_user succeeds and the role gua
+backend/tests/test_ml.py:22: Reset the cooldown so this test is independent of execution order.
+docker-compose.yml:1: The stack lives in infra/docker-compose.yml. Including it here keeps
+edge/src/backoff.rs:1: Retry timing for forwarding after a failure.
+edge/src/backoff.rs:8: Delay before retry number `attempt` (starting at 1): 1, 2, 4, 8 second
+edge/src/main.rs:4: Usage: `phaemos-edge --api-url https://api.phaemos.com --api-key KEY [
+edge/src/main.rs:39: Sends pending readings in order and stops at the first failure, so the
+edge/src/reading.rs:1: Validation of readings arriving from the sensor nodes.
+edge/src/reading.rs:5: Parses one line from a node. A reading must be a JSON object with a no
+edge/src/reading.rs:10: Returns a description of the problem when the line is not a valid read
+edge/src/spool.rs:3: Each reading is one line in an append-only file, flushed to disk befor
+edge/src/spool.rs:15: Opens the spool file, creating it and its folder if needed.
+edge/src/spool.rs:19: Returns any error from creating the folder or the file.
+edge/src/spool.rs:29: Appends one reading and flushes it to disk.
+edge/src/spool.rs:33: Returns any error from writing or syncing the file.
+edge/src/spool.rs:40: Every reading still waiting, oldest first.
+edge/src/spool.rs:44: Returns any error from reading the file.
+edge/src/spool.rs:52: Removes the oldest `count` readings once they have been forwarded. The
+edge/src/spool.rs:58: Returns any error from reading, writing or renaming the files.
+firmware/arduino_nano/nano_node/nano_node.ino:3: Reads BME280, LDR and FC-28 moisture sensor.
+firmware/arduino_nano/nano_node/nano_node.ino:4: Outputs one CSV line every 2 seconds over Serial at 9600 baud.
+firmware/arduino_nano/nano_node/nano_node.ino:16: Example output:
+firmware/arduino_nano/nano_node/nano_node.ino:23: Use a named constant for the interval rather than a magic number so it
+firmware/arduino_nano/nano_node/nano_node.ino:27: Track the last report time with millis() rather than delay() so the
+firmware/arduino_nano/nano_node/nano_node.ino:33: Initialise Serial before Wire so any I2C errors during initBME280Nano
+firmware/arduino_nano/nano_node/nano_node.ino:43: Use (now - last_report_ms) rather than comparing to a target time
+firmware/arduino_nano/nano_node/nano_node.ino:55: Normal path: all sensors healthy
+firmware/arduino_nano/nano_node/nano_node.ino:65: Use -1 rather than 0 because 0 is a plausible real temperature
+firmware/arduino_nano/nano_node/sensors.cpp:3: Return a struct from readBME280Nano rather than output params because 
+firmware/arduino_nano/nano_node/sensors.cpp:12: Declare the BME280 object at file scope so both initBME280Nano and
+firmware/arduino_nano/nano_node/sensors.cpp:14: Use static linkage to prevent name collisions if other translation uni
+firmware/arduino_nano/nano_node/sensors.cpp:18: Track init success in a module-level flag so readBME280Nano can return
+firmware/arduino_nano/nano_node/sensors.cpp:23: Try 0x76 first because it is the more common default (SDO=GND on most
+firmware/arduino_nano/nano_node/sensors.cpp:35: Leave bme_initialised false here; readBME280Nano will set ok=false
+firmware/arduino_nano/nano_node/sensors.cpp:42: Check bme_initialised before every read rather than just on first read
+firmware/arduino_nano/nano_node/sensors.cpp:64: Use analogRead directly here rather than averaging multiple samples
+firmware/arduino_nano/nano_node/sensors.cpp:72: The FC-28 is a resistive sensor: low ADC value = low resistance = high
+firmware/arduino_nano/nano_node/sensors.cpp:80: Use a threshold of 500 because with a 5V supply and the FC-28's typica
+firmware/arduino_nano/nano_node/sensors.h:4: Use #pragma once rather than a traditional #ifndef guard because every
+firmware/arduino_nano/nano_node/sensors.h:11: Group the BME280 readings into a struct rather than using global varia
+firmware/arduino_nano/nano_node/sensors.h:22: Try both addresses here so the same firmware works with both the commo
+firmware/arduino_nano/nano_node/sensors.h:28: Return a struct from readBME280Nano rather than output params because 
+firmware/arduino_nano/nano_node/sensors.h:34: Expose this as a raw ADC integer rather than a lux value because
+firmware/arduino_nano/nano_node/sensors.h:40: Higher value = drier (more resistance). Lower value = wetter.
+firmware/arduino_nano/nano_node/sensors.h:44: Use threshold 500 as the water-detected cutoff because the FC-28
+firmware/esp32/comms/http_client.cpp:1: Include HTTPClient before the local headers so the ESP32 Arduino core
+firmware/esp32/comms/http_client.cpp:10: Check WiFi status up front and return -1 immediately rather than
+firmware/esp32/comms/http_client.cpp:19: Use http.begin(url) (single-argument form) because the backend uses
+firmware/esp32/comms/http_client.cpp:24: Set Content-Type to application/json so the FastAPI backend can parse
+firmware/esp32/comms/http_client.cpp:28: Use X-API-Key rather than Authorization: Bearer because the backend
+firmware/esp32/comms/http_client.cpp:39: Always call http.end() to release the underlying TCP connection back
+firmware/esp32/comms/http_client.h:1: Use #pragma once for the same reason as every other header in this pro
+firmware/esp32/comms/http_client.h:4: Include WString.h (pulled in by Arduino.h) here indirectly through Str
+firmware/esp32/comms/http_client.h:9: Returns the HTTP response code (200, 201, etc.) on success,
+firmware/esp32/comms/http_client.h:11: Always calls http.end() internally to free the connection handle.
+firmware/esp32/comms/serial_parser.cpp:1: Include Arduino.h to get String and the F() macro on a .cpp file - the
+firmware/esp32/comms/serial_parser.cpp:9: Implement this as a static file-scope function to keep both parse func
+firmware/esp32/comms/serial_parser.cpp:11: Return NAN on failure so the caller can check isnan() rather than rece
+firmware/esp32/comms/serial_parser.cpp:19: Find the next comma or end-of-string to delimit the value substring.
+firmware/esp32/comms/serial_parser.cpp:34: Zero the struct through the valid flag first so partial failures leave
+firmware/esp32/comms/serial_parser.cpp:47: Treat any NAN as a parse failure and reject the whole line so the
+firmware/esp32/comms/serial_parser.cpp:59: Cast water to int before comparing to 0 because toFloat() on "0" gives
+firmware/esp32/comms/serial_parser.cpp:79: Handle FFT_PEAK separately because its value is suffixed with "Hz"
+firmware/esp32/comms/serial_parser.h:1: Use #pragma once for consistency with every other header in this proje
+firmware/esp32/comms/serial_parser.h:7: Keep a bool valid flag rather than using sentinel values like -999 so 
+firmware/esp32/comms/serial_parser.h:21: Separate this from NanoData because the two serial ports have differen
+firmware/esp32/comms/serial_parser.h:37: Sets d->valid = true on success, false on any parse error.
+firmware/esp32/comms/wifi_manager.cpp:1: Include Arduino.h before WiFi.h because some Arduino WiFi builds rely 
+firmware/esp32/comms/wifi_manager.cpp:9: Store the last credentials in static variables so reconnectWiFi() can
+firmware/esp32/comms/wifi_manager.cpp:11: Static storage lasts for the full firmware lifetime and is not stack-a
+firmware/esp32/comms/wifi_manager.cpp:16: Save the credentials on every call so reconnectWiFi always has the
+firmware/esp32/comms/wifi_manager.cpp:27: Poll every 500 ms rather than a tight loop to give the TCP/IP stack
+firmware/esp32/comms/wifi_manager.cpp:44: Guard against a null pointer here in case reconnectWiFi is somehow
+firmware/esp32/comms/wifi_manager.cpp:50: Disconnect first to clear any stale association state on the ESP32
+firmware/esp32/comms/wifi_manager.h:1: Use #pragma once for the same reason as every other header in this pro
+firmware/esp32/config.h:18: Telemetry ingest endpoint exposed by the FastAPI backend.
+firmware/esp32/config.h:20: Generated when creating a device in the admin/API.
+firmware/esp32/config.h:21: Sent in the `X-API-Key` header so the backend can authenticate which d
+firmware/esp32/config.h:24: Included in the JSON body so the backend knows which device row to ass
+firmware/esp32/config.h:27: Pins
+firmware/esp32/config.h:34: Timing
+firmware/esp32/config.h:48: Use a separate API_KEY for the v2 multi-node setup; DEVICE_API_KEY rem
+firmware/esp32/config.h:53: They point to the same physical pins as MPU6050_SDA/SCL defined above.
+firmware/esp32/dht22.ino:10: Tell the library which protocol variant to use; DHT22 has higher preci
+firmware/esp32/dht22.ino:13: Declare the sensor instance globally so initDHT() and readDHT() share 
+firmware/esp32/dht22.ino:17: Prepare the internal state machine for sampling.
+firmware/esp32/dht22.ino:18: This must be called in setup() before the first readTemperature()/read
+firmware/esp32/dht22.ino:22: Use C++ references for temperature and humidity so changes here update
+firmware/esp32/dht22.ino:24: Read temperature in Celsius and relative humidity as a percentage.
+firmware/esp32/dht22.ino:28: Guard against occasional DHT failures caused by timing or noise.
+firmware/esp32/dht22.ino:32: Fall back to 0.0 so the JSON payload is always a valid number, not NaN
+firmware/esp32/esp32.ino:2: Split all sensor, output and comms logic into submodules and keep this
+firmware/esp32/esp32.ino:43: Use HardwareSerial(2) for the STM32 for the same isolation reason.
+firmware/esp32/esp32.ino:53: Use plain primitive types for sensors that return single values rather
+firmware/esp32/esp32.ino:66: Data received over serial from Nano and STM32.
+firmware/esp32/esp32.ino:85: Start Serial at 115200 early so any init failures print to the monitor
+firmware/esp32/esp32.ino:90: Start both secondary serial ports before calling any sensor init that
+firmware/esp32/esp32.ino:95: Initialise the I2C bus before any I2C sensor because every I2C call
+firmware/esp32/esp32.ino:105: No separate initFC28() call is needed because the FC28 is purely analo
+firmware/esp32/esp32.ino:124: Show the splash last so the display confirms full init success.
+firmware/esp32/esp32.ino:188: Trigger CH1 as a cooling relay in critical overheat conditions -
+firmware/esp32/esp32.ino:194: Group the three warning conditions together because any single one
+firmware/esp32/esp32.ino:198: Turn the relay off during WARNING - load switching is reserved for
+firmware/esp32/esp32.ino:202: Play one quiet beep at NORMAL only when state transitions back from
+firmware/esp32/esp32.ino:214: Attempt a reconnect rather than silently dropping the reading so
+firmware/esp32/esp32.ino:217: Return after reconnect because the connection may still not be up
+firmware/esp32/esp32.ino:222: Use StaticJsonDocument to avoid heap fragmentation - 1024 bytes is
+firmware/esp32/esp32.ino:257: Nano serial data (best-effort - only include if the last parse succeed
+firmware/esp32/main.ino:16: Use a higher baud rate to keep debug logging responsive while posting 
+firmware/esp32/main.ino:19: Initialise each sensor subsystem once.
+firmware/esp32/main.ino:23: Connect to Wi-Fi
+firmware/esp32/main.ino:32: Check for a firmware update once on boot before starting the sensor lo
+firmware/esp32/main.ino:37: Collect one frame of environment and vibration data.
+firmware/esp32/main.ino:41: Let the sensor helper functions fill these by reference.
+firmware/esp32/main.ino:45: Read the LDR on the analog pin.
+firmware/esp32/main.ino:47: Keep this as a float to match the backend schema type.
+firmware/esp32/main.ino:50: Build the JSON payload.
+firmware/esp32/main.ino:65: Create a short-lived HTTP client each cycle to keep state simple.
+firmware/esp32/main.ino:76: Always close the connection to release sockets and memory on the ESP32
+firmware/esp32/main.ino:82: Wait for the configured sensor polling interval.
+firmware/esp32/mpu6050.ino:12: Use a global driver instance for I2C communication with the MPU6050.
+firmware/esp32/mpu6050.ino:13: The default I2C address (0x68) is used; tie AD0 HIGH on the breakout b
+firmware/esp32/mpu6050.ino:17: Use the configured SDA/SCL pins to support boards with custom wiring.
+firmware/esp32/mpu6050.ino:18: On a standard Arduino Uno these are fixed, but the ESP32 lets you rema
+firmware/esp32/mpu6050.ino:20: Wake the chip from sleep mode and configure default full-scale ranges.
+firmware/esp32/mpu6050.ino:22: Print a serial hint so wiring, power or address problems are obvious.
+firmware/esp32/mpu6050.ino:28: Read acceleration in g (gravity units).
+firmware/esp32/mpu6050.ino:29: The Z-axis at rest should read ~1g due to gravity.
+firmware/esp32/mpu6050.ino:31: Use Motion6 to get accel (rawAx/rawAy/rawAz) and gyro (gx/gy/gz) toget
+firmware/esp32/mpu6050.ino:34: Pass by pointer so the library fills all six variables in a single I2C
+firmware/esp32/mpu6050.ino:37: Apply the scale factor for the +/-2g range: 16384 LSB/g.
+firmware/esp32/mpu6050.ino:38: Convert to g-units to keep values human-readable and model-friendly.
+firmware/esp32/mpu6050.ino:39: Use 16384.0 (a float literal) to force floating-point division; intege
+firmware/esp32/ota.ino:3: Called once from setup() after Wi-Fi connects.
+firmware/esp32/ota.ino:4: If the server has a newer firmware version, download it
+firmware/esp32/ota.ino:13: Hardcode the version string into this build of the firmware.
+firmware/esp32/ota.ino:14: It must match the version uploaded to the backend for comparisons to w
+firmware/esp32/ota.ino:17: Use this callback to log OTA flash progress to serial.
+firmware/esp32/ota.ino:26: Ask the backend what the latest available firmware version is.
+firmware/esp32/ota.ino:37: Parse the JSON response to extract the version string.
+firmware/esp32/ota.ino:48: Compare version strings; if they match the firmware is already current
+firmware/esp32/ota.ino:57: Rely on HTTPUpdate to handle the download, CRC check, flash write and 
+firmware/esp32/ota.ino:62: Point the updater at the download endpoint.
+firmware/esp32/ota.ino:65: Pass the API key as a custom header so the server can authenticate the
+firmware/esp32/ota.ino:78: The device reboots automatically after a successful flash - this line 
+firmware/esp32/outputs/buzzer.cpp:1: Include Arduino.h explicitly because this is a .cpp file - the Arduino
+firmware/esp32/outputs/buzzer.cpp:9: Set the pin mode here rather than in the sketch so the buzzer module
+firmware/esp32/outputs/buzzer.cpp:12: Ensure the pin starts LOW so the buzzer does not emit noise during
+firmware/esp32/outputs/buzzer.cpp:18: Use 2000 Hz because it cuts through ambient noise without being
+firmware/esp32/outputs/buzzer.cpp:28: Play one short beep for NORMAL so the operator gets audible
+firmware/esp32/outputs/buzzer.cpp:34: Use two beeps with a 150 ms gap to distinguish WARNING from
+firmware/esp32/outputs/buzzer.cpp:42: Repeat the three-beep sequence twice so it cannot be missed
+firmware/esp32/outputs/buzzer.cpp:50: Pause between repetitions so the operator can count them.
+firmware/esp32/outputs/buzzer.cpp:56: Do nothing for unknown patterns rather than assert or halt
+firmware/esp32/outputs/buzzer.h:1: Use #pragma once so the compiler ignores this header on subsequent inc
+firmware/esp32/outputs/buzzer.h:5: Define BuzzerPattern as a named enum so call sites read as plain Engli
+firmware/esp32/outputs/buzzer.h:17: Expose this as a primitive so other modules can build custom sequences
+firmware/esp32/outputs/oled.cpp:1: Include Wire.h first because Adafruit_SSD1306 needs it initialised bef
+firmware/esp32/outputs/oled.cpp:10: Allocate the display object at file scope so it persists across calls 
+firmware/esp32/outputs/oled.cpp:16: Pass OLED_ADDR from config.h so the address is defined in exactly one
+firmware/esp32/outputs/oled.cpp:19: Print to Serial here because the OLED is not yet usable - this
+firmware/esp32/outputs/oled.cpp:22: Do not halt the program on OLED failure because the rest of the
+firmware/esp32/outputs/oled.cpp:33: Use text size 2 for the title so it is readable across the room
+firmware/esp32/outputs/oled.cpp:38: Centre the title by measuring its pixel width at size 2 (6 px per
+firmware/esp32/outputs/oled.cpp:46: Use text size 1 for the subtitle to keep both lines on screen at once.
+firmware/esp32/outputs/oled.cpp:56: Hold the splash for 2 s so the user can confirm the device has booted
+firmware/esp32/outputs/oled.cpp:67: Line 1 - environmental data from BME280.
+firmware/esp32/outputs/oled.cpp:68: Keep it short (T/H/P) because all three values must fit on 128 px.
+firmware/esp32/outputs/oled.cpp:77: Line 2 - vibration axes from MPU6050.
+firmware/esp32/outputs/oled.cpp:78: Show Vx/Vy/Vz using one decimal place to fit within the line width.
+firmware/esp32/outputs/oled.cpp:87: Line 3 - power rail health from INA219.
+firmware/esp32/outputs/oled.cpp:88: Show voltage and current together because they are always read as a pa
+firmware/esp32/outputs/oled.cpp:96: Line 4 - alert flags on the bottom row where the operator can see them
+firmware/esp32/outputs/oled.h:1: Use #pragma once to avoid double-inclusion without the noise of a manu
+firmware/esp32/outputs/oled.h:5: Pull in the sensor structs here so callers only need one include to dr
+firmware/esp32/outputs/relay.cpp:1: Include Arduino.h explicitly because this is a .cpp compilation unit a
+firmware/esp32/outputs/relay.cpp:8: Store the pin numbers in an array indexed by RelayChannel so triggerRe
+firmware/esp32/outputs/relay.cpp:20: Write HIGH on init because the relay module is active-low - HIGH
+firmware/esp32/outputs/relay.cpp:29: Guard against out-of-range enum casts so a corrupt value cannot
+firmware/esp32/outputs/relay.cpp:33: Invert the logic here because the module is active-low:
+firmware/esp32/outputs/relay.h:1: Use #pragma once to keep this header self-contained without boilerplat
+firmware/esp32/outputs/relay.h:5: Use a named enum for relay channels so call sites cannot accidentally 
+firmware/esp32/outputs/rgb_led.cpp:1: Include Adafruit_NeoPixel before the local headers because the library
+firmware/esp32/outputs/rgb_led.cpp:8: Allocate the NeoPixel object at file scope so it lives for the full
+firmware/esp32/outputs/rgb_led.cpp:16: Clear all pixels immediately after begin() so the strip does not show
+firmware/esp32/outputs/rgb_led.cpp:27: Use a mid-brightness green (0, 180, 0) rather than full
+firmware/esp32/outputs/rgb_led.cpp:34: Use amber (255, 100, 0) rather than pure yellow because it is
+firmware/esp32/outputs/rgb_led.cpp:40: Use full red to maximise urgency - power draw is acceptable
+firmware/esp32/outputs/rgb_led.cpp:46: Default to off rather than an arbitrary colour so an unknown
+firmware/esp32/outputs/rgb_led.cpp:52: Fill all pixels with the same colour in a loop so the visual effect
+firmware/esp32/outputs/rgb_led.h:1: Use #pragma once for the same reason as the other headers in this fold
+firmware/esp32/outputs/rgb_led.h:4: Define LEDStatus as a named enum so the call site reads
+firmware/esp32/outputs/rgb_led.h:17: Update all pixels together because the strip forms a single status bar
+firmware/esp32/sensors/as5600.cpp:1: Include config.h first to get AS5600_ADDR, I2C_SDA and I2C_SCL without
+firmware/esp32/sensors/as5600.cpp:9: Define them here rather than in config.h because they are hardware
+firmware/esp32/sensors/as5600.cpp:14: Keep the previous angle and timestamp at file scope so RPM can be
+firmware/esp32/sensors/as5600.cpp:31: Mask hi to 4 bits because the top 4 bits of register 0x0C are unused
+firmware/esp32/sensors/as5600.cpp:37: Do a quick probe to make sure the sensor is on the bus before
+firmware/esp32/sensors/as5600.cpp:47: Prime the baseline so the first RPM calculation has a reference.
+firmware/esp32/sensors/as5600.cpp:64: Skip RPM on the very first call because there is no previous
+firmware/esp32/sensors/as5600.cpp:72: Compute the shortest angular delta to handle wrap-around
+firmware/esp32/sensors/as5600.cpp:78: Convert degrees/second to RPM: (deg/s) / 360 * 60.
+firmware/esp32/sensors/as5600.h:1: Use #pragma once consistently with every sensor header in this project
+firmware/esp32/sensors/bme280.cpp:1: Include config.h first so every macro (BME280_ADDR, I2C_SDA, etc.) is
+firmware/esp32/sensors/bme280.cpp:9: Keep the sensor object at file scope because it must persist between
+firmware/esp32/sensors/bme280.cpp:14: Try the address from config.h first, then fall back to 0x77 because
+firmware/esp32/sensors/bme280.cpp:22: Print to Serial here rather than halting execution so the rest of
+firmware/esp32/sensors/bme280.cpp:31: Pass the pointer fields directly to the Adafruit methods to avoid
+firmware/esp32/sensors/bme280.h:1: Use #pragma once instead of an #ifndef guard because it is simpler and
+firmware/esp32/sensors/ds18b20.cpp:1: Include config.h first so DS18B20_PIN and DS18B20_RESOLUTION are
+firmware/esp32/sensors/ds18b20.cpp:8: Build OneWire on the pin from config.h so the wiring can change in one
+firmware/esp32/sensors/ds18b20.cpp:15: Set resolution here rather than leaving it at the library default (9-b
+firmware/esp32/sensors/ds18b20.cpp:20: Use non-blocking mode (waitForConversion = false) so the main loop
+firmware/esp32/sensors/ds18b20.cpp:24: Kick off the first conversion so the next readDS18B20() call has data.
+firmware/esp32/sensors/ds18b20.cpp:31: Request a fresh conversion before reading so the value is never
+firmware/esp32/sensors/ds18b20.h:1: Use #pragma once for the same reason as every other header here.
+firmware/esp32/sensors/ds18b20.h:9: Returns -127.0 on error, which is the DallasTemperature sentinel for
+firmware/esp32/sensors/fc28.cpp:1: Include config.h to get FC28_PIN and WATER_THRESHOLD so threshold
+firmware/esp32/sensors/fc28.cpp:9: Cast to float immediately so callers can scale without an explicit cas
+firmware/esp32/sensors/fc28.cpp:13: Test raw < WATER_THRESHOLD rather than > because the FC28 is a
+firmware/esp32/sensors/fc28.h:1: Use #pragma once to match the style of every other header in this fold
+firmware/esp32/sensors/ina219.cpp:1: Include config.h before the Adafruit header so INA219_ADDR is already
+firmware/esp32/sensors/ina219.cpp:8: Pass the I2C address from config.h to the constructor so that changing
+firmware/esp32/sensors/ina219.cpp:17: Leave calibration at the Adafruit default (32V / 2A) because the
+firmware/esp32/sensors/ina219.cpp:25: Derive power here rather than calling getPower_mW() because the
+firmware/esp32/sensors/ina219.h:1: Use #pragma once consistently across all sensor headers in this projec
+firmware/esp32/sensors/ldr.cpp:1: Include config.h to get LDR_V2_PIN and MAX4466_PIN so the GPIO numbers
+firmware/esp32/sensors/ldr.cpp:8: Read LDR_V2_PIN (GPIO33) which is ADC1_CH5 on the ESP32.
+firmware/esp32/sensors/ldr.cpp:9: The ESP32 ADC returns 0-4095 for a 12-bit read; keep that scale
+firmware/esp32/sensors/ldr.cpp:15: Read MAX4466_PIN (GPIO32) which is ADC1_CH4.
+firmware/esp32/sensors/ldr.cpp:16: The MAX4466 output swings around Vcc/2, so a single analogRead gives
+firmware/esp32/sensors/ldr.h:1: Use #pragma once to stay consistent with the rest of the sensor header
+firmware/esp32/sensors/ldr.h:5: Returns a raw ADC value in the range 0-4095.
+firmware/esp32/sensors/ldr.h:6: Return float rather than int so callers can apply calibration multipli
+firmware/esp32/sensors/ldr.h:11: Returns the raw ADC value in the range 0-4095.
+firmware/esp32/sensors/mlx90614.cpp:1: Include config.h first so MLX90614_ADDR is available for the construct
+firmware/esp32/sensors/mlx90614.cpp:7: Use the default constructor here because Adafruit_MLX90614 always uses
+firmware/esp32/sensors/mlx90614.cpp:20: Read object temperature rather than ambient because the use case
+firmware/esp32/sensors/mlx90614.h:1: Use #pragma once to keep the header guard minimal and readable.
+firmware/esp32/sensors/mlx90614.h:8: Return a float directly rather than a struct because this sensor has
+firmware/esp32/sensors/mpu6050.cpp:1: Include config.h first so I2C pin macros are available when Wire.h ini
+firmware/esp32/sensors/mpu6050.cpp:8: Keep the object static so its calibration state survives across loop()
+firmware/esp32/sensors/mpu6050.cpp:13: Print rather than hang so the watchdog can recover the node.
+firmware/esp32/sensors/mpu6050.cpp:18: Choose 8g range because Phaemos nodes are expected to see moderate
+firmware/esp32/sensors/mpu6050.cpp:25: Use the 21 Hz low-pass filter to reject high-frequency electrical
+firmware/esp32/sensors/mpu6050.cpp:34: Use getEvent() instead of raw register reads so the Adafruit driver
+firmware/esp32/sensors/mpu6050.cpp:44: Gyro comes back in rad/s from Adafruit - no conversion needed.
+firmware/esp32/sensors/mpu6050.h:1: Use #pragma once for the same reason as the other headers in this fold
+firmware/esp32/sensors/mq2.cpp:1: Include config.h to get MQ2_ANALOG_PIN, MQ2_DIGITAL_PIN, and
+firmware/esp32/sensors/mq2.cpp:8: Configure the digital pin as INPUT_PULLUP because the MQ-2 module's
+firmware/esp32/sensors/mq2.cpp:18: Read the 12-bit ESP32 ADC (0-4095) and map it to 0-1023 so the
+firmware/esp32/sensors/mq2.cpp:24: Treat a LOW digital output as an alert because the MQ-2 comparator
+firmware/esp32/sensors/mq2.h:1: Use #pragma once to match the style of every other header in this fold
+firmware/esp32/sensors/vl53l0x.cpp:1: Include config.h first so VL53L0X_ADDR is available if we ever need
+firmware/esp32/sensors/vl53l0x.cpp:8: Declare the object static to keep its configuration state across calls
+firmware/esp32/sensors/vl53l0x.cpp:16: Use long-range mode because Phaemos distance sensing applications
+firmware/esp32/sensors/vl53l0x.cpp:26: Check the phase failure flag before trusting the range value
+firmware/esp32/sensors/vl53l0x.cpp:29: Status 4 is a phase failure / timeout - return 0 to signal invalid.
+firmware/esp32/sensors/vl53l0x.h:1: Use #pragma once for consistency with every other header in this folde
+firmware/esp32/sensors/vl53l0x.h:10: Return uint16_t because VL53L0X range is 0-8190 mm - a uint16_t fits
+firmware/esp32/sensors/vl53l0x.h:12: Returns 0 on timeout or ranging error.
+firmware/pico_w/bme280.py:4: Include the full compensation math here rather than returning raw ADC
+firmware/pico_w/bme280.py:53: Check the chip ID so a wiring error produces a clear error message
+firmware/pico_w/bme280.py:178: Guard against division by zero here exactly as the Bosch
+firmware/pico_w/http_post.py:9: Keep this fallback so the module can be imported in a CPython test
+firmware/pico_w/http_post.py:35: Set Content-Type explicitly to application/json because urequests
+firmware/pico_w/http_post.py:46: Close the response immediately after reading the status code to
+firmware/pico_w/http_post.py:55: Print the exception here so it appears in Thonny's output pane
+firmware/pico_w/main.py:22: Use software-flexible I2C rather than hardware I2C0/I2C1 here because
+firmware/pico_w/main.py:27: Initialise BME280 first so any sensor fault is visible on the REPL bef
+firmware/pico_w/main.py:41: Connect at startup rather than lazily because the OLED shows "PHAEMOS"
+firmware/pico_w/main.py:46: Print the error and continue rather than halting so sensor data still
+firmware/pico_w/main.py:58: Divide by 25600 (256 * 100) to convert from 1/256 Pa to hPa directly.
+firmware/pico_w/main.py:107: Use ticks_ms / ticks_diff for timing rather than subtracting absolute
+firmware/pico_w/main.py:125: Use ticks_diff(now, last_post_ticks) and compare to interval_ms rather
+firmware/pico_w/main.py:142: Sleep 1 second between OLED refreshes rather than running flat-out to
+firmware/pico_w/ssd1306.py:4: Use a minimal local driver rather than relying on the MicroPython
+firmware/pico_w/ssd1306.py:17: Define them as class constants rather than inline magic numbers so the
+firmware/pico_w/ssd1306.py:54: Allocate the framebuffer as a bytearray of width * height / 8
+firmware/pico_w/wifi_connect.py:27: Use STA_IF (station mode) because the Pico is a client connecting to
+firmware/pico_w/wifi_connect.py:31: Activate the interface before calling connect() because on cold boot
+firmware/pico_w/wifi_connect.py:44: Poll every 0.5 seconds rather than using a blocking wait so the loop
+firmware/stm32_blackpill/Core/Inc/fft.h:4: Use arm_rfft_fast_f32 (radix-2 real FFT, O(N log N)) from CMSIS-DSP.
+firmware/stm32_blackpill/Core/Inc/fft.h:5: This replaces the previous O(N^2) DFT implementation; on a 96 MHz
+firmware/stm32_blackpill/Core/Inc/fft.h:9: Build requirements (STM32CubeIDE project properties):
+firmware/stm32_blackpill/Core/Inc/fft.h:15: Library name:        arm_cortexM4lf_math
+firmware/stm32_blackpill/Core/Inc/fft.h:25: Choose 128 because it is a power of two (required by arm_rfft_fast_f32
+firmware/stm32_blackpill/Core/Inc/fft.h:37: Returns the frequency in Hz of the bin with the highest magnitude,
+firmware/stm32_blackpill/Core/Inc/mpu6050_driver.h:4: Target the STM32F4 HAL here because the Black Pill ships with an F411C
+firmware/stm32_blackpill/Core/Inc/mpu6050_driver.h:65: Provide this lighter function for the vibration node's 100Hz ISR where
+firmware/stm32_blackpill/Core/Inc/uart_output.h:4: Keep UART formatting in its own translation unit so that if the output
+firmware/stm32_blackpill/Core/Inc/uart_output.h:24: Output format (CRLF terminated):
+firmware/stm32_blackpill/Core/Inc/uart_output.h:27: Example:
+firmware/stm32_blackpill/Core/Src/fft.c:4: Use arm_rfft_fast_f32 from CMSIS-DSP in place of an O(N^2) DFT.
+firmware/stm32_blackpill/Core/Src/fft.c:5: On a 96 MHz Cortex-M4 with FPU this processes 128 points in roughly 19
+firmware/stm32_blackpill/Core/Src/fft.c:9: The arm_rfft_fast_f32 output for an N-point real FFT is packed as:
+firmware/stm32_blackpill/Core/Src/fft.c:15: Magnitude of bin k: sqrt(Re[k]^2 + Im[k]^2).
+firmware/stm32_blackpill/Core/Src/fft.c:17: Build requirements - see fft.h for the full list of STM32CubeIDE setti
+firmware/stm32_blackpill/Core/Src/fft.c:24: Keep these static so repeated calls reuse the same allocation without
+firmware/stm32_blackpill/Core/Src/fft.c:39: Initialise on first call rather than at reset so twiddle-factor
+firmware/stm32_blackpill/Core/Src/fft.c:56: Scan bins 1 to FFT_SIZE/2-1.
+firmware/stm32_blackpill/Core/Src/fft.c:57: Bin 0 (output[0]) is DC - gravity on the Z axis always wins it.
+firmware/stm32_blackpill/Core/Src/fft.c:58: Bin FFT_SIZE/2 (output[1]) is the Nyquist bin - aliased content at
+firmware/stm32_blackpill/Core/Src/fft.c:66: Compare magnitude-squared to avoid calling sqrtf() in every
+firmware/stm32_blackpill/Core/Src/main.c:4: Sampling strategy:
+firmware/stm32_blackpill/Core/Src/main.c:5: Use TIM2 at 100 Hz to drive sampling rather than a HAL_Delay loop beca
+firmware/stm32_blackpill/Core/Src/main.c:14: The SystemClock_Config, MX_GPIO_Init, MX_I2C1_Init, MX_USART1_UART_Ini
+firmware/stm32_blackpill/Core/Src/main.c:40: At 100 Hz this covers 1.28 seconds per FFT window; the buffer is
+firmware/stm32_blackpill/Core/Src/main.c:45: Use volatile here because sample_ready is written in the ISR (TIM2
+firmware/stm32_blackpill/Core/Src/main.c:70: Use ReadAccel (6 bytes) rather than ReadAll (14 bytes) in the ISR
+firmware/stm32_blackpill/Core/Src/main.c:101: Initialise MPU6050 - halt in Error_Handler if the sensor is absent or
+firmware/stm32_blackpill/Core/Src/main.c:108: Start TIM2 in interrupt mode.  Use Base_Start_IT rather than
+firmware/stm32_blackpill/Core/Src/main.c:116: Main loop - processes one 1-second window per iteration */
+firmware/stm32_blackpill/Core/Src/main.c:120: Avoid a WFI/sleep here because the STM32F411 wakes from WFI on
+firmware/stm32_blackpill/Core/Src/main.c:127: Compute per-axis means across the 100-sample window.
+firmware/stm32_blackpill/Core/Src/main.c:128: Use separate mean variables rather than reusing the buffer
+firmware/stm32_blackpill/Core/Src/main.c:135: For a multi-axis FFT upgrade, expand the buffer to 3*100 floats. */
+firmware/stm32_blackpill/Core/Src/main.c:151: Vector magnitude: sqrt(x^2 + y^2 + z^2) */
+firmware/stm32_blackpill/Core/Src/main.c:156: Compute FFT peak frequency on the full FFT_SIZE-sample Z-axis buffer.
+firmware/stm32_blackpill/Core/Src/main.c:170: Provide empty stubs so this file compiles and documents pin assignment
+firmware/stm32_blackpill/Core/Src/main.c:176: Use 96 MHz rather than the maximum 100 MHz because it gives whole-numb
+firmware/stm32_blackpill/Core/Src/main.c:181: Generated by STM32CubeIDE - do not edit manually */
+firmware/stm32_blackpill/Core/Src/main.c:189: Generated by STM32CubeIDE */
+firmware/stm32_blackpill/Core/Src/main.c:194: Use 400 kHz (fast mode) rather than 100 kHz so a 14-byte MPU6050 read
+firmware/stm32_blackpill/Core/Src/main.c:200: Generated by STM32CubeIDE */
+firmware/stm32_blackpill/Core/Src/main.c:206: Use 115200 rather than 9600 so the ~60-byte telemetry line transmits i
+firmware/stm32_blackpill/Core/Src/main.c:211: Generated by STM32CubeIDE */
+firmware/stm32_blackpill/Core/Src/main.c:218: At 96 MHz system clock and TIM2 on APB1 (which runs at 96 MHz when APB
+firmware/stm32_blackpill/Core/Src/main.c:220: Prescaler (PSC) = 9600 - 1  -> timer clock = 96 MHz / 9600 = 10 000 Hz
+firmware/stm32_blackpill/Core/Src/main.c:223: Subtract 1 from both because TIM2 counts from 0 to ARR inclusive (ARR+
+firmware/stm32_blackpill/Core/Src/main.c:229: Generated by STM32CubeIDE */
+firmware/stm32_blackpill/Core/Src/main.c:235: Disable interrupts and loop forever rather than attempting a soft rese
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:4: Use HAL_I2C_Mem_Read rather than two separate HAL_I2C_Master calls
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:14: Define the I2C timeout in ms as a named constant rather than a magic
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:18: Scale factors from the MPU6050 datasheet Section 4.17 / 4.19.
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:19: Use +/-2g accel range (ACCEL_CONFIG = 0x00) -> 16384 LSB/g.
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:20: Use +/-250 deg/s gyro range (GYRO_CONFIG = 0x00) -> 131 LSB/(deg/s). *
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:27: The MPU6050 powers up in sleep mode (PWR_MGMT_1 bit 6 = 1).
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:28: Write 0x00 to PWR_MGMT_1 to clear sleep and select the internal
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:36: Wake up the MPU6050 by clearing the SLEEP bit in PWR_MGMT_1 */
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:43: Configure DLPF to 44 Hz bandwidth (CONFIG register = 0x03).
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:44: Enable the DLPF to suppress high-frequency noise above 44 Hz that
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:52: Set accelerometer range to +/-2g (ACCEL_CONFIG bits [4:3] = 00).
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:53: Choose +/-2g because most mechanical vibration in the intended use
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:62: Set gyro range to +/-250 deg/s (GYRO_CONFIG bits [4:3] = 00).
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:63: Keep the gyro at maximum sensitivity because gyro data is currently
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:77: Read only accel here rather than all 14 bytes to keep the I2C transact
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:87: Use HAL_I2C_Mem_Read rather than two separate Master calls - see file
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:94: The MPU6050 outputs data big-endian: high byte first, then low byte.
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:95: Cast to int16_t before dividing to correctly handle negative values. *
+firmware/stm32_blackpill/Core/Src/mpu6050_driver.c:106: Read all 14 bytes in a single Mem_Read call so that all axes are captu
+firmware/stm32_blackpill/Core/Src/uart_output.c:4: Isolate all string formatting in this file so the output protocol can
+firmware/stm32_blackpill/Core/Src/uart_output.c:14: Size the buffer to 128 bytes which is well above the worst-case format
+firmware/stm32_blackpill/Core/Src/uart_output.c:23: Use snprintf rather than sprintf to prevent buffer overrun if floats
+firmware/stm32_blackpill/Core/Src/uart_output.c:27: Use HAL_UART_Transmit in blocking mode rather than DMA because this
+firmware/stm32_blackpill/Core/Src/uart_output.c:45: Guard against snprintf returning a negative value (encoding error)
+frontend/.env.example:1: Backend API URL - used by all frontend fetch calls
+frontend/.env.local.example:1: Copy this file to .env.local and fill in your values
+frontend/app/admin/page.tsx:34: Use FormData to send the binary file as a multipart upload.
+frontend/app/changelog/page.tsx:11: Read CHANGELOG.md at build time so the page stays static with zero run
+frontend/app/compare/page.tsx:3: Fetch the device list once on mount so users can pick from named devic
+frontend/app/devices/[id]/page.tsx:3: Convert this to a client component so it can use hooks (useState, useE
+frontend/app/devices/[id]/page.tsx:59: Fetch only device metadata here - the latest reading comes from the
+frontend/app/devices/[id]/page.tsx:71: Fetch the user list once so the owner picker dropdown is populated.
+frontend/app/devices/[id]/page.tsx:118: Poll GET /telemetry/{id}/latest every 5s and pass data[0] to SensorGri
+frontend/app/devices/page.tsx:53: Debounce the search so the API is not hit on every keystroke.
+frontend/app/faq/page.tsx:342: Precompute each section's starting number so the running count across
+frontend/app/layout.tsx:16: Apply the stored theme class before the page renders to prevent a flas
+frontend/app/login/page.tsx:13: Redirect immediately if already authenticated so logged-in users
+frontend/app/login/page.tsx:47: Store the token in both localStorage (for the axios interceptor) and
+frontend/app/page.tsx:19: Track whether the user has manually picked a device so polling never
+frontend/app/page.tsx:23: Poll devices and active alerts every 5 seconds - they change infrequen
+frontend/app/page.tsx:27: Use allSettled so a failing alerts query never blocks device cards fro
+frontend/app/page.tsx:34: Only auto-select the first device on the very first load, never on
+frontend/app/status/page.tsx:51: Poll every 30s so the page stays current without a manual refresh.
+frontend/components/AlertBanner.tsx:42: Close on backdrop click so the operator can dismiss without submitting
+frontend/components/GoogleAnalytics.tsx:6: Defer GA4 loading until consent is confirmed - loading unconditionally
+frontend/components/TelemetryChart.tsx:3: Split readings into sensor groups so each chart has a focused y-axis s
+frontend/components/TelemetryChart.tsx:78: Limit to 500 rows for the historical view - enough to draw smooth line
+frontend/components/TelemetryChart.tsx:82: Keep WS-pushed readings in a ref to avoid re-renders on every push.
+frontend/components/TelemetryChart.tsx:88: Cap the live buffer at 50 entries so unbounded device activity does no
+frontend/components/TelemetryChart.tsx:95: Merge live readings ahead of polled ones; duplicates are filtered by i
+frontend/components/admin/AlertRulesPanel.tsx:3: Fetch devices alongside rules so the form can offer a device picker
+frontend/components/admin/UserTable.tsx:15: Fetch once on mount - the user list does not change often enough
+frontend/components/admin/WebhooksPanel.tsx:147: Actions */}
+frontend/components/dashboard/MaintenanceBanner.tsx:12: Poll every 60s - maintenance windows change rarely so tight polling is
+frontend/components/dashboard/MaintenanceBanner.tsx:28: Silently ignore errors - a failing banner check must never break the d
+frontend/components/dashboard/SensorGrid.tsx:3: Group sensors by category rather than listing all fields flat because 
+frontend/components/dashboard/SensorGrid.tsx:26: Build the category list inside the component rather than at module lev
+frontend/components/dashboard/SensorGrid.tsx:80: Use a sentinel alert field for gas_alert so the card can render a
+frontend/components/dashboard/SensorGrid.tsx:140: Show the skeleton at grid layout so the placeholder occupies the same
+frontend/components/tickets/TicketForm.tsx:29: Send only fields the user filled in - the backend treats omitted optio
+frontend/components/tickets/TicketTable.tsx:3: Implement sorting as local state because ticket lists are short enough
+frontend/components/tickets/TicketTable.tsx:25: Define priority weight so sorting by priority produces a meaningful
+frontend/components/ui/ErrorBoundary.tsx:13: Use a class component here because React error boundaries require
+frontend/components/ui/ErrorToast.tsx:25: Clean up the timeout so if the parent unmounts before the timer fires
+frontend/components/ui/LoadingSkeleton.tsx:3: Vary the widths so the skeleton does not look like a uniform loading b
+frontend/components/ui/LoadingSkeleton.tsx:11: Predefine the width cycle so each row reliably gets a distinct width
+frontend/components/ui/LogoutButton.tsx:9: Clear both storage locations so neither the axios interceptor nor
+frontend/components/ui/StatusBadge.tsx:3: Accept both device status strings and alert severity strings so this
+frontend/components/ui/ThemeToggle.tsx:3: Read the current theme from the html element's class list (set by the
+frontend/components/ui/ThemeToggle.tsx:13: Sync with the class applied by the pre-hydration script so the initial
+frontend/hooks/useAlerts.ts:3: Follow the same polling pattern as useTelemetry so both hooks behave
+frontend/hooks/useAlerts.ts:23: Only fetch unresolved alerts here because the dashboard alert panel
+frontend/hooks/useAlerts.ts:50: Clear the interval so the hook does not keep firing after the componen
+frontend/hooks/useTelemetry.ts:3: Use setInterval rather than polling with setTimeout chains because set
+frontend/hooks/useTelemetry.ts:35: Extract the fetch logic into useCallback so the interval handler and t
+frontend/hooks/useTelemetry.ts:56: Set loading true whenever the deviceId or time range changes so the co
+frontend/hooks/useTelemetry.ts:64: Hold a reference to the interval in a closure variable so the visibili
+frontend/hooks/useTelemetry.ts:68: Pause polling while the tab is hidden and restart it the moment the ta
+frontend/hooks/useTickets.ts:3: Poll on an interval rather than fetching once so the ticket list stays
+frontend/hooks/useTickets.ts:28: Only add the status param when it is provided so a missing value
+frontend/hooks/useWebSocketTelemetry.ts:3: Use exponential backoff rather than a fixed retry interval because the
+frontend/hooks/useWebSocketTelemetry.ts:5: Skip all retries on close code 1008 (auth failure) to avoid an infinit
+frontend/hooks/useWebSocketTelemetry.ts:15: Swap the scheme so the WS connection uses the same host/port as the RE
+frontend/hooks/useWebSocketTelemetry.ts:28: Hold refs instead of state so reconnect logic can read current values
+frontend/lib/utils.ts:1: Keep all pure formatting helpers in one place so components stay thin
+frontend/middleware.ts:3: Whitelist paths that must be accessible without authentication so that
+frontend/middleware.ts:24: Pass through Next.js internals, static files and any whitelisted path
+frontend/middleware.ts:46: Match every route so the middleware runs for all pages, then the early
+infra/docker-compose.yml:1: Full PHAEMOS stack. From the repository root the root docker-compose.y
+infra/sql/queries/device-summary.sql:22: Use a lateral join to fetch only the most recent telemetry row per dev
+infra/sql/seed/demo-devices.sql:10: Insert three demo devices representing different machine types.
+infra/sql/seed/demo-devices.sql:18: Insert alert rules for each demo device.

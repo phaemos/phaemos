@@ -63,7 +63,7 @@ def _check_db() -> str:
 
 
 def _check_redis() -> str:
-    # Import redis lazily so the main app does not fail if the package is absent.
+    # import redis lazily so the main app does not fail if the package is absent.
     from app.config import settings
     try:
         import redis as redis_lib

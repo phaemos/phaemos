@@ -16,13 +16,13 @@ _UNSET = {"", "placeholder"}
 def send_sms(to_number: str, message: str) -> None:
     """Send an SMS to to_number. Silently skips if Brevo is not configured."""
     if settings.brevo_api_key in _UNSET:
-        # Omit the recipient from this log because phone numbers are PII.
+        # omit the recipient from this log because phone numbers are PII.
         _log.warning("Brevo API key not configured - SMS not sent")
         return
     if not to_number:
         return
 
-    # Import sib_api_v3_sdk lazily so a missing package does not crash the
+    # import sib_api_v3_sdk lazily so a missing package does not crash the
     # whole app on startup - teams that have not installed the SDK still get
     # all other features; only SMS is disabled.
     try:

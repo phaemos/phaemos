@@ -1,11 +1,11 @@
-//! Retry timing for forwarding after a failure.
+//! retry timing for forwarding after a failure.
 
 use std::time::Duration;
 
 const BASE_SECS: u64 = 1;
 const MAX_SECS: u64 = 60;
 
-/// Delay before retry number `attempt` (starting at 1): 1, 2, 4, 8 seconds and so on,
+/// delay before retry number `attempt` (starting at 1): 1, 2, 4, 8 seconds and so on,
 /// capped at one minute so a long outage is noticed quickly once it ends.
 #[must_use]
 pub fn delay(attempt: u32) -> Duration {

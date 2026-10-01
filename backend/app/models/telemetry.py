@@ -14,7 +14,7 @@ class Telemetry(Base):
     # ForeignKey("devices.id") creates a database-level link to the devices table
     # ondelete="CASCADE" means if a device is deleted, all its telemetry rows are also deleted automatically
     device_id     = Column(UUID(as_uuid=True), ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
-    # Store node_type so the API can filter readings by which physical board sent them
+    # store node_type so the API can filter readings by which physical board sent them
     node_type     = Column(String(20))
 
     # sensor readings are nullable - a device may not report every metric on every reading

@@ -1,7 +1,7 @@
 //! `phaemos-edge`: reads readings as JSON lines on stdin (for example from a node's
 //! serial bridge), spools them to disk and forwards them to the PHAEMOS API.
 //!
-//! Usage: `phaemos-edge --api-url https://api.phaemos.com --api-key KEY [--spool PATH]`
+//! usage: `phaemos-edge --api-url https://api.phaemos.com --api-key KEY [--spool PATH]`
 
 use std::io::{self, BufRead};
 use std::process::ExitCode;
@@ -36,7 +36,7 @@ fn parse_args() -> Result<Config, String> {
     })
 }
 
-/// Sends pending readings in order and stops at the first failure, so the spool
+/// sends pending readings in order and stops at the first failure, so the spool
 /// keeps its order. Returns how many were forwarded.
 fn flush(config: &Config, spool: &Spool) -> io::Result<(usize, bool)> {
     let url = format!("{}/api/v1/telemetry", config.api_url);

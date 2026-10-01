@@ -1,7 +1,7 @@
 /**
  * mpu6050_driver.h - MPU6050 IMU driver header for STM32F411CEU6 (Black Pill)
  *
- * Target the STM32F4 HAL here because the Black Pill ships with an F411CEU6
+ * target the STM32F4 HAL here because the Black Pill ships with an F411CEU6
  * and STM32CubeIDE generates HAL-based projects by default, so staying in HAL
  * avoids mixing abstraction layers and keeps the project portable to other
  * F4-series chips.
@@ -62,7 +62,7 @@ HAL_StatusTypeDef MPU6050_Init(I2C_HandleTypeDef *hi2c);
  * @hi2c:  pointer to HAL I2C handle
  * @data:  output struct (only accel_x/y/z are written; gyro fields untouched)
  * Returns HAL_OK on success.
- * Provide this lighter function for the vibration node's 100Hz ISR where
+ * provide this lighter function for the vibration node's 100Hz ISR where
  * reading only 6 bytes instead of 14 reduces the I2C bus time per interrupt.
  */
 HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data);

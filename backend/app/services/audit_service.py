@@ -1,4 +1,4 @@
-# Put audit logging in its own service because it is a cross-cutting concern - any route
+# put audit logging in its own service because it is a cross-cutting concern - any route
 # can call log_action() without knowing anything about how audit records are stored.
 # keeping it separate also means we can silence or redirect audit logging (e.g. swap to
 # an external SIEM) by editing only this file, without touching any route logic.
@@ -28,7 +28,7 @@ def log_action(
         resource_id: The primary key of the specific entity, as a string for flexibility.
         detail:      Optional free-text context, e.g. changed field names and old/new values.
     """
-    # Use a try/except here because audit logging must never crash the main request.
+    # use a try/except here because audit logging must never crash the main request.
     # if the audit_log table is missing or the DB is briefly unavailable, the primary
     # operation should still succeed - a lost audit row is far less damaging than a
     # failed user-facing write.
@@ -46,20 +46,20 @@ def log_action(
                 "resource": resource,
                 "resource_id": resource_id,
                 "detail": detail,
-                # Use timezone-aware UTC so the timestamp is unambiguous regardless
+                # use timezone-aware UTC so the timestamp is unambiguous regardless
                 # of where the server is deployed.
                 "created_at": datetime.now(tz=timezone.utc),
             },
         )
-        # Commit separately here so the audit row is persisted even if the caller's
+        # commit separately here so the audit row is persisted even if the caller's
         # outer transaction is later rolled back for unrelated reasons.
         db.commit()
     except Exception as exc:  # noqa: BLE001
-        # Swallow the exception intentionally - see docstring above.
+        # swallow the exception intentionally - see docstring above.
         # the rollback prevents a half-open transaction from blocking future queries
         # on this session.
         db.rollback()
-        # Log to stderr anyway so operators can detect if audit logging is broken
+        # log to stderr anyway so operators can detect if audit logging is broken
         # without it causing visible errors to end users.
         import sys
         print(f"[audit_service] WARNING: failed to write audit log: {exc}", file=sys.stderr)

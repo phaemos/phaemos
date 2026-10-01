@@ -1,10 +1,10 @@
-// Use #pragma once for consistency with every other header in this project.
+// use #pragma once for consistency with every other header in this project.
 #pragma once
 
 #include <Arduino.h>
 
 // NanoData - holds all values that the Arduino Nano transmits over UART1.
-// Keep a bool valid flag rather than using sentinel values like -999 so that
+// keep a bool valid flag rather than using sentinel values like -999 so that
 // any caller can check success with a simple if (d.valid) test.
 struct NanoData {
     bool  valid;         // true only when parsing succeeded without errors
@@ -18,7 +18,7 @@ struct NanoData {
 
 // STM32Data - holds the vibration analysis values that the STM32 transmits
 // over UART2 after running its FFT on the MPU6050 axes.
-// Separate this from NanoData because the two serial ports have different
+// separate this from NanoData because the two serial ports have different
 // baud rates and message cadences.
 struct STM32Data {
     bool  valid;          // true only when parsing succeeded without errors
@@ -34,5 +34,5 @@ void parseNanoSerial(const String& line, NanoData* d);
 // parseSTM32Serial - parses one line in the format:
 // "VIB:x,y,z,MAG:m,FFT_PEAK:hHz"
 // Extracts MAG as vib_magnitude and FFT_PEAK as fft_peak_hz.
-// Sets d->valid = true on success, false on any parse error.
+// sets d->valid = true on success, false on any parse error.
 void parseSTM32Serial(const String& line, STM32Data* d);

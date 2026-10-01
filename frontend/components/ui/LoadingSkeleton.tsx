@@ -1,6 +1,6 @@
 'use client';
 
-// Vary the widths so the skeleton does not look like a uniform loading bar,
+// vary the widths so the skeleton does not look like a uniform loading bar,
 // which feels more like real content being loaded rather than a generic spinner.
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
   className?: string;
 }
 
-// Predefine the width cycle so each row reliably gets a distinct width
+// predefine the width cycle so each row reliably gets a distinct width
 // without needing random numbers that would break server/client hydration.
 const ROW_WIDTHS = ['w-full', 'w-5/6', 'w-4/5'];
 

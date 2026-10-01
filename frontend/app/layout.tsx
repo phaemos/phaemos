@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'Smart Maintenance Platform',
 };
 
-// Apply the stored theme class before the page renders to prevent a flash
+// apply the stored theme class before the page renders to prevent a flash
 // of the wrong theme during hydration.
 const themeScript = `
 (function() {

@@ -34,7 +34,7 @@ def _build_text(webhook: Webhook, context: dict) -> str:
 
 
 def _host(url: str) -> str:
-    # Extract only the netloc so downstream checks cannot be fooled by the
+    # extract only the netloc so downstream checks cannot be fooled by the
     # target domain appearing in the path or query string of a malicious URL.
     try:
         return urlparse(url).netloc.lower()

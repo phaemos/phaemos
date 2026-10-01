@@ -339,7 +339,7 @@ const FAQ_SECTIONS = [
 ];
 
 export default function FaqPage() {
-  // Precompute each section's starting number so the running count across
+  // precompute each section's starting number so the running count across
   // sections is a pure function of FAQ_SECTIONS rather than a counter mutated
   // during render.
   const sectionOffsets = FAQ_SECTIONS.reduce<number[]>((offsets, _section, i) => {

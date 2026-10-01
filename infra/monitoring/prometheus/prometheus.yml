@@ -1,4 +1,4 @@
-# prometheus scrape configuration for PHAEMOS.
+# Prometheus scrape configuration for PHAEMOS.
 # polls the FastAPI /metrics endpoint (exposed by prometheus-fastapi-instrumentator).
 
 global:

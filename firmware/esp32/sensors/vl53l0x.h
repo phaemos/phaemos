@@ -1,4 +1,4 @@
-// Use #pragma once for consistency with every other header in this folder.
+// use #pragma once for consistency with every other header in this folder.
 #pragma once
 
 #include <stdint.h>
@@ -7,7 +7,7 @@
 void initVL53L0X();
 
 // readVL53L0X returns distance in millimetres.
-// Return uint16_t because VL53L0X range is 0-8190 mm - a uint16_t fits
+// return uint16_t because VL53L0X range is 0-8190 mm - a uint16_t fits
 // that without waste and matches the register width of the sensor.
-// Returns 0 on timeout or ranging error.
+// returns 0 on timeout or ranging error.
 uint16_t readVL53L0X();

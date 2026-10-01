@@ -1,4 +1,4 @@
-// Use #pragma once for the same reason as the other headers in this folder -
+// use #pragma once for the same reason as the other headers in this folder -
 // it prevents duplicate-inclusion without boilerplate.
 #pragma once
 

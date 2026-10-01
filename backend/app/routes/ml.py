@@ -44,7 +44,7 @@ def _do_retrain(user_id: str) -> None:
             )
             return
 
-        # Build a DataFrame from the 6 features the live scorer uses so training
+        # build a DataFrame from the 6 features the live scorer uses so training
         # and inference operate on an identical feature vector.
         data = {col: [getattr(r, col) for r in rows] for col in FEATURE_COLS}
         df = pd.DataFrame(data).fillna(0.0)
@@ -62,7 +62,7 @@ def _do_retrain(user_id: str) -> None:
         joblib.dump(model, MODEL_PATH)
         reload_model()
 
-        # Compute n_anomalies on training data as a rough quality indicator rather
+        # compute n_anomalies on training data as a rough quality indicator rather
         # than precision/recall, which requires labels we do not have.
         raw_scores = model.score_samples(X)
         normalised = np.clip(1 - (raw_scores + 0.5), 0.0, 1.0)

@@ -1,5 +1,5 @@
 // esp32.ino - PHAEMOS v2 main firmware for the ESP32 hub node.
-// Split all sensor, output and comms logic into submodules and keep this
+// split all sensor, output and comms logic into submodules and keep this
 // file as the orchestration layer only - it wires everything together without
 // containing implementation details.
 
@@ -40,7 +40,7 @@
 // Use HardwareSerial(1) for the Nano because UART1 does not conflict with
 // the USB debug port (UART0) or the STM32 (UART2).
 HardwareSerial NanoSerial(1);
-// Use HardwareSerial(2) for the STM32 for the same isolation reason.
+// use HardwareSerial(2) for the STM32 for the same isolation reason.
 HardwareSerial STM32Serial(2);
 
 // ─── Global sensor reading structs ───────────────────────────────────────────
@@ -50,7 +50,7 @@ BME280Reading  bmeData;
 MPU6050Reading mpuData;
 INA219Reading  inaData;
 
-// Use plain primitive types for sensors that return single values rather
+// use plain primitive types for sensors that return single values rather
 // than creating structs for each one - keeps the code proportionate.
 uint16_t distMm       = 0;
 float    gasLevel     = 0.0f;
@@ -63,7 +63,7 @@ float    mlxAmbient   = 0.0f;
 float    mlxObject    = 0.0f;
 float    as5600Angle  = 0.0f;
 
-// Data received over serial from Nano and STM32.
+// data received over serial from Nano and STM32.
 NanoData  nanoData;
 STM32Data stm32Data;
 
@@ -82,17 +82,17 @@ void readAllSensors();
 // setup
 // ============================================================
 void setup() {
-    // Start Serial at 115200 early so any init failures print to the monitor
+    // start Serial at 115200 early so any init failures print to the monitor
     // before the rest of the boot sequence runs.
     Serial.begin(115200);
     Serial.println(F("PHAEMOS v2 booting..."));
 
-    // Start both secondary serial ports before calling any sensor init that
+    // start both secondary serial ports before calling any sensor init that
     // might try to read from them.
     NanoSerial.begin(NANO_BAUD,   SERIAL_8N1, NANO_RX_PIN,  NANO_TX_PIN);
     STM32Serial.begin(STM32_BAUD, SERIAL_8N1, STM32_RX_PIN, STM32_TX_PIN);
 
-    // Initialise the I2C bus before any I2C sensor because every I2C call
+    // initialise the I2C bus before any I2C sensor because every I2C call
     // will silently fail if Wire has not been started.
     Wire.begin(I2C_SDA, I2C_SCL);
 
@@ -102,7 +102,7 @@ void setup() {
     initINA219();
     initVL53L0X();
     initMQ2();
-    // No separate initFC28() call is needed because the FC28 is purely analog
+    // no separate initFC28() call is needed because the FC28 is purely analog
     // and ADC reads work without explicit initialisation on the ESP32.
 
     // ── Output init ──────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ void setup() {
     delay(100);
     beep(100);
 
-    // Show the splash last so the display confirms full init success.
+    // show the splash last so the display confirms full init success.
     displaySplash("PHAEMOS", "v2 starting...");
 
     Serial.println(F("Setup complete."));
@@ -185,21 +185,21 @@ void readAllSensors() {
 // ============================================================
 void checkThresholds() {
     if (bmeData.temperature > TEMP_CRITICAL_C) {
-        // Trigger CH1 as a cooling relay in critical overheat conditions -
+        // trigger CH1 as a cooling relay in critical overheat conditions -
         // the wiring doc defines CH1 as the cooling fan/valve.
         beepPattern(PATTERN_CRITICAL);
         setLEDStatus(STATUS_CRITICAL);
         triggerRelay(RELAY_CH1, true);
     } else if (bmeData.temperature > TEMP_WARNING_C || gasAlert || waterAlert) {
-        // Group the three warning conditions together because any single one
+        // group the three warning conditions together because any single one
         // is enough to alert the operator, even if the others are clear.
         beepPattern(PATTERN_WARNING);
         setLEDStatus(STATUS_WARNING);
-        // Turn the relay off during WARNING - load switching is reserved for
+        // turn the relay off during WARNING - load switching is reserved for
         // CRITICAL so we do not cycle the cooling system on minor alerts.
         triggerRelay(RELAY_CH1, false);
     } else {
-        // Play one quiet beep at NORMAL only when state transitions back from
+        // play one quiet beep at NORMAL only when state transitions back from
         // WARNING/CRITICAL - callers should debounce this in a real deployment.
         setLEDStatus(STATUS_NORMAL);
         triggerRelay(RELAY_CH1, false);
@@ -211,15 +211,15 @@ void checkThresholds() {
 // ============================================================
 void postTelemetry() {
     if (WiFi.status() != WL_CONNECTED) {
-        // Attempt a reconnect rather than silently dropping the reading so
+        // attempt a reconnect rather than silently dropping the reading so
         // the backend data stream has as few gaps as possible.
         reconnectWiFi();
-        // Return after reconnect because the connection may still not be up
+        // return after reconnect because the connection may still not be up
         // and starting an HTTP request on a disconnected radio will error out.
         return;
     }
 
-    // Use StaticJsonDocument to avoid heap fragmentation - 1024 bytes is
+    // use StaticJsonDocument to avoid heap fragmentation - 1024 bytes is
     // enough for all current fields with headroom for future additions.
     StaticJsonDocument<1024> doc;
 
@@ -254,7 +254,7 @@ void postTelemetry() {
     doc["moisture"]     = moistureLevel;
     doc["water_alert"]  = waterAlert;
 
-    // Nano serial data (best-effort - only include if the last parse succeeded)
+    // nano serial data (best-effort - only include if the last parse succeeded)
     if (nanoData.valid) {
         doc["nano_temp"]    = nanoData.temperature;
         doc["nano_hum"]     = nanoData.humidity;

@@ -25,7 +25,7 @@ def list_audit_logs(
     _admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    # Use raw SQL here to stay consistent with audit_service.py which also uses
+    # use raw SQL here to stay consistent with audit_service.py which also uses
     # raw SQL for writes - keeping both sides consistent avoids having a mismatch
     # where the ORM model diverges from the raw-SQL schema the service relies on.
     rows = db.execute(
@@ -40,7 +40,7 @@ def list_audit_logs(
         {"limit": limit, "skip": skip},
     ).fetchall()
 
-    # Convert Row objects to dicts so FastAPI can serialise them as JSON without
+    # convert Row objects to dicts so FastAPI can serialise them as JSON without
     # needing a Pydantic model for the audit log table.
     return [dict(row._mapping) for row in rows]
 
@@ -54,7 +54,7 @@ def export_audit_logs(
     _admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    # Build the WHERE clause dynamically so unused filters add no overhead.
+    # build the WHERE clause dynamically so unused filters add no overhead.
     # all parameters are passed as bound values to prevent SQL injection.
     conditions = ["1=1"]
     params: dict = {}
@@ -92,7 +92,7 @@ def export_audit_logs(
         writer.writerow([str(v) if v is not None else "" for v in row])
     csv_bytes = buf.getvalue().encode("utf-8")
 
-    # Sign the response body with an HMAC-SHA256 so recipients can verify
+    # sign the response body with an HMAC-SHA256 so recipients can verify
     # the export has not been tampered with after leaving the server.
     sig = hmac.new(settings.secret_key.encode(), csv_bytes, hashlib.sha256).hexdigest()
 

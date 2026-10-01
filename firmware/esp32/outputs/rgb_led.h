@@ -1,7 +1,7 @@
-// Use #pragma once for the same reason as the other headers in this folder.
+// use #pragma once for the same reason as the other headers in this folder.
 #pragma once
 
-// Define LEDStatus as a named enum so the call site reads
+// define LEDStatus as a named enum so the call site reads
 // setLEDStatus(STATUS_CRITICAL) rather than setLEDStatus(2), making intent
 // obvious without a comment at every call.
 enum LEDStatus {
@@ -14,6 +14,6 @@ enum LEDStatus {
 void initRGBLed();
 
 // setLEDStatus - sets every pixel on the strip to the colour that represents s.
-// Update all pixels together because the strip forms a single status bar,
+// update all pixels together because the strip forms a single status bar,
 // not individual independently controlled lights.
 void setLEDStatus(LEDStatus s);

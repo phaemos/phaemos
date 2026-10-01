@@ -1,5 +1,5 @@
 def test_retrain_requires_admin(client, db):
-    # Create a real viewer row so get_current_user succeeds and the role guard
+    # create a real viewer row so get_current_user succeeds and the role guard
     # (403) is what terminates the request, not a missing-user 401.
     from passlib.context import CryptContext
     from app.models.user import User
@@ -19,7 +19,7 @@ def test_retrain_requires_admin(client, db):
 
 def test_retrain_accepted_then_cooldown(client, auth_headers):
     import app.routes.ml as ml_module
-    # Reset the cooldown so this test is independent of execution order.
+    # reset the cooldown so this test is independent of execution order.
     ml_module._last_retrain = None
 
     res = client.post("/api/v1/ml/retrain", headers=auth_headers)

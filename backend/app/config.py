@@ -1,25 +1,25 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# Extend BaseSettings from Pydantic's BaseModel so each field is type-validated automatically
+# extend BaseSettings from Pydantic's BaseModel so each field is type-validated automatically
 class Settings(BaseSettings):
-    # Use SettingsConfigDict to tell pydantic-settings where to load values from
+    # use SettingsConfigDict to tell pydantic-settings where to load values from
     # env_file=".env" means values are read from a local .env file if present
     # extra="ignore" silently discards any .env keys that aren't declared as fields here
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # Require this field - no default means the app won't start if it's missing
+    # require this field - no default means the app won't start if it's missing
     database_url: str
-    # Make fields with defaults optional; the default applies when the env var isn't set
+    # make fields with defaults optional; the default applies when the env var isn't set
     redis_url: str = "redis://localhost:6379"
-    # Require secret_key with no default - never hard-code secrets in source code
+    # require secret_key with no default - never hard-code secrets in source code
     secret_key: str
-    # Use HS256 (HMAC-SHA256) as the signing algorithm to create and verify JWT tokens
+    # use HS256 (HMAC-SHA256) as the signing algorithm to create and verify JWT tokens
     algorithm: str = "HS256"
-    # Shorten access tokens to 15 minutes so a stolen token has minimal blast radius;
+    # shorten access tokens to 15 minutes so a stolen token has minimal blast radius;
     # the refresh token (7-day httpOnly cookie) handles silent renewal.
     access_token_expire_minutes: int = 15
-    # Accept a comma-separated list of frontend URLs allowed to call this API via CORS
+    # accept a comma-separated list of frontend URLs allowed to call this API via CORS
     allowed_origins: str = "http://localhost:3000"
     environment: str = "development"
 
@@ -54,12 +54,12 @@ class Settings(BaseSettings):
     # -- OTA firmware --
     firmware_storage_path: str = "./firmware_uploads"
 
-    # Use @property to turn this into a read-only attribute so callers write settings.origins not settings.origins()
+    # use @property to turn this into a read-only attribute so callers write settings.origins not settings.origins()
     @property
     def origins(self) -> list[str]:
-        # Split the comma-separated string into a list and strip any accidental whitespace around each entry
+        # split the comma-separated string into a list and strip any accidental whitespace around each entry
         return [o.strip() for o in self.allowed_origins.split(",")]
 
 
-# Instantiate once at import time; every module that imports 'settings' shares this same object
+# instantiate once at import time; every module that imports 'settings' shares this same object
 settings = Settings()

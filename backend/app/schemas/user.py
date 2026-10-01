@@ -15,7 +15,7 @@ class UserRegister(BaseModel):
     @field_validator("password")
     @classmethod
     def password_strength(cls, v: str) -> str:
-        # Enforce a minimum bar here so weak passwords never reach the DB.
+        # enforce a minimum bar here so weak passwords never reach the DB.
         # rules: 8+ chars, at least one uppercase letter, at least one digit.
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")

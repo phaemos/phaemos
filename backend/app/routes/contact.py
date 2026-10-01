@@ -23,7 +23,7 @@ class ContactRequest(BaseModel):
 
 
 async def _verify_turnstile(token: str, remote_ip: str) -> bool:
-    # Verify the Turnstile token server-side so the captcha cannot be bypassed
+    # verify the Turnstile token server-side so the captcha cannot be bypassed
     # by stripping it from the request.
     async with httpx.AsyncClient() as client:
         resp = await client.post(
@@ -39,7 +39,7 @@ async def _verify_turnstile(token: str, remote_ip: str) -> bool:
 
 
 def _send_email(payload: ContactRequest) -> None:
-    # Only attempt SMTP when credentials are configured - missing creds are a
+    # only attempt SMTP when credentials are configured - missing creds are a
     # no-op rather than a crash so the dev environment works without real mail.
     if not settings.smtp_host or not settings.smtp_user:
         return
@@ -77,6 +77,6 @@ async def submit_contact(request: Request, payload: ContactRequest):
     try:
         _send_email(payload)
     except Exception:
-        # Swallow SMTP errors here - the message was valid and a mail
+        # swallow SMTP errors here - the message was valid and a mail
         # delivery failure should not surface a 500 to the visitor.
         pass
