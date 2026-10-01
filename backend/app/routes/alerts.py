@@ -62,7 +62,7 @@ def resolve_alert(
     db.commit()
     db.refresh(alert)
 
-    # I serialise to Pydantic BEFORE calling audit_service because audit_service
+    # Serialise to Pydantic BEFORE calling audit_service because audit_service
     # calls db.commit() internally, which expires all SQLAlchemy ORM objects in
     # the session. FastAPI would then fail to serialise the expired alert object.
     # capturing it as a Pydantic model first avoids that race.

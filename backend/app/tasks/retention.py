@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 _RETENTION_DAYS = 90
 
-# I create a dedicated SessionLocal here because the background job runs
+# Create a dedicated SessionLocal here because the background job runs
 # outside FastAPI's request lifecycle and cannot use Depends(get_db).
 _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -26,7 +26,7 @@ def _delete_old_telemetry() -> None:
             {"cutoff": cutoff},
         )
         n_deleted = result.rowcount
-        # I commit before audit so the deletion is durable even if the audit call fails.
+        # Commit before audit so the deletion is durable even if the audit call fails.
         db.commit()
         logger.info(
             "Retention cleanup: deleted %d rows older than %d days",
@@ -50,7 +50,7 @@ def _delete_old_telemetry() -> None:
 
 def start_retention_scheduler() -> None:
     scheduler = BackgroundScheduler(daemon=True)
-    # I run at 02:00 UTC daily - off-peak to avoid contention with live ingest.
+    # Run at 02:00 UTC daily - off-peak to avoid contention with live ingest.
     scheduler.add_job(
         _delete_old_telemetry,
         trigger="cron",

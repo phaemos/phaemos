@@ -40,12 +40,9 @@ type: short description
 - Keep the subject to 72 characters or fewer, in the imperative mood (`add` not `added`) with no full stop.
 - An optional body, separated by a blank line, explains why the change was made rather than how.
 
-## Style
+## Code style
 
-- UK English in prose, comments and names: `colour`, `organisation`, `licence` as a noun.
-- No Oxford comma: write "x, y and z".
-- No em dashes or en dashes. Use a hyphen or rewrite the sentence.
-- Comments explain why rather than what, written in the first person ("I debounce this because...").
+- Comments explain why the code does something rather than what it does.
 - Backend: PEP 8, checked with `ruff check backend/`. Dashboard: TypeScript strict mode, checked with `npm run lint`.
 - Edge gateway: `cargo fmt` and `cargo clippy`. Go CLI: `gofmt` and `go vet`.
 - Run `make lint` and `make test` before pushing.

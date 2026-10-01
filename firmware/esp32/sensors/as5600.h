@@ -1,4 +1,4 @@
-// I use #pragma once consistently with every sensor header in this project.
+// Use #pragma once consistently with every sensor header in this project.
 #pragma once
 
 // initAS5600 sets up I2C and primes the angle baseline for RPM calculation.

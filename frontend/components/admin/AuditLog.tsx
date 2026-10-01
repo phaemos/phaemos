@@ -100,7 +100,7 @@ export default function AuditLog() {
           </tbody>
         </table>
 
-        {/* pagination - I use skip/limit rather than page numbers so the controls
+        {/* pagination - use skip/limit rather than page numbers so the controls
             map directly onto the backend query params without any conversion. */}
         <div className="flex items-center justify-between px-4 py-3 bg-surface-50 dark:bg-surface-800/50 border-t border-surface-200 dark:border-surface-800">
           <button

@@ -1,7 +1,7 @@
 /**
  * uart_output.h - UART formatting layer for the vibration node
  *
- * I keep UART formatting in its own translation unit so that if the output
+ * Keep UART formatting in its own translation unit so that if the output
  * protocol changes (e.g. switching to JSON or MQTT framing) only this file
  * and its .c companion need to be touched, leaving all sensor and DSP code
  * untouched.

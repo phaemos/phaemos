@@ -34,6 +34,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Code comments across the backend, dashboard, firmware and SQL read as plain statements of why the code works the way it does. The contributor guide's Code style section now lists only the tooling checks.
 - Hardware designs in `hardware/` are now licensed under the CERN Open Hardware Licence v2, Strongly Reciprocal (CERN-OHL-S-2.0), matching MELOPHOS. Everything else stays AGPL-3.0-or-later. `NOTICE.md` now explains which licence covers what and lists every dependency manifest. The README and docs licence sections say the same
 - `CONTRIBUTING.md` rewritten: where to start, the branch, commit and style conventions, the email addresses and how to report a vulnerability, with callouts for the read-only component copies and security reports
 - `hardware/README.md` rewritten with the correct firmware folders, the MPU6050 on the STM32 node, a warning about the Nano's 5 V logic and its own licence section
@@ -41,7 +42,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Callouts where a mistake costs something: private vulnerability reports in `SECURITY.md`, the Nano level shifter, the ESP32 LED strip power budget and `docker compose down` wiping the database
 - README rewritten in full around the brand logo, which switches between its light and dark versions with the viewer's theme. It now covers what PHAEMOS does, a short architecture diagram, a table of every component folder and the repository it publishes to, a two-command quickstart and the simulator. The detail it used to carry moved into the docs: running without Docker, the smoke test and the test commands into `development.md`, the release flow into `releases.md`, the tech stack and boards into `tech-stack.md` and the folder tree into `repositories.md`. The docs home page lists every page and uses the current board names
 - Auto-merge is now ecosystem-aware: patch and minor Dependabot bumps and major GitHub Actions bumps auto-merge once CI passes, but major `npm` and `pip` bumps are held for manual review since a breaking runtime change could pass lint and build yet still deploy; previously major bumps were skipped entirely
-- README rewritten: dropped the leftover animated capsule-render footer banner, switched the prose to first person, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it has been live since Phase 2, only real hardware data is still pending), verified every doc link and image still resolves
+- README rewritten: dropped the leftover animated capsule-render footer banner, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it has been live since Phase 2, only real hardware data is still pending), verified every doc link and image still resolves
 - Backend `redis` bumped to 8.1.0, `pandas` to 3.0.5 and `bcrypt` to 5.0.0; frontend `tailwind-merge` bumped to 3.6.0, `react`/`react-dom` to 19 and `eslint`/`eslint-config-next` to 9/16, each held for manual review as a major bump and verified individually rather than merged blind
 - Frontend migrated to Tailwind CSS v4: `@tailwindcss/postcss` replaces the old `tailwindcss` + `autoprefixer` PostCSS plugins, `globals.css` uses a single `@import "tailwindcss"` instead of the three `@tailwind` directives and the existing `tailwind.config.ts` stays in effect via `@config` rather than migrating its theme into CSS
 - Frontend migrated to ESLint 9's flat config for `eslint-config-next` 16: `.eslintrc.cjs` replaced by `eslint.config.mjs` importing the package's native flat config export directly; `next lint` (deprecated, crashes on ESLint 9 with a circular-JSON error) replaced by calling the `eslint` CLI directly in the `lint` script
@@ -69,7 +70,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Bumped backend `uvicorn` to 0.54.0. SQLAlchemy stays on 2.0.x and Dependabot now ignores 2.1 and later, since 2.1 switches a bare `postgresql://` URL to the `psycopg` driver while the backend uses `psycopg2-binary`.
-- Replaced em dashes in comments in `deploy.yml` and the monitoring compose file with plain punctuation. The discussion templates lost their Oxford commas too.
+- Tidied punctuation in the comments of `deploy.yml`, the monitoring compose file and the discussion templates.
 
 ## [2.3.0] - 2026-06-03
 
@@ -123,7 +124,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `docs/week_by_week.md` rewritten from rigid 12-week table to phase-based structure separating done from pending work (PR 135)
 - `docs/architecture.md` updated for v2 hardware, Next.js 15 and DigitalOcean deployment (PR 135)
 - `docs/api-reference.md` expanded with all endpoints added since v2.2.0 (PR 135)
-- All em dashes in source comments replaced with hyphens per project style guide (PR 135)
+- Tidied punctuation in source comments (PR 135)
 
 ### Fixed
 

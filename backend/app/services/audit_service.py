@@ -1,4 +1,4 @@
-# I put audit logging in its own service because it is a cross-cutting concern - any route
+# Put audit logging in its own service because it is a cross-cutting concern - any route
 # can call log_action() without knowing anything about how audit records are stored.
 # keeping it separate also means we can silence or redirect audit logging (e.g. swap to
 # an external SIEM) by editing only this file, without touching any route logic.
@@ -28,12 +28,12 @@ def log_action(
         resource_id: The primary key of the specific entity, as a string for flexibility.
         detail:      Optional free-text context, e.g. changed field names and old/new values.
     """
-    # I use a try/except here because audit logging must never crash the main request.
+    # Use a try/except here because audit logging must never crash the main request.
     # if the audit_log table is missing or the DB is briefly unavailable, the primary
     # operation should still succeed - a lost audit row is far less damaging than a
     # failed user-facing write.
     try:
-        from sqlalchemy import text  # I import here to avoid a circular dependency at module level
+        from sqlalchemy import text  # Import here to avoid a circular dependency at module level
         db.execute(
             text("""
             INSERT INTO audit_log (id, user_id, action, resource, resource_id, detail, created_at)
@@ -46,20 +46,20 @@ def log_action(
                 "resource": resource,
                 "resource_id": resource_id,
                 "detail": detail,
-                # I use timezone-aware UTC so the timestamp is unambiguous regardless
+                # Use timezone-aware UTC so the timestamp is unambiguous regardless
                 # of where the server is deployed.
                 "created_at": datetime.now(tz=timezone.utc),
             },
         )
-        # I commit separately here so the audit row is persisted even if the caller's
+        # Commit separately here so the audit row is persisted even if the caller's
         # outer transaction is later rolled back for unrelated reasons.
         db.commit()
     except Exception as exc:  # noqa: BLE001
-        # I swallow the exception intentionally - see docstring above.
+        # Swallow the exception intentionally - see docstring above.
         # the rollback prevents a half-open transaction from blocking future queries
         # on this session.
         db.rollback()
-        # I still log to stderr so operators can detect if audit logging is broken
+        # Log to stderr anyway so operators can detect if audit logging is broken
         # without it causing visible errors to end users.
         import sys
         print(f"[audit_service] WARNING: failed to write audit log: {exc}", file=sys.stderr)

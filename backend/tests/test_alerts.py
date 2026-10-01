@@ -43,7 +43,7 @@ def test_resolve_alert(client, device, db, auth_headers):
     db.add(alert)
     db.flush()
 
-    # I pass auth_headers because resolve now requires an authenticated user
+    # Pass auth_headers because resolve now requires an authenticated user
     # to record the actor in the audit log.
     res = client.patch(f"/api/v1/alerts/{alert.id}/resolve", headers=auth_headers)
     assert res.status_code == 200
