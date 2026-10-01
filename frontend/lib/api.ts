@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { storeSession } from './session';
 
 const api = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1`,
@@ -36,7 +37,7 @@ api.interceptors.response.use(
           {},
           { withCredentials: true },
         );
-        localStorage.setItem('token', data.access_token);
+        storeSession(data.access_token);
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
         return api(originalRequest);
       } catch {

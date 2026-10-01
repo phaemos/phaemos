@@ -106,7 +106,7 @@ Ensure `DATABASE_URL` and `REDIS_URL` point at running local instances before st
 | POST | `/api/v1/auth/accept-invite` | None | Set password and activate invited account |
 | POST | `/api/v1/auth/2fa/enable` | Bearer | Generate TOTP secret and QR code |
 | POST | `/api/v1/auth/2fa/confirm` | Bearer | Confirm TOTP enrolment |
-| POST | `/api/v1/auth/2fa/verify` | None | Verify TOTP code during login |
+| POST | `/api/v1/auth/2fa/verify` | Sign-in challenge | Second sign-in step: the challenge from login or OAuth plus a TOTP code |
 | POST | `/api/v1/auth/2fa/disable` | Bearer | Disable 2FA (requires valid TOTP code) |
 | **Devices** | | | |
 | GET | `/api/v1/devices` | Bearer | List devices (tag filter supported) |

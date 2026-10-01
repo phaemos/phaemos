@@ -27,7 +27,7 @@ You will receive a response within 72 hours. Once the issue is confirmed and a f
 
 ## Implemented Security Controls
 
-See [docs/security.md](docs/security.md) for the full table of 27 implemented security measures, including JWT auth, refresh tokens, OAuth, 2FA/TOTP, rate limiting, brute-force lockout, security headers, GDPR endpoints, WebSocket auth, CORS configuration and audit logging.
+See [docs/security.md](docs/security.md) for the full table of 30 implemented security measures, including JWT auth, refresh tokens, OAuth, 2FA/TOTP, rate limiting, brute-force lockout, security headers, GDPR endpoints, WebSocket auth, CORS configuration and audit logging.
 
 ## Scope
 

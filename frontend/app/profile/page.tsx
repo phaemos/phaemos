@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import api from '../../lib/api';
+import { storeSession } from '../../lib/session';
 import { useToast } from '../../hooks/useToast';
 
 interface UserProfile {
@@ -127,7 +128,9 @@ export default function ProfilePage() {
     e.preventDefault();
     setTfaSaving(true);
     try {
-      await api.post(`/auth/2fa/confirm?code=${encodeURIComponent(totpCode)}`);
+      // the API ends every other session and returns a fresh one for this browser.
+      const { data } = await api.post<{ access_token?: string }>(`/auth/2fa/confirm?code=${encodeURIComponent(totpCode)}`);
+      if (data.access_token) storeSession(data.access_token);
       setUser(prev => prev ? { ...prev, totp_enabled: true } : prev);
       setQrCode(null);
       setTotpCode('');
@@ -143,7 +146,8 @@ export default function ProfilePage() {
     e.preventDefault();
     setTfaSaving(true);
     try {
-      await api.post(`/auth/2fa/disable?code=${encodeURIComponent(disableCode)}`);
+      const { data } = await api.post<{ access_token?: string }>(`/auth/2fa/disable?code=${encodeURIComponent(disableCode)}`);
+      if (data.access_token) storeSession(data.access_token);
       setUser(prev => prev ? { ...prev, totp_enabled: false } : prev);
       setDisableCode('');
       addToast('success', '2FA disabled.');

@@ -20,6 +20,8 @@ Authorization: Bearer <access_token>
 
 **Token refresh** uses a 7-day httpOnly cookie (no header needed - the browser sends it automatically).
 
+Every token states its purpose (access, refresh or sign-in challenge) and is only accepted for that purpose. Changing the password or turning two-factor authentication on or off ends every other session for the account. Five failed attempts, wrong passwords and wrong authentication codes alike, lock the account for 15 minutes.
+
 ---
 
 ## Telemetry
@@ -149,7 +151,15 @@ Get a single device with latest status.
 
 Update device name, location or status.
 
-**Auth:** Bearer JWT (Admin only)
+**Auth:** Bearer JWT (admin, or a technician for their own or unassigned devices)
+
+---
+
+### POST /devices/{id}/rotate-key
+
+Replace the device's API key. The response includes the new key, so the old one stops working straight away and the firmware needs the new value.
+
+**Auth:** Bearer JWT (admin, or a technician for their own or unassigned devices)
 
 ---
 
@@ -372,7 +382,20 @@ Login and receive a short-lived access token. Sets a 7-day httpOnly refresh cook
 }
 ```
 
-If the account has 2FA enabled, the response returns `{ "requires_2fa": true, "temp_token": "..." }` instead and the client must call `POST /auth/2fa/verify` to complete login.
+If the account has 2FA enabled, a correct password does not sign in on its own. The response carries a short-lived challenge instead, no refresh cookie is set and the client completes sign-in with `POST /auth/2fa/verify`:
+
+```json
+{
+  "access_token": null,
+  "token_type": "mfa",
+  "mfa_required": true,
+  "mfa_token": "eyJ..."
+}
+```
+
+The `mfa_token` expires after 5 minutes and is accepted only by `POST /auth/2fa/verify`.
+
+**Response 429:** the account is locked after too many failed attempts.
 
 ---
 
@@ -395,15 +418,11 @@ Exchange the httpOnly refresh cookie for a new 15-minute access token. No reques
 
 ### POST /auth/logout
 
-Clear the httpOnly refresh cookie.
+Clear the httpOnly refresh cookie and any pending sign-in challenge.
 
-**Auth:** Bearer JWT
+**Auth:** None (cookie-based)
 
-**Response 200:**
-
-```json
-{ "detail": "Logged out." }
-```
+**Response 204:** no body.
 
 ---
 
@@ -437,11 +456,13 @@ Update the current user's name, email or phone number.
 
 ### POST /auth/change-password
 
-Change the current user's password.
+Change the current user's password. Every other session for the account ends. The response sets a fresh refresh cookie so this browser stays signed in.
 
 **Auth:** Bearer JWT
 
-**Rate limit:** 5/hour per IP
+**Rate limit:** 10/minute per IP
+
+**Response 204:** no body.
 
 **Request body:**
 
@@ -480,7 +501,7 @@ GDPR data export. Returns a JSON bundle of all data associated with the current 
 
 ### GET /auth/google
 
-Initiate Google OAuth flow. Redirects to Google consent screen.
+Initiate Google OAuth flow. Redirects to the Google consent screen with a random `state` value, which is also stored in a short-lived httpOnly cookie.
 
 **Auth:** None (public)
 
@@ -488,7 +509,9 @@ Initiate Google OAuth flow. Redirects to Google consent screen.
 
 ### GET /auth/google/callback
 
-Google OAuth callback. Exchanges the authorisation code, creates or finds the user by email and issues tokens.
+Google OAuth callback. Refuses the request unless its `state` matches the cookie set by `GET /auth/google`. Exchanges the authorisation code and creates or finds the user by email, accepting only an email Google reports as verified.
+
+No token is ever put in the redirect URL. Without 2FA it sets the refresh cookie and redirects to `/login?step=oauth`, where the dashboard exchanges the cookie for an access token. With 2FA it sets a sign-in challenge cookie and redirects to `/login?step=mfa` to ask for the code.
 
 **Auth:** None (public)
 
@@ -496,7 +519,7 @@ Google OAuth callback. Exchanges the authorisation code, creates or finds the us
 
 ### GET /auth/github
 
-Initiate GitHub OAuth flow. Redirects to GitHub consent screen.
+Initiate GitHub OAuth flow. Redirects to the GitHub consent screen with a random `state` value, which is also stored in a short-lived httpOnly cookie.
 
 **Auth:** None (public)
 
@@ -504,7 +527,9 @@ Initiate GitHub OAuth flow. Redirects to GitHub consent screen.
 
 ### GET /auth/github/callback
 
-GitHub OAuth callback. Exchanges the authorisation code, creates or finds the user by email and issues tokens.
+GitHub OAuth callback. Refuses the request unless its `state` matches the cookie set by `GET /auth/github`. Exchanges the authorisation code and creates or finds the user by email, accepting only an email GitHub reports as verified.
+
+No token is ever put in the redirect URL. Without 2FA it sets the refresh cookie and redirects to `/login?step=oauth`, where the dashboard exchanges the cookie for an access token. With 2FA it sets a sign-in challenge cookie and redirects to `/login?step=mfa` to ask for the code.
 
 **Auth:** None (public)
 
@@ -583,7 +608,7 @@ Set a password and activate an invited account.
 
 ### POST /auth/2fa/enable
 
-Generate a TOTP secret and QR code URI for the current user. Does not activate 2FA until confirmed.
+Generate a TOTP secret and a QR code for the current user. Does not activate 2FA until confirmed.
 
 **Auth:** Bearer JWT
 
@@ -592,56 +617,62 @@ Generate a TOTP secret and QR code URI for the current user. Does not activate 2
 ```json
 {
   "secret": "BASE32SECRET",
-  "qr_uri": "otpauth://totp/PHAEMOS:jane@example.com?secret=..."
+  "qr_code": "<base64 PNG>"
 }
 ```
+
+**Response 409:** 2FA is already enabled. Disable it first.
 
 ---
 
 ### POST /auth/2fa/confirm
 
-Confirm TOTP enrolment by submitting the first valid code from the authenticator app. Activates 2FA on the account.
+Confirm TOTP enrolment by submitting the first valid code from the authenticator app. Activates 2FA on the account and ends every other session.
 
 **Auth:** Bearer JWT
 
-**Request body:**
+**Query parameters:** `code` - the 6-digit code
 
-```json
-{ "code": "123456" }
-```
+**Response 200:** `{ "detail": "2FA enabled", "access_token": "eyJ...", "token_type": "bearer" }` plus a fresh refresh cookie for this browser.
 
 ---
 
 ### POST /auth/2fa/verify
 
-Verify a TOTP code during the two-step login flow (after `POST /auth/login` returns `requires_2fa: true`).
+The second step of sign-in for an account with 2FA. Needs the challenge from the first step: the `mfa_token` from `POST /auth/login`, or the challenge cookie an OAuth callback set (leave `mfa_token` out then). A code on its own never signs anyone in.
 
-**Auth:** None (public - uses temp_token from login response)
+**Auth:** None (uses the sign-in challenge)
+
+**Rate limit:** 10/minute per IP
 
 **Request body:**
 
 ```json
 {
-  "temp_token": "...",
+  "mfa_token": "eyJ...",
   "code": "123456"
 }
 ```
 
 **Response 200:** same as `/auth/login` - access token + refresh cookie
 
+**Response 401:** the code is wrong, already used or the challenge has expired. Wrong codes count towards the account lockout.
+
+**Response 429:** the account is locked after too many failed attempts.
+
+Each code is accepted only once.
+
 ---
 
 ### POST /auth/2fa/disable
 
-Disable 2FA on the current account. Requires a valid TOTP code to prevent accidental or unauthorised disabling.
+Disable 2FA on the current account. Requires a valid TOTP code to prevent accidental or unauthorised disabling. Ends every other session.
 
 **Auth:** Bearer JWT
 
-**Request body:**
+**Query parameters:** `code` - the 6-digit code
 
-```json
-{ "code": "123456" }
-```
+**Response 200:** `{ "detail": "2FA disabled", "access_token": "eyJ...", "token_type": "bearer" }` plus a fresh refresh cookie for this browser.
 
 ---
 

@@ -87,6 +87,16 @@ def get_device(
 
 
 # PATCH is used instead of PUT because we only update the fields that are sent, not the whole resource
+def _require_device_write(user: User, device: Device) -> None:
+    # admins manage every device and technicians manage their own or unassigned
+    # ones. Viewers are read-only, so they can never change a device or see its key.
+    if user.role == "admin":
+        return
+    if user.role == "technician" and device.owner_id in (None, user.id):
+        return
+    raise HTTPException(status_code=403, detail="Access denied")
+
+
 @router.patch("/{device_id}", response_model=DeviceResponse)
 def update_device(
     device_id: UUID,
@@ -97,12 +107,7 @@ def update_device(
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
-    if (
-        current_user.role == "technician"
-        and device.owner_id is not None
-        and device.owner_id != current_user.id
-    ):
-        raise HTTPException(status_code=403, detail="Access denied")
+    _require_device_write(current_user, device)
     # exclude_none=True skips fields the client didn't send, so we only overwrite what was explicitly provided
     for field, value in payload.model_dump(exclude_none=True).items():
         # setattr dynamically sets device.<field> = value without needing to name each field explicitly
@@ -118,11 +123,12 @@ def rotate_api_key(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # require auth so only legitimate operators can rotate keys, not
-    # unauthenticated callers who might know a device UUID from other sources.
+    # the response carries the new key, so only someone allowed to manage the
+    # device may rotate it.
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
+    _require_device_write(current_user, device)
     device.api_key = secrets.token_urlsafe(32)
     db.commit()
     db.refresh(device)
@@ -142,7 +148,8 @@ def rotate_api_key(
 def delete_device(
     device_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # deleting matches creating: admins only.
+    current_user: User = Depends(require_admin),
 ):
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:

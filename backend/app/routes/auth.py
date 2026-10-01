@@ -1,8 +1,11 @@
 import base64
+import hmac
 import io
+import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from urllib.parse import urlencode
 
 import bcrypt
 import httpx
@@ -52,8 +55,8 @@ from app.db import get_db
 from app.limiter import limiter
 from app.models.user import User
 from app.schemas.user import (
-    UserRegister, UserLogin, UserResponse, TokenResponse,
-    UserUpdate, ChangePassword, InviteCreate, AcceptInvite,
+    UserRegister, UserLogin, UserResponse, TokenResponse, LoginResponse,
+    TotpVerify, UserUpdate, ChangePassword, InviteCreate, AcceptInvite,
 )
 from app.services import email_service
 
@@ -64,50 +67,91 @@ pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 _bearer = HTTPBearer()
 
 # lock accounts for 15 minutes after 5 consecutive failures, matching NIST
-# SP 800-63B guidance on brute-force mitigation.
+# SP 800-63B guidance on brute-force mitigation. Wrong second-factor codes
+# count towards the same limit as wrong passwords.
 _MAX_FAILURES = 5
 _LOCKOUT_MINUTES = 15
+
+_REFRESH_DAYS = 7
+_REFRESH_COOKIE = "refresh_token"
+_REFRESH_PATH = "/api/v1/auth/refresh"
+
+# the challenge issued after a correct password, or after OAuth, when the
+# account has two-factor authentication. It only works at /2fa/verify and
+# expires quickly so an unfinished sign-in cannot be resumed later.
+_CHALLENGE_MINUTES = 5
+_CHALLENGE_COOKIE = "signin_challenge"
+_CHALLENGE_PATH = "/api/v1/auth/2fa/verify"
+
+# the OAuth state lives in a short-lived cookie scoped to the auth routes, so
+# a callback is only accepted from a sign-in this browser actually started.
+_STATE_COOKIE = "oauth_state"
+_STATE_PATH = "/api/v1/auth"
+_STATE_SECONDS = 600
 
 
 def hash_password(password: str) -> str:
     return pwd_ctx.hash(password)
 
 
-def verify_password(plain: str, hashed: str) -> bool:
+def verify_password(plain: str, hashed: str | None) -> bool:
+    # accounts created through OAuth have no password, so they can never
+    # pass a password check.
+    if not hashed:
+        return False
     return pwd_ctx.verify(plain, hashed)
 
 
-def create_access_token(data: dict) -> str:
-    # include user identity, role and a short-lived expiration in the payload.
+def _encode(data: dict, token_type: str, lifetime: timedelta) -> str:
+    # every token carries its type so one kind can never stand in for another,
+    # and the user's session version so changing the password or two-factor
+    # settings ends every existing session.
     payload = data.copy()
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    payload["type"] = token_type
+    payload.setdefault("ver", 0)
+    payload["exp"] = datetime.now(timezone.utc) + lifetime
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
+
+
+def _identity(user: User) -> dict:
+    return {"sub": str(user.id), "role": user.role, "ver": user.token_version or 0}
+
+
+def create_access_token(data: dict) -> str:
+    return _encode(data, "access", timedelta(minutes=settings.access_token_expire_minutes))
 
 
 def create_refresh_token(data: dict) -> str:
-    # add type="refresh" so the /refresh endpoint can reject access tokens
-    # presented in place of refresh tokens.
-    payload = data.copy()
-    payload["type"] = "refresh"
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(days=7)
-    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
+    return _encode(data, "refresh", timedelta(days=_REFRESH_DAYS))
 
 
-def decode_token(token: str) -> dict:
-    """Decode and validate a JWT, returning the payload or raising HTTPException."""
-    # expose this as a standalone helper so the WebSocket route can validate
-    # tokens passed as query params without depending on the HTTPBearer scheme.
+def create_challenge_token(data: dict) -> str:
+    return _encode(data, "challenge", timedelta(minutes=_CHALLENGE_MINUTES))
+
+
+def decode_token(token: str, token_type: str = "access") -> dict:
+    """Decode a JWT and check its type, returning the payload or raising HTTPException."""
+    # kept as a standalone helper so the WebSocket route can validate tokens
+    # passed as query params without depending on the HTTPBearer scheme.
     try:
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
-        if not payload.get("sub"):
-            raise HTTPException(status_code=401, detail="Invalid token payload")
-        return payload
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
     except JWTError:
         raise HTTPException(status_code=401, detail="Could not validate token")
+    if not payload.get("sub") or payload.get("type") != token_type:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return payload
+
+
+def user_for_token(db: Session, payload: dict) -> User:
+    """Load the user a decoded token belongs to, refusing tokens from an ended session."""
+    try:
+        user_id = uuid.UUID(str(payload.get("sub")))
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or (user.token_version or 0) != payload.get("ver", 0):
+        raise HTTPException(status_code=401, detail="Session is no longer valid")
+    return user
 
 
 def get_current_user(
@@ -116,12 +160,7 @@ def get_current_user(
 ) -> User:
     # factor this into a reusable dependency so any route can require an
     # authenticated user without duplicating the JWT decode + DB lookup logic.
-    payload = decode_token(credentials.credentials)
-    user_id: str = payload.get("sub")
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    return user
+    return user_for_token(db, decode_token(credentials.credentials, "access"))
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
@@ -130,6 +169,93 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin role required")
     return current_user
+
+
+def _set_cookie(response: Response, key: str, value: str, path: str, max_age: int) -> None:
+    response.set_cookie(
+        key=key,
+        value=value,
+        httponly=True,
+        secure=settings.environment != "development",
+        samesite="lax",
+        max_age=max_age,
+        path=path,
+    )
+
+
+def _clear_cookie(response: Response, key: str, path: str) -> None:
+    # expire the cookie by setting max_age=0 rather than deleting it so the
+    # browser clears it immediately without needing a separate request.
+    _set_cookie(response, key, "", path, 0)
+
+
+def _set_refresh_cookie(response: Response, user: User) -> None:
+    _set_cookie(response, _REFRESH_COOKIE, create_refresh_token(_identity(user)),
+                _REFRESH_PATH, _REFRESH_DAYS * 24 * 3600)
+
+
+def _session_response(user: User, body: dict | None = None) -> JSONResponse:
+    """A response carrying a fresh access token and refresh cookie for this user."""
+    content = {"access_token": create_access_token(_identity(user)), "token_type": "bearer"}
+    if body:
+        content.update(body)
+    response = JSONResponse(content=content)
+    _set_refresh_cookie(response, user)
+    _clear_cookie(response, _CHALLENGE_COOKIE, _CHALLENGE_PATH)
+    return response
+
+
+def _end_other_sessions(db: Session, user: User) -> None:
+    # bumping the version invalidates every token issued before now. The caller
+    # hands the current browser a fresh session straight afterwards.
+    user.token_version = (user.token_version or 0) + 1
+    db.commit()
+    db.refresh(user)
+
+
+def _check_lockout(user: User | None) -> None:
+    if user and user.locked_until and user.locked_until > datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=429,
+            detail="Account locked due to too many failed attempts. Try again later.",
+        )
+
+
+def _record_failure(db: Session, user: User | None) -> None:
+    if not user:
+        return
+    user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+    if user.failed_login_attempts >= _MAX_FAILURES:
+        user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=_LOCKOUT_MINUTES)
+    db.commit()
+
+
+def _complete_sign_in(db: Session, user: User) -> JSONResponse:
+    # reset the failure counter only once every factor has passed, so
+    # alternating a correct password with code guesses cannot dodge the lockout.
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    user.last_login = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
+    return _session_response(user)
+
+
+def verify_totp(user: User, code: str) -> bool:
+    """Check a one-time code, accepting each time step at most once."""
+    # one step either side allows for clock drift. A step at or before the last
+    # accepted one is refused, so a code that has been seen cannot be replayed.
+    if not user.totp_secret or not code or not code.isdigit():
+        return False
+    totp = pyotp.TOTP(user.totp_secret)
+    now = totp.timecode(datetime.now(timezone.utc))
+    for step in (now - 1, now, now + 1):
+        if hmac.compare_digest(totp.generate_otp(step), code):
+            if user.totp_last_step is not None and step <= user.totp_last_step:
+                return False
+            user.totp_last_step = step
+            return True
+    return False
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
@@ -148,7 +274,7 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
     return user
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=LoginResponse)
 @limiter.limit("5/minute")
 def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
     # look up by email first; if the user does not exist, still run through
@@ -157,41 +283,19 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
 
     # check lockout before verifying the password so a locked account cannot
     # be probed even with the correct credentials.
-    if user and user.locked_until and user.locked_until > datetime.now(timezone.utc):
-        raise HTTPException(
-            status_code=429,
-            detail="Account locked due to too many failed attempts. Try again later.",
-        )
+    _check_lockout(user)
 
     if not user or not verify_password(payload.password, user.password_hash):
-        if user:
-            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
-            if user.failed_login_attempts >= _MAX_FAILURES:
-                user.locked_until = datetime.now(timezone.utc) + timedelta(
-                    minutes=_LOCKOUT_MINUTES
-                )
-            db.commit()
+        _record_failure(db, user)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # reset failure counter and record the successful login timestamp.
-    user.failed_login_attempts = 0
-    user.locked_until = None
-    user.last_login = datetime.now(timezone.utc)
-    db.commit()
+    # the password alone is not enough for an account with two-factor
+    # authentication: hand back a short-lived challenge that only /2fa/verify
+    # accepts instead of a session.
+    if user.totp_enabled:
+        return {"mfa_required": True, "mfa_token": create_challenge_token(_identity(user)), "token_type": "mfa"}
 
-    token = create_access_token({"sub": str(user.id), "role": user.role})
-    refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
-    response = JSONResponse(content={"access_token": token, "token_type": "bearer"})
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh,
-        httponly=True,
-        secure=settings.environment != "development",
-        samesite="lax",
-        max_age=7 * 24 * 3600,
-        path="/api/v1/auth/refresh",
-    )
-    return response
+    return _complete_sign_in(db, user)
 
 
 @router.get("/me", response_model=UserResponse)
@@ -209,27 +313,14 @@ def refresh(
 ):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token missing")
-    payload = decode_token(refresh_token)
-    if payload.get("type") != "refresh":
-        raise HTTPException(status_code=401, detail="Invalid token type")
-    user = db.query(User).filter(User.id == payload.get("sub")).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    token = create_access_token({"sub": str(user.id), "role": user.role})
-    return {"access_token": token, "token_type": "bearer"}
+    user = user_for_token(db, decode_token(refresh_token, "refresh"))
+    return {"access_token": create_access_token(_identity(user)), "token_type": "bearer"}
 
 
 @router.post("/logout", status_code=204)
 def logout(response: Response):
-    # expire the cookie by setting max_age=0 rather than deleting it so the
-    # browser clears it immediately without needing a separate DELETE request.
-    response.set_cookie(
-        key="refresh_token",
-        value="",
-        httponly=True,
-        max_age=0,
-        path="/api/v1/auth/refresh",
-    )
+    _clear_cookie(response, _REFRESH_COOKIE, _REFRESH_PATH)
+    _clear_cookie(response, _CHALLENGE_COOKIE, _CHALLENGE_PATH)
 
 
 # ── Profile management ────────────────────────────────────────────────────────
@@ -255,13 +346,17 @@ def update_me(
 def change_password(
     request: Request,
     payload: ChangePassword,
+    response: Response,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not current_user.password_hash or not verify_password(payload.old_password, current_user.password_hash):
+    if not verify_password(payload.old_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     current_user.password_hash = hash_password(payload.new_password)
-    db.commit()
+    # a new password ends every other session. This browser keeps working
+    # through the fresh refresh cookie set below.
+    _end_other_sessions(db, current_user)
+    _set_refresh_cookie(response, current_user)
 
 
 @router.delete("/me", status_code=204)
@@ -279,7 +374,7 @@ def delete_me(
     db.delete(current_user)
     db.commit()
     if response:
-        response.set_cookie(key="refresh_token", value="", httponly=True, max_age=0, path="/api/v1/auth/refresh")
+        _clear_cookie(response, _REFRESH_COOKIE, _REFRESH_PATH)
 
 
 @router.get("/me/export")
@@ -320,11 +415,15 @@ def export_me(
 
 @router.post("/2fa/enable")
 def totp_enable(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # starting enrolment again would silently switch an active second factor
+    # off, so an enabled one has to be disabled with a valid code first.
+    if current_user.totp_enabled:
+        raise HTTPException(status_code=409, detail="2FA is already enabled. Disable it first.")
     # generate a fresh secret each time so a half-completed enrolment can be
     # restarted without the old unconfirmed secret persisting.
     secret = pyotp.random_base32()
     current_user.totp_secret = secret
-    current_user.totp_enabled = False  # not active until confirmed
+    current_user.totp_last_step = None
     db.commit()
 
     uri = pyotp.totp.TOTP(secret).provisioning_uri(
@@ -339,74 +438,76 @@ def totp_enable(current_user: User = Depends(get_current_user), db: Session = De
 
 
 @router.post("/2fa/confirm")
+@limiter.limit("10/minute")
 def totp_confirm(
+    request: Request,
     code: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    if current_user.totp_enabled:
+        raise HTTPException(status_code=409, detail="2FA is already enabled")
     if not current_user.totp_secret:
         raise HTTPException(status_code=400, detail="Call /2fa/enable first")
-    if not pyotp.TOTP(current_user.totp_secret).verify(code):
+    if not verify_totp(current_user, code):
         raise HTTPException(status_code=400, detail="Invalid TOTP code")
     current_user.totp_enabled = True
-    db.commit()
-    return {"detail": "2FA enabled"}
+    # turning on a second factor ends every session that signed in without it.
+    _end_other_sessions(db, current_user)
+    return _session_response(current_user, {"detail": "2FA enabled"})
 
 
 @router.post("/2fa/verify", response_model=TokenResponse)
 @limiter.limit("10/minute")
 def totp_verify(
     request: Request,
-    code: str,
-    user_id: str,
+    payload: TotpVerify,
+    challenge_cookie: str | None = Cookie(default=None, alias=_CHALLENGE_COOKIE),
     db: Session = Depends(get_db),
 ):
-    # accept user_id as a query param rather than a JWT so this endpoint works
-    # before a full access token is issued - it is the second step of login.
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user or not user.totp_enabled or not user.totp_secret:
-        raise HTTPException(status_code=400, detail="2FA not enabled for this user")
-    if not pyotp.TOTP(user.totp_secret).verify(code):
+    # the second step of every sign-in. It needs the challenge issued after the
+    # first step, from the request body (password sign-in) or from the cookie
+    # set by an OAuth callback, so a code on its own never signs anyone in.
+    raw = payload.mfa_token or challenge_cookie
+    if not raw:
+        raise HTTPException(status_code=401, detail="Sign in again to continue")
+    user = user_for_token(db, decode_token(raw, "challenge"))
+    if not user.totp_enabled:
+        raise HTTPException(status_code=401, detail="Sign in again to continue")
+    _check_lockout(user)
+    if not verify_totp(user, payload.code):
+        _record_failure(db, user)
         raise HTTPException(status_code=401, detail="Invalid TOTP code")
-    token = create_access_token({"sub": str(user.id), "role": user.role})
-    refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
-    resp = JSONResponse(content={"access_token": token, "token_type": "bearer"})
-    resp.set_cookie(
-        key="refresh_token",
-        value=refresh,
-        httponly=True,
-        secure=settings.environment != "development",
-        samesite="lax",
-        max_age=7 * 24 * 3600,
-        path="/api/v1/auth/refresh",
-    )
-    return resp
+    return _complete_sign_in(db, user)
 
 
 @router.post("/2fa/disable")
+@limiter.limit("10/minute")
 def totp_disable(
+    request: Request,
     code: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     if not current_user.totp_enabled or not current_user.totp_secret:
         raise HTTPException(status_code=400, detail="2FA is not enabled")
-    if not pyotp.TOTP(current_user.totp_secret).verify(code):
+    if not verify_totp(current_user, code):
         raise HTTPException(status_code=401, detail="Invalid TOTP code")
     current_user.totp_enabled = False
     current_user.totp_secret = None
-    db.commit()
-    return {"detail": "2FA disabled"}
+    current_user.totp_last_step = None
+    _end_other_sessions(db, current_user)
+    return _session_response(current_user, {"detail": "2FA disabled"})
 
 
 # ── OAuth ─────────────────────────────────────────────────────────────────────
 
 def _oauth_upsert(db: Session, email: str, name: str, provider: str, provider_id: str) -> User:
     """Find or create a user from an OAuth callback. Returns the user record."""
+    # callers only pass an email the provider has verified, which is what makes
+    # linking it to an existing account by email safe.
     user = db.query(User).filter(User.email == email).first()
     if user:
-        # update the provider fields on each login so a user who previously
-        # signed up with a password and later uses Google gets the link recorded.
         user.oauth_provider = provider
         user.oauth_id = provider_id
     else:
@@ -423,21 +524,36 @@ def _oauth_upsert(db: Session, email: str, name: str, provider: str, provider_id
     return user
 
 
-def _oauth_redirect(user: User, frontend_url: str) -> RedirectResponse:
-    """Issue tokens and redirect the browser back to the frontend."""
-    token = create_access_token({"sub": str(user.id), "role": user.role})
-    refresh = create_refresh_token({"sub": str(user.id), "role": user.role})
-    url = f"{frontend_url}?token={token}"
-    response = RedirectResponse(url=url)
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh,
-        httponly=True,
-        secure=settings.environment != "development",
-        samesite="lax",
-        max_age=7 * 24 * 3600,
-        path="/api/v1/auth/refresh",
-    )
+def _oauth_start(authorize_url: str, params: dict) -> RedirectResponse:
+    # a random state ties the provider's callback to this browser, so nobody
+    # can finish a sign-in they did not start (login CSRF).
+    state = secrets.token_urlsafe(32)
+    response = RedirectResponse(url=f"{authorize_url}?{urlencode({**params, 'state': state})}")
+    _set_cookie(response, _STATE_COOKIE, state, _STATE_PATH, _STATE_SECONDS)
+    return response
+
+
+def _check_state(state: str | None, expected: str | None) -> None:
+    if not state or not expected or not hmac.compare_digest(state, expected):
+        raise HTTPException(status_code=400, detail="Sign-in expired or was not started here. Try again.")
+
+
+def _oauth_finish(db: Session, user: User) -> RedirectResponse:
+    """Send the browser back to the dashboard without putting any token in the URL."""
+    frontend = settings.allowed_origins.split(",")[0].strip()
+    if user.totp_enabled:
+        # the provider proves the first factor only. The challenge travels in a
+        # cookie that only /2fa/verify reads and the login page asks for the code.
+        response = RedirectResponse(url=f"{frontend}/login?step=mfa")
+        _set_cookie(response, _CHALLENGE_COOKIE, create_challenge_token(_identity(user)), _CHALLENGE_PATH, _CHALLENGE_MINUTES * 60)
+    else:
+        user.last_login = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(user)
+        # the login page swaps the refresh cookie for an access token.
+        response = RedirectResponse(url=f"{frontend}/login?step=oauth")
+        _set_refresh_cookie(response, user)
+    _clear_cookie(response, _STATE_COOKIE, _STATE_PATH)
     return response
 
 
@@ -448,20 +564,25 @@ def google_login():
     # a server-side session store.
     if not settings.google_client_id:
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
-    params = (
-        f"client_id={settings.google_client_id}"
-        f"&redirect_uri={settings.google_redirect_uri}"
-        "&response_type=code"
-        "&scope=openid%20email%20profile"
-        "&access_type=offline"
-    )
-    return RedirectResponse(url=f"https://accounts.google.com/o/oauth2/v2/auth?{params}")
+    return _oauth_start("https://accounts.google.com/o/oauth2/v2/auth", {
+        "client_id": settings.google_client_id,
+        "redirect_uri": settings.google_redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "offline",
+    })
 
 
 @router.get("/google/callback")
-async def google_callback(code: str, db: Session = Depends(get_db)):
+async def google_callback(
+    code: str,
+    state: str | None = None,
+    oauth_state: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
     if not settings.google_client_id:
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
+    _check_state(state, oauth_state)
     async with httpx.AsyncClient() as client:
         token_res = await client.post(
             "https://oauth2.googleapis.com/token",
@@ -483,27 +604,34 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
             headers={"Authorization": f"Bearer {token_data['access_token']}"},
         )
     profile = profile_res.json()
+    # only a verified address may sign in to, or link with, an account.
+    if not profile.get("email") or profile.get("email_verified") is not True:
+        raise HTTPException(status_code=400, detail="Your Google account email is not verified")
     user = _oauth_upsert(db, profile["email"], profile.get("name", ""), "google", profile["sub"])
-    frontend = settings.allowed_origins.split(",")[0].strip()
-    return _oauth_redirect(user, f"{frontend}/dashboard")
+    return _oauth_finish(db, user)
 
 
 @router.get("/github")
 def github_login():
     if not settings.github_client_id:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
-    params = (
-        f"client_id={settings.github_client_id}"
-        f"&redirect_uri={settings.github_redirect_uri}"
-        "&scope=user:email"
-    )
-    return RedirectResponse(url=f"https://github.com/login/oauth/authorize?{params}")
+    return _oauth_start("https://github.com/login/oauth/authorize", {
+        "client_id": settings.github_client_id,
+        "redirect_uri": settings.github_redirect_uri,
+        "scope": "user:email",
+    })
 
 
 @router.get("/github/callback")
-async def github_callback(code: str, db: Session = Depends(get_db)):
+async def github_callback(
+    code: str,
+    state: str | None = None,
+    oauth_state: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
     if not settings.github_client_id:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
+    _check_state(state, oauth_state)
     async with httpx.AsyncClient() as client:
         token_res = await client.post(
             "https://github.com/login/oauth/access_token",
@@ -531,15 +659,17 @@ async def github_callback(code: str, db: Session = Depends(get_db)):
         )
     profile = profile_res.json()
     emails = emails_res.json()
-    primary_email = next(
-        (e["email"] for e in emails if e.get("primary") and e.get("verified")),
-        profile.get("email"),
-    )
-    if not primary_email:
-        raise HTTPException(status_code=400, detail="Could not retrieve verified email from GitHub")
-    user = _oauth_upsert(db, primary_email, profile.get("name") or profile.get("login", ""), "github", str(profile["id"]))
-    frontend = settings.allowed_origins.split(",")[0].strip()
-    return _oauth_redirect(user, f"{frontend}/dashboard")
+    if not isinstance(emails, list):
+        emails = []
+    # only a verified address may sign in to, or link with, an account. The
+    # public profile email is not checked by GitHub, so it is never used.
+    verified = [e["email"] for e in emails if e.get("verified") and e.get("email")]
+    primary = next((e["email"] for e in emails if e.get("primary") and e.get("verified")), None)
+    email = primary or (verified[0] if verified else None)
+    if not email:
+        raise HTTPException(status_code=400, detail="Could not retrieve a verified email from GitHub")
+    user = _oauth_upsert(db, email, profile.get("name") or profile.get("login", ""), "github", str(profile["id"]))
+    return _oauth_finish(db, user)
 
 
 # TODO Step 20b: implement Apple OAuth when Apple Developer Programme enrolled
