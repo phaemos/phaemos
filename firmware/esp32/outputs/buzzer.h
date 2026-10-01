@@ -1,8 +1,8 @@
-// Use #pragma once so the compiler ignores this header on subsequent includes
+// use #pragma once so the compiler ignores this header on subsequent includes
 // without requiring a matching #endif at the bottom of the file.
 #pragma once
 
-// Define BuzzerPattern as a named enum so call sites read as plain English
+// define BuzzerPattern as a named enum so call sites read as plain English
 // instead of magic integers - easier to review and less error-prone.
 enum BuzzerPattern {
     PATTERN_NORMAL   = 0, // single quiet beep - all clear
@@ -14,7 +14,7 @@ enum BuzzerPattern {
 void initBuzzer();
 
 // beep - emits a single tone on BUZZER_PIN for the given duration in milliseconds.
-// Expose this as a primitive so other modules can build custom sequences.
+// expose this as a primitive so other modules can build custom sequences.
 void beep(uint16_t ms);
 
 // beepPattern - plays one of the three predefined alert patterns.

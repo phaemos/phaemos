@@ -60,10 +60,10 @@ from app.services import email_service
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Use HTTPBearer so FastAPI generates the "Authorise" button in the OpenAPI UI.
+# use HTTPBearer so FastAPI generates the "Authorise" button in the OpenAPI UI.
 _bearer = HTTPBearer()
 
-# Lock accounts for 15 minutes after 5 consecutive failures, matching NIST
+# lock accounts for 15 minutes after 5 consecutive failures, matching NIST
 # SP 800-63B guidance on brute-force mitigation.
 _MAX_FAILURES = 5
 _LOCKOUT_MINUTES = 15
@@ -78,7 +78,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(data: dict) -> str:
-    # Include user identity, role and a short-lived expiration in the payload.
+    # include user identity, role and a short-lived expiration in the payload.
     payload = data.copy()
     payload["exp"] = datetime.now(timezone.utc) + timedelta(
         minutes=settings.access_token_expire_minutes
@@ -87,7 +87,7 @@ def create_access_token(data: dict) -> str:
 
 
 def create_refresh_token(data: dict) -> str:
-    # Add type="refresh" so the /refresh endpoint can reject access tokens
+    # add type="refresh" so the /refresh endpoint can reject access tokens
     # presented in place of refresh tokens.
     payload = data.copy()
     payload["type"] = "refresh"
@@ -97,7 +97,7 @@ def create_refresh_token(data: dict) -> str:
 
 def decode_token(token: str) -> dict:
     """Decode and validate a JWT, returning the payload or raising HTTPException."""
-    # Expose this as a standalone helper so the WebSocket route can validate
+    # expose this as a standalone helper so the WebSocket route can validate
     # tokens passed as query params without depending on the HTTPBearer scheme.
     try:
         payload = jwt.decode(
@@ -114,7 +114,7 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
-    # Factor this into a reusable dependency so any route can require an
+    # factor this into a reusable dependency so any route can require an
     # authenticated user without duplicating the JWT decode + DB lookup logic.
     payload = decode_token(credentials.credentials)
     user_id: str = payload.get("sub")
@@ -125,7 +125,7 @@ def get_current_user(
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    # Keep the role guard as a separate dependency so admin-only routes read
+    # keep the role guard as a separate dependency so admin-only routes read
     # cleanly: `Depends(require_admin)` states the intent without an if-block.
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin role required")
@@ -151,11 +151,11 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("5/minute")
 def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
-    # Look up by email first; if the user does not exist, still run through
+    # look up by email first; if the user does not exist, still run through
     # the lockout path to avoid leaking whether an email is registered.
     user = db.query(User).filter(User.email == payload.email).first()
 
-    # Check lockout before verifying the password so a locked account cannot
+    # check lockout before verifying the password so a locked account cannot
     # be probed even with the correct credentials.
     if user and user.locked_until and user.locked_until > datetime.now(timezone.utc):
         raise HTTPException(
@@ -221,7 +221,7 @@ def refresh(
 
 @router.post("/logout", status_code=204)
 def logout(response: Response):
-    # Expire the cookie by setting max_age=0 rather than deleting it so the
+    # expire the cookie by setting max_age=0 rather than deleting it so the
     # browser clears it immediately without needing a separate DELETE request.
     response.set_cookie(
         key="refresh_token",
@@ -272,7 +272,7 @@ def delete_me(
     db: Session = Depends(get_db),
     response: Response = None,
 ):
-    # Anonymise tickets rather than delete them so the audit trail stays intact
+    # anonymise tickets rather than delete them so the audit trail stays intact
     # but the personal data (user identity) is removed to satisfy GDPR erasure.
     from app.models.ticket import Ticket
     db.query(Ticket).filter(Ticket.created_by == current_user.id).update({"created_by": None})
@@ -320,7 +320,7 @@ def export_me(
 
 @router.post("/2fa/enable")
 def totp_enable(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Generate a fresh secret each time so a half-completed enrolment can be
+    # generate a fresh secret each time so a half-completed enrolment can be
     # restarted without the old unconfirmed secret persisting.
     secret = pyotp.random_base32()
     current_user.totp_secret = secret
@@ -361,7 +361,7 @@ def totp_verify(
     user_id: str,
     db: Session = Depends(get_db),
 ):
-    # Accept user_id as a query param rather than a JWT so this endpoint works
+    # accept user_id as a query param rather than a JWT so this endpoint works
     # before a full access token is issued - it is the second step of login.
     user = db.query(User).filter(User.id == user_id).first()
     if not user or not user.totp_enabled or not user.totp_secret:
@@ -405,7 +405,7 @@ def _oauth_upsert(db: Session, email: str, name: str, provider: str, provider_id
     """Find or create a user from an OAuth callback. Returns the user record."""
     user = db.query(User).filter(User.email == email).first()
     if user:
-        # Update the provider fields on each login so a user who previously
+        # update the provider fields on each login so a user who previously
         # signed up with a password and later uses Google gets the link recorded.
         user.oauth_provider = provider
         user.oauth_id = provider_id
@@ -443,7 +443,7 @@ def _oauth_redirect(user: User, frontend_url: str) -> RedirectResponse:
 
 @router.get("/google")
 def google_login():
-    # Build the authorization URL manually rather than using authlib's
+    # build the authorization URL manually rather than using authlib's
     # session helper so this works in a stateless FastAPI environment without
     # a server-side session store.
     if not settings.google_client_id:
@@ -557,7 +557,7 @@ def list_users(
     _admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    # Name the admin dependency _admin (underscore prefix) to signal it is
+    # name the admin dependency _admin (underscore prefix) to signal it is
     # only used for its side-effect (role guard), not its return value.
     return (
         db.query(User)
@@ -575,7 +575,7 @@ def set_user_permissions(
     _admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    # Replace the entire permissions dict atomically to avoid partial-update races.
+    # replace the entire permissions dict atomically to avoid partial-update races.
     # passing null clears all overrides and reverts the user to role defaults.
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -589,7 +589,7 @@ def set_user_permissions(
 # ── Invitation flow ───────────────────────────────────────────────────────────
 
 def _create_invite_token(email: str, role: str) -> str:
-    # Embed the role in the invite token so the accept endpoint can pre-assign
+    # embed the role in the invite token so the accept endpoint can pre-assign
     # it without a second DB lookup or a separate parameter in the accept form.
     payload = {
         "sub":  email,
@@ -611,7 +611,7 @@ def invite_user(
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     token = _create_invite_token(payload.email, payload.role)
-    # Build the accept link using the request base URL so it works in both
+    # build the accept link using the request base URL so it works in both
     # local dev and production without hard-coding a domain.
     frontend_base = str(request.base_url).rstrip("/").replace(":8000", ":3000")
     invite_link = f"{frontend_base}/accept-invite?token={token}"
@@ -622,7 +622,7 @@ def invite_user(
 @router.get("/accept-invite/{token}")
 @limiter.limit("20/minute")
 def get_invite_info(request: Request, token: str):
-    # Validate the token here so the frontend can show a friendly error
+    # validate the token here so the frontend can show a friendly error
     # (expired, invalid) before the user fills in their name and password.
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])

@@ -1,7 +1,7 @@
 -- 003_multi_tenant.sql
 -- run with: psql $DATABASE_URL -f migrations/003_multi_tenant.sql
 --
--- Use IF NOT EXISTS guards so this script is idempotent - safe to run more than once.
+-- use IF NOT EXISTS guards so this script is idempotent - safe to run more than once.
 
 -- ---------------------------------------------------------------------------
 -- devices: multi-tenant ownership column

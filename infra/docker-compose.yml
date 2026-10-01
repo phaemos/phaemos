@@ -1,4 +1,4 @@
-# Full PHAEMOS stack. From the repository root the root docker-compose.yml includes
+# full PHAEMOS stack. From the repository root the root docker-compose.yml includes
 # this file, so `docker compose up` keeps working there.
 
 name: phaemos

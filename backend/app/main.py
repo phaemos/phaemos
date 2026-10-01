@@ -13,13 +13,13 @@ from app.routes import telemetry, devices, alerts, tickets, auth, ml, ws, firmwa
 from app.routes.health import router as health_router, public_router as health_public_router
 from app.tasks.retention import start_retention_scheduler
 
-# Create all tables on startup - use Alembic migrations for production
+# create all tables on startup - use Alembic migrations for production
 Base.metadata.create_all(bind=engine)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start the retention scheduler here rather than at module level so it
+    # start the retention scheduler here rather than at module level so it
     # does not launch during pytest collection (which imports main).
     start_retention_scheduler()
     yield
@@ -32,15 +32,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Wire the slowapi limiter onto app.state so @limiter.limit decorators on routes
+# wire the slowapi limiter onto app.state so @limiter.limit decorators on routes
 # can resolve the shared instance at request time.
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Expose a /metrics endpoint that Prometheus scrapes for API performance data.
+# expose a /metrics endpoint that Prometheus scrapes for API performance data.
 Instrumentator().instrument(app).expose(app)
 
-# Restrict methods and headers explicitly rather than using ["*"] so the
+# restrict methods and headers explicitly rather than using ["*"] so the
 # CORS preflight cannot be used as a probe for unexpected endpoints.
 app.add_middleware(
     CORSMiddleware,
@@ -50,7 +50,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
-# Group route registration by domain to keep API boundaries clear.
+# group route registration by domain to keep API boundaries clear.
 app.include_router(auth.router,      prefix="/api/v1/auth",        tags=["Auth"])
 app.include_router(devices.router,   prefix="/api/v1/devices",     tags=["Devices"])
 app.include_router(telemetry.router, prefix="/api/v1/telemetry",   tags=["Telemetry"])
@@ -66,7 +66,7 @@ app.include_router(contact.router,      prefix="/api/v1",  tags=["Contact"])
 # health_router has auth-protected fleet stats; health_public_router has the no-auth /status check
 app.include_router(health_router,       prefix="/api/v1",  tags=["Health"])
 app.include_router(health_public_router,                   tags=["Health"])
-# Give WebSocket routes a different prefix - no /api/v1 so the WS URL is clean.
+# give WebSocket routes a different prefix - no /api/v1 so the WS URL is clean.
 app.include_router(ws.router,        tags=["WebSocket"])
 
 

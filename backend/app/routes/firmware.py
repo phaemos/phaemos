@@ -22,7 +22,7 @@ from app.services import audit_service
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Cap firmware uploads at 2 MB to prevent a malicious or accidental upload
+# cap firmware uploads at 2 MB to prevent a malicious or accidental upload
 # from exhausting server RAM (the whole file is read into memory before writing).
 _MAX_FIRMWARE_BYTES = 2 * 1024 * 1024
 

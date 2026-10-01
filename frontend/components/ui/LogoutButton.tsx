@@ -6,7 +6,7 @@ export default function LogoutButton() {
   const router = useRouter();
 
   function handleLogout() {
-    // Clear both storage locations so neither the axios interceptor nor
+    // clear both storage locations so neither the axios interceptor nor
     // the edge middleware thinks the user is still authenticated.
     localStorage.removeItem('token');
     document.cookie = 'token=; path=/; max-age=0; SameSite=Strict';

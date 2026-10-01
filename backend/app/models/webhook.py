@@ -12,7 +12,7 @@ class Webhook(Base):
     name       = Column(String(200), nullable=False)
     url        = Column(Text, nullable=False)
     enabled    = Column(Boolean, default=True, nullable=False)
-    # Allow a custom message template with {device_name}, {metric}, {value},
+    # allow a custom message template with {device_name}, {metric}, {value},
     # {threshold}, {severity} placeholders; NULL means use the built-in format.
     template   = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

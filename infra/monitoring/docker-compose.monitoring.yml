@@ -1,8 +1,8 @@
 # monitoring stack: run alongside the main compose file:
 #   docker compose -f infra/docker-compose.yml -f infra/monitoring/docker-compose.monitoring.yml up
 #
-# prometheus scrapes the backend /metrics endpoint every 15 seconds.
-# grafana visualises those metrics on port 3001 (3000 is taken by Next.js).
+# Prometheus scrapes the backend /metrics endpoint every 15 seconds.
+# Grafana visualises those metrics on port 3001 (3000 is taken by Next.js).
 # default Grafana credentials: admin / admin (change for any shared environment).
 
 services:

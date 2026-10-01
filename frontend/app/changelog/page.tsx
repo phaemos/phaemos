@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Version history and release notes for PHAEMOS.',
 };
 
-// Read CHANGELOG.md at build time so the page stays static with zero runtime cost.
+// read CHANGELOG.md at build time so the page stays static with zero runtime cost.
 function getChangelog(): string {
   try {
     return readFileSync(join(process.cwd(), '..', 'CHANGELOG.md'), 'utf8');

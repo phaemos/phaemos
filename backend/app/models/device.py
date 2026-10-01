@@ -29,9 +29,9 @@ class Device(Base):
     # server_default=func.now() lets the database set the timestamp, which is more reliable
     # than relying on application-side time (avoids clock-skew issues between app and DB servers)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    # Keep owner_id nullable so existing unowned devices are valid and technicians
+    # keep owner_id nullable so existing unowned devices are valid and technicians
     # can see them (unowned = shared/unassigned, not hidden).
     owner_id   = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    # Use a PostgreSQL ARRAY column rather than a join table because the tag set is
+    # use a PostgreSQL ARRAY column rather than a join table because the tag set is
     # small and querying with `tag = ANY(tags)` is fast with a GIN index at this scale.
     tags       = Column(ARRAY(String), server_default="{}", nullable=False)

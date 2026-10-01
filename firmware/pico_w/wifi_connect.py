@@ -1,5 +1,5 @@
 # firmware/pico_w/wifi_connect.py
-# wi-Fi connection helper for the Pico 2W ambient node.
+# Wi-Fi connection helper for the Pico 2W ambient node.
 
 import network
 import time
@@ -24,11 +24,11 @@ def connect_wifi(ssid, password, timeout_s=30):
     Raises:
         RuntimeError: If the connection is not established within timeout_s.
     """
-    # Use STA_IF (station mode) because the Pico is a client connecting to
+    # use STA_IF (station mode) because the Pico is a client connecting to
     # an existing access point, not hosting its own network.
     wlan = network.WLAN(network.STA_IF)
 
-    # Activate the interface before calling connect() because on cold boot
+    # activate the interface before calling connect() because on cold boot
     # the interface is inactive by default and connect() will silently do
     # nothing without an explicit activate().
     wlan.active(True)
@@ -41,7 +41,7 @@ def connect_wifi(ssid, password, timeout_s=30):
 
     wlan.connect(ssid, password)
 
-    # Poll every 0.5 seconds rather than using a blocking wait so the loop
+    # poll every 0.5 seconds rather than using a blocking wait so the loop
     # can be interrupted cleanly and gives a visible timeout counter on the
     # REPL for debugging during bring-up.
     elapsed = 0.0

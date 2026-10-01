@@ -50,7 +50,7 @@ export default function DevicesPage() {
   const [batching, setBatching]     = useState(false);
   const isAdmin = typeof window !== 'undefined' && getTokenRole() === 'admin';
 
-  // Debounce the search so the API is not hit on every keystroke.
+  // debounce the search so the API is not hit on every keystroke.
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(t);

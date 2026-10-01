@@ -1,6 +1,6 @@
 'use client';
 
-// Split readings into sensor groups so each chart has a focused y-axis scale
+// split readings into sensor groups so each chart has a focused y-axis scale
 // instead of cramming incompatible units (Celsius, g-units, mA) onto one axis.
 
 import { useState, useMemo, useCallback, useRef } from 'react';
@@ -75,24 +75,24 @@ export default function TelemetryChart({ deviceId, nodeType }: Props) {
 
   const fromTs = useMemo(() => fromTsForRange(range), [range]);
 
-  // Limit to 500 rows for the historical view - enough to draw smooth lines
+  // limit to 500 rows for the historical view - enough to draw smooth lines
   // without saturating the browser paint cycle.
   const { data: polledReadings, loading } = useTelemetry(deviceId, { fromTs, limit: 500, nodeType });
 
-  // Keep WS-pushed readings in a ref to avoid re-renders on every push.
+  // keep WS-pushed readings in a ref to avoid re-renders on every push.
   // the chart only rebuilds when polledReadings changes (every 5s poll), but
   // the ref allows live readings to be merged in the useMemo below without stale closures.
   const liveRef = useRef<Telemetry[]>([]);
 
   const handleWsMessage = useCallback((reading: Telemetry) => {
-    // Cap the live buffer at 50 entries so unbounded device activity does not
+    // cap the live buffer at 50 entries so unbounded device activity does not
     // grow memory without limit between polling cycles.
     liveRef.current = [reading, ...liveRef.current].slice(0, 50);
   }, []);
 
   useWebSocketTelemetry(deviceId, { onMessage: handleWsMessage });
 
-  // Merge live readings ahead of polled ones; duplicates are filtered by id
+  // merge live readings ahead of polled ones; duplicates are filtered by id
   // so a reading that arrives via WS before the next poll does not appear twice.
   // this deliberately reads liveRef during render: the whole point of buffering
   // WS pushes in a ref (see above) is to skip a re-render on every single push
