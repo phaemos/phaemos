@@ -7,29 +7,51 @@
 
 Reveal before failure. PHAEMOS is an open industrial IoT platform for predictive maintenance: sensor nodes stream what a machine is doing, a live dashboard shows it and a machine learning model flags the readings that drift from normal before they turn into a breakdown.
 
-The name is pronounced FAY-mos and means "an ordered system that reveals", from Ancient Greek roots tied to revelation and structure.
-
 > [!NOTE]
 > The platform software runs end to end today: ingest, storage, anomaly scoring, alerts, tickets and the dashboard, with a simulator standing in for real machines. Wiring the physical nodes and training the model on real readings is the current phase. See the [milestones](https://github.com/phaemos/phaemos/milestones) for what is planned and in which order.
 
 ## What it does
 
 - **Four sensor nodes.** An ESP32 gateway with 11 sensors, an STM32 running a vibration FFT at 100 Hz, an Arduino Nano and a Raspberry Pi Pico 2W cover temperature, vibration, current, gas, sound, distance and shaft speed.
-- **Real-time pipeline.** A FastAPI backend ingests every reading into PostgreSQL and Redis and streams it to the dashboard over WebSocket.
+- **Real-time pipeline.** A FastAPI backend scores and stores every reading in PostgreSQL and streams it to the dashboard over WebSocket.
 - **Anomaly detection.** An Isolation Forest scores each reading as it arrives and raises an alert when a machine drifts. It needs no labelled fault data.
-- **Operations built in.** Alert rules, maintenance windows, tickets, webhooks to Slack, Discord and Teams, email and SMS, tamper-evident audit logs and role-based access with two-factor sign-in.
+- **Operations built in.** Alert rules, maintenance windows, tickets, webhooks to Slack, Discord and Teams, email and SMS, an audit log of every change and role-based access with optional two-factor enrolment.
 - **Resilient at the edge.** A Rust gateway beside the machines reads a node's serial output, spools every reading to disk during a network outage and sends it on once the link returns, so nothing is lost.
 - **Tools for developers.** A Python SDK, a simulator with injectable faults and a Go CLI for load testing.
 
+## The name
+
+PHAEMOS, pronounced FAY-mos, is coined from two Ancient Greek roots.
+
+| Part | Root | Meaning |
+| --- | --- | --- |
+| PHAE- | *phaen-* (φαιν-), as in *phaínein* | to reveal, to bring to light, the root behind *phenomenon* |
+| -MOS | *-mos*, as in *kósmos* (κόσμος) | system or order |
+
+Together they mean "an ordered system that reveals". The platform learns the normal order of each machine and reveals the readings that break it before they become a failure, which is where the tagline comes from: **reveal before failure**. The sister project [MELOPHOS](https://github.com/melophos) is named the same way.
+
 ## Architecture
 
-```text
-STM32 vibration node --UART-->  ESP32 gateway  --HTTPS POST, every 5 s-->  FastAPI backend
-Arduino Nano -------serial-->   (11 sensors)                                 Isolation Forest scoring
-Raspberry Pi Pico 2W ---------------HTTPS POST--------------------------->   alerts, tickets, webhooks
-any node --serial--> Rust edge gateway (spools through outages) -------->        |
-                                                                                 v
-                                            PostgreSQL + Redis --WebSocket-->  Next.js dashboard
+```mermaid
+flowchart LR
+    subgraph NODES["Sensor nodes"]
+        STM["STM32 Black Pill<br/>vibration FFT"]
+        NANO["Arduino Nano<br/>auxiliary sensors"]
+        ESP["ESP32 hub<br/>11 sensors"]
+        PICO["Raspberry Pi Pico 2W<br/>ambient sensors"]
+    end
+    STM -- "UART" --> ESP
+    NANO -- "serial" --> ESP
+    EDGE["Rust edge gateway<br/>spools through outages"]
+    NODES -. "serial" .-> EDGE
+    ESP -- "POST every 5 s" --> API
+    PICO -- "POST over Wi-Fi" --> API
+    EDGE -- "forwards in order" --> API
+    TOOLS["Python SDK, simulator<br/>and Go CLI"] --> API
+    API["FastAPI backend<br/>Isolation Forest scoring<br/>alert rules and tickets"]
+    API --> DB[("PostgreSQL")]
+    API -- "WebSocket" --> UI["Next.js dashboard"]
+    API --> OUT["Webhooks, Discord,<br/>email and SMS"]
 ```
 
 The full picture, from each node's sensors to the background tasks, is in [docs/architecture.md](docs/architecture.md), with the reasoning behind each choice in [docs/decisions.md](docs/decisions.md).
@@ -70,7 +92,7 @@ The simulator produces readings for any of the four node types and can inject fa
 
 ## Hardware
 
-Four nodes are planned, each with its own role and sensors. The firmware and backend are ready, but the boards are still being wired and validated, so readings so far come from the simulator. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
+Four nodes are planned, each with its own role and sensors. The firmware and backend are ready, but the boards are still being wired and validated, so readings so far come from the simulator. Every node's circuit is simulated in Proteus first, and the schematics and PCB layouts that get manufactured are planned in KiCad. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
 
 ## Documentation
 

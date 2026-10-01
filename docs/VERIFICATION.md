@@ -196,10 +196,11 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] Nano wiring guide
 - [x] Pico 2W wiring guide
 - [x] PCB design guide
-- [x] Proteus schematic placeholders
-- [ ] Proteus ESP32 schematic (Phase 2)
-- [ ] Proteus STM32 schematic (Phase 2)
-- [ ] Proteus Nano schematic (Phase 2)
+- [x] Proteus simulation placeholders
+- [ ] ESP32 circuit simulated in Proteus and schematic drawn in KiCad (Phase 2)
+- [ ] STM32 circuit simulated in Proteus and schematic drawn in KiCad (Phase 2)
+- [ ] Nano circuit simulated in Proteus and schematic drawn in KiCad (Phase 2)
+- [ ] Pico 2W circuit simulated in Proteus and schematic drawn in KiCad (Phase 2)
 - [ ] PCB layout completed (Phase 3)
 - [ ] Gerber files exported and ordered (Phase 3)
 
@@ -241,6 +242,6 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [ ] All sensors tested on real boards
 - [ ] 24-48 hours of baseline data collected
 - [ ] Isolation Forest model trained on real data
-- [ ] Proteus schematics completed
+- [ ] Proteus simulations and KiCad schematics completed
 - [ ] PCB layout completed
 - [ ] Gerber files exported and ordered

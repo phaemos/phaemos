@@ -14,13 +14,14 @@ PCB work is Phase 3 - do not start until breadboard validation is complete and s
 
 ## General workflow
 
-1. Complete schematic in Proteus ISIS (see `../schematics/`) - all 4 nodes must pass ERC
-2. Transfer netlist to Proteus ARES for PCB layout per node
-3. Set board outline to match chosen enclosure dimensions
-4. Route power planes first, then signal traces, then pour GND on bottom layer
-5. Run DRC and resolve all violations
-6. Export Gerbers: F.Cu, B.Cu, silkscreen, mask, edge cuts, drill file
-7. Order from JLCPCB or PCBWay - typically 5 boards for ~£15-20 including UK shipping
+1. Simulate the node's circuit in Proteus (see `../schematics/`) to check it before committing to a board
+2. Draw the schematic in KiCad and pass ERC - all 4 nodes must pass
+3. Assign footprints and lay out the PCB in KiCad's PCB editor
+4. Set board outline to match chosen enclosure dimensions
+5. Route power planes first, then signal traces, then pour GND on bottom layer
+6. Run DRC and resolve all violations
+7. Export Gerbers: F.Cu, B.Cu, silkscreen, mask, edge cuts, drill file
+8. Order from JLCPCB or PCBWay - typically 5 boards for ~£15-20 including UK shipping
 
 ## Recommended spec
 
