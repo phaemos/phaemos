@@ -38,6 +38,7 @@ nav:
   - Home: index.md
   - Getting Started:
     - Architecture: architecture.md
+    - Development: development.md
     - Deployment: deployment.md
     - Deployment Checklist: deployment-checklist.md
     - Scalability: scalability.md
@@ -45,9 +46,12 @@ nav:
     - API Reference: api-reference.md
     - Sensor Reference: sensor_reference.md
     - Database Schema: schema.md
+    - Tech Stack: tech-stack.md
+    - Repositories: repositories.md
   - Security: security.md
   - Development:
     - Decision Log: decisions.md
+    - Releases: releases.md
     - Week by Week: week_by_week.md
     - Verification: VERIFICATION.md
   - Monitoring: instatus.md

@@ -18,6 +18,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `assets/brand/`: the PHAEMOS logo and emblem in light and dark versions with transparent backgrounds, the single-colour emblem, a 1280 by 640 social preview card and the full brand board, with the colours, type and usage rules
+- New docs pages: `development.md` (running locally, the smoke test, the simulator and the test commands), `releases.md`, `tech-stack.md` and `repositories.md` (the monorepo layout and how publishing works), all in the docs site navigation
 - `client/`: the `phaemos-client` Python SDK, the `phaemos-sim` simulator for all four node types with injectable faults and `phaemosctl`, a Go tool for status checks, sending readings and ingest load testing
 - `edge/`: `phaemos-edge`, a Rust gateway that spools readings to disk and forwards them in order, so an outage loses nothing (ADR 020)
 - `infra/` holds the Compose stack, the Prometheus and Grafana overlay and the SQL queries and seed data, published to its own repository. A root `docker-compose.yml` includes it, so every existing command still works from the root
@@ -30,6 +32,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- README rewritten in full around the brand logo, which switches between its light and dark versions with the viewer's theme. It now covers what PHAEMOS does, a short architecture diagram, a table of every component folder and the repository it publishes to, a two-command quickstart and the simulator. The detail it used to carry moved into the docs: running without Docker, the smoke test and the test commands into `development.md`, the release flow into `releases.md`, the tech stack and boards into `tech-stack.md` and the folder tree into `repositories.md`. The docs home page lists every page and uses the current board names
 - Auto-merge is now ecosystem-aware: patch and minor Dependabot bumps and major GitHub Actions bumps auto-merge once CI passes, but major `npm` and `pip` bumps are held for manual review since a breaking runtime change could pass lint and build yet still deploy; previously major bumps were skipped entirely
 - README rewritten: dropped the leftover animated capsule-render footer banner, switched the prose to first person, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it has been live since Phase 2, only real hardware data is still pending), verified every doc link and image still resolves
 - Backend `redis` bumped to 8.1.0, `pandas` to 3.0.5 and `bcrypt` to 5.0.0; frontend `tailwind-merge` bumped to 3.6.0, `react`/`react-dom` to 19 and `eslint`/`eslint-config-next` to 9/16, each held for manual review as a major bump and verified individually rather than merged blind

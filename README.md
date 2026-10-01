@@ -1,288 +1,85 @@
-# PHAEMOS
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/phaemos-logo-dark.png">
+    <img src="assets/brand/phaemos-logo-light.png" alt="PHAEMOS: reveal before failure" width="360">
+  </picture>
+</h1>
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Discussions](https://img.shields.io/github/discussions/phaemos/phaemos)](https://github.com/phaemos/phaemos/discussions)
+Reveal before failure. PHAEMOS is an open industrial IoT platform for predictive maintenance: sensor nodes stream what a machine is doing, a live dashboard shows it and a machine learning model flags the readings that drift from normal before they turn into a breakdown.
 
-I built PHAEMOS as a smart maintenance platform: it collects real-time sensor data from ESP32, STM32 and Arduino hardware nodes, shows it on a live dashboard, fires alerts when readings cross a threshold and uses machine learning to flag anomalies before they turn into failures.
+The name is pronounced FAY-mos and means "an ordered system that reveals", from Ancient Greek roots tied to revelation and structure.
 
-## Name, pronunciation and meaning
+> [!NOTE]
+> The platform software runs end to end today: ingest, storage, anomaly scoring, alerts, tickets and the dashboard, with a simulator standing in for real machines. Wiring the physical nodes and training the model on real readings is the current phase. See the [milestones](https://github.com/phaemos/phaemos/milestones) for what is planned and in which order.
 
-- Pronunciation: **FAY-mos**
-- Meaning: "an ordered system that reveals"
-- Origin: coined from Ancient Greek roots tied to revelation and structure
+## What it does
 
-I chose the name because PHAEMOS reveals hidden machine behavior through telemetry, alerting, anomaly detection and maintenance workflows before a failure becomes visible. My tagline for it: reveal before failure.
-
-## Quick navigation
-
-<p align="center">
-      <a href="#architecture">Architecture</a> •
-      <a href="#quickstart">Quickstart</a> •
-      <a href="#project-structure">Project structure</a> •
-      <a href="#docs">Docs</a> •
-      <a href="#release-flow">Release flow</a> •
-      <a href="#hardware">Hardware</a> •
-      <a href="#tech-stack">Tech stack</a> •
-      <a href="#languages--tools-used">Languages &amp; tools used</a>
-</p>
+- **Four sensor nodes.** An ESP32 gateway with 11 sensors, an STM32 running a vibration FFT at 100 Hz, an Arduino Nano and a Raspberry Pi Pico 2W cover temperature, vibration, current, gas, sound, distance and shaft speed.
+- **Real-time pipeline.** A FastAPI backend ingests every reading into PostgreSQL and Redis and streams it to the dashboard over WebSocket.
+- **Anomaly detection.** An Isolation Forest scores each reading as it arrives and raises an alert when a machine drifts. It needs no labelled fault data.
+- **Operations built in.** Alert rules, maintenance windows, tickets, webhooks to Slack, Discord and Teams, email and SMS, tamper-evident audit logs and role-based access with two-factor sign-in.
+- **Resilient at the edge.** A Rust gateway beside the machines reads a node's serial output, spools every reading to disk during a network outage and sends it on once the link returns, so nothing is lost.
+- **Tools for developers.** A Python SDK, a simulator with injectable faults and a Go CLI for load testing.
 
 ## Architecture
 
+```text
+STM32 vibration node --UART-->  ESP32 gateway  --HTTPS POST, every 5 s-->  FastAPI backend
+Arduino Nano -------serial-->   (11 sensors)                                 Isolation Forest scoring
+Raspberry Pi Pico 2W ---------------HTTPS POST--------------------------->   alerts, tickets, webhooks
+any node --serial--> Rust edge gateway (spools through outages) -------->        |
+                                                                                 v
+                                            PostgreSQL + Redis --WebSocket-->  Next.js dashboard
 ```
-[ Hardware Layer - 4 nodes ]
-  ESP32 Primary Node          -- 11 sensors, OLED, buzzer, RGB LED, relay
-  STM32 Black Pill F411CEU6   -- MPU6050 at 100Hz + FFT, UART to ESP32
-  Arduino Nano                -- BME280 + LDR + FC-28, serial to ESP32
-  Raspberry Pi Pico 2W        -- BME280 + LDR + OLED, direct Wi-Fi POST
-        |
-  [ Firmware Layer ]
-  Nano (serial 9600) -------> ESP32 (parses + merges payload)
-  STM32 (UART 115200) ------> ESP32 (FFT peak Hz forwarded to API)
-  Pico 2W (Wi-Fi) ----------> API directly
-  ESP32 (Wi-Fi POST) -------> API every 5 seconds
-        |
-        | HTTP POST /api/v1/telemetry
-        v
-  [ Backend - FastAPI ]
-  /telemetry  /devices  /alerts  /tickets  /auth  /ml  /ws
-        |
-   PostgreSQL 15 + Redis 7
-        |
-  [ ML Layer - Isolation Forest ]
-  anomaly scoring runs on every ingest; POST /api/v1/ml/retrain refits on the
-  last 10,000 rows. The shipped model.pkl is trained on synthetic data and
-  will be retrained on real sensor data once Phase 5 hardware bring-up is done
-        |
-  [ Frontend - Next.js 15 ]
-  live dashboard, sensor grid, device list, ticket system, admin panel
-        |
-  [ Observability ]
-  Prometheus + Grafana monitoring overlay (infra/monitoring)
-```
+
+The full picture, from each node's sensors to the background tasks, is in [docs/architecture.md](docs/architecture.md), with the reasoning behind each choice in [docs/decisions.md](docs/decisions.md).
+
+## Repository layout
+
+This repository is the single source of truth. Each component folder is self-contained and is published to its own read-only repository on every merge to `main`, see [docs/repositories.md](docs/repositories.md).
+
+| Folder | What it is | Published to |
+| --- | --- | --- |
+| [`backend/`](backend/) | FastAPI service: ingest, auth, alerts, tickets, webhooks and the Isolation Forest model | [`phaemos/backend`](https://github.com/phaemos/backend) |
+| [`frontend/`](frontend/) | Next.js dashboard, admin panel and public pages | [`phaemos/frontend`](https://github.com/phaemos/frontend) |
+| [`firmware/`](firmware/) | Code for the four nodes: ESP32, STM32, Arduino Nano and Pico 2W | [`phaemos/firmware`](https://github.com/phaemos/firmware) |
+| [`hardware/`](hardware/) | Wiring tables, schematics, PCB layouts and the parts inventory | [`phaemos/hardware`](https://github.com/phaemos/hardware) |
+| [`edge/`](edge/) | Rust store-and-forward gateway | [`phaemos/edge`](https://github.com/phaemos/edge) |
+| [`client/`](client/) | Python SDK and simulator, plus a Go CLI | [`phaemos/client`](https://github.com/phaemos/client) |
+| [`infra/`](infra/) | Docker Compose stack, Prometheus and Grafana, SQL reports | [`phaemos/infra`](https://github.com/phaemos/infra) |
+| [`docs/`](docs/) | Architecture, API, deployment, security and decisions | stays here |
+| [`assets/`](assets/) | Logos, colours and the social preview card | stays here |
 
 ## Quickstart
-
-### Prerequisites
-
-- Docker and Docker Compose
-- Node.js 18+
-- Python 3.11+
-
-### Run with Docker
 
 ```bash
 cp .env.example .env
 make dev
 ```
 
-Or without Make:
+The dashboard is then on `http://localhost:3000` and the API on `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
+
+### Without hardware
 
 ```bash
-docker compose up --build
+pip install -e client/python
+phaemos-sim --node esp32 --count 5 --dry-run
 ```
 
-Frontend: http://localhost:3000
-Backend API: http://localhost:8000
-API docs: http://localhost:8000/docs
-
-### Run without Docker
-
-**Backend**
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate       # Windows
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-**Frontend**
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Quick API smoke test (no hardware)
-
-I use this when I want to validate core backend flows quickly without wiring up sensors.
-
-```bash
-cd backend
-uvicorn app.main:app --reload
-```
-
-In a second terminal:
-
-```bash
-python scripts/quick_api_smoke.py
-```
-
-What it tests:
-
-- auth register and login
-- device registration
-- telemetry ingest with a generated device API key
-- latest telemetry fetch
-- ML score endpoint
-
-## Project structure
-
-```
-phaemos/
-├── firmware/
-│   ├── esp32/              v2 primary node (sensors/, outputs/, comms/, esp32.ino)
-│   ├── stm32_blackpill/    HAL vibration node (Core/Src + Core/Inc)
-│   ├── arduino_nano/       BME280 + LDR + FC-28 secondary node
-│   └── pico_w/             MicroPython ambient node
-├── backend/
-│   ├── app/                FastAPI routes, models, schemas, services
-│   ├── ml/                 Isolation Forest training and evaluation
-│   ├── migrations/         SQL schema for all tables
-│   └── tests/              pytest suite
-├── frontend/
-│   ├── app/                Next.js App Router pages
-│   ├── components/         Dashboard, tickets, admin, UI primitives
-│   ├── hooks/              useTelemetry, useAlerts, useWebSocketTelemetry
-│   └── lib/                Axios API client, utility functions
-├── hardware/
-│   ├── schematics/         Proteus schematic placeholders (Phase 5)
-│   ├── wiring/             Pin connection tables for all 4 nodes
-│   └── pcb/                PCB design guide for Proteus ARES (Phase 5)
-├── client/
-│   ├── python/             phaemos-client SDK and the phaemos-sim telemetry simulator
-│   └── go/                 phaemosctl: status, send and ingest load testing
-├── edge/                   phaemos-edge: Rust store-and-forward gateway for outages
-├── docs/                   Architecture, API reference, sensor reference, security, deployment
-├── infra/
-│   ├── docker-compose.yml  The full stack: db, redis, backend, frontend
-│   ├── monitoring/         Grafana + Prometheus overlay
-│   └── sql/                Reporting queries and demo seed data
-├── Makefile                make dev / test / lint / build / migrate / seed
-├── docker-compose.yml      Includes infra/docker-compose.yml so root commands keep working
-├── CHANGELOG.md
-├── SUPPORT.md
-├── SECURITY.md
-├── .env.example
-└── README.md
-```
-
-## Docs
-
-- [Architecture overview](docs/architecture.md)
-- [Database schema](docs/schema.md)
-- [API reference](docs/api-reference.md)
-- [Sensor reference](docs/sensor_reference.md)
-- [Security controls](docs/security.md)
-- [Deployment guide](docs/deployment.md)
-- [Deployment checklist](docs/deployment-checklist.md)
-- [Development timeline](docs/week_by_week.md)
-- [Decision log](docs/decisions.md)
-- [Verification tracker](docs/VERIFICATION.md)
-- [Support](SUPPORT.md)
-- [Changelog](CHANGELOG.md)
-
-## Release flow
-
-PHAEMOS uses tag-based releases with changelog validation.
-
-1. Update `CHANGELOG.md` with a new version section: `## [X.Y.Z] - DD-MM-YYYY`.
-1. Commit and merge to `main`.
-1. Create and push the tag:
-
-```bash
-git tag vX.Y.Z
-git push origin vX.Y.Z
-```
-
-1. The GitHub Actions `Release` workflow validates the changelog entry and creates the GitHub release.
-
-See [docs/deployment.md](docs/deployment.md) for the full VPS, Vercel and DNS setup guide. See [docs/deployment-checklist.md](docs/deployment-checklist.md) for the pre-release checklist.
+The simulator produces readings for any of the four node types and can inject faults such as a failing bearing, so the whole platform can be exercised on a laptop. Running without Docker, the API smoke test and the full test suite are covered in [docs/development.md](docs/development.md).
 
 ## Hardware
 
-I currently run four physical nodes. Phase 5 (wiring the boards, validating readings and training the ML model on real data) has not started yet, so the firmware and backend below are ready but unverified against live hardware. See [docs/week_by_week.md](docs/week_by_week.md) for the full phase breakdown.
+Four nodes are planned, each with its own role and sensors. The firmware and backend are ready, but the boards are still being wired and validated, so readings so far come from the simulator. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
 
-| Board | Language | Role |
-| --- | --- | --- |
-| ESP32 DevKit | C++ (Arduino IDE) | Primary node, 11 sensors, Wi-Fi POST, OLED, buzzer, RGB LED, relay |
-| STM32 Black Pill F411CEU6 | C (STM32 HAL) | Vibration node, MPU6050 at 100Hz, FFT, UART to ESP32 |
-| Arduino Nano | C++ (Arduino IDE) | Secondary node, BME280, LDR, FC-28, serial CSV to ESP32 |
-| Raspberry Pi Pico 2W | MicroPython | Ambient node, BME280, LDR, OLED, direct Wi-Fi POST |
+## Documentation
 
-| Sensor | Measures | Interface | Node |
-| --- | --- | --- | --- |
-| BME280 | Temperature, humidity, pressure | I2C 0x76 | ESP32, Nano, Pico 2W |
-| MPU6050 | Acceleration + gyroscope (6-axis) | I2C 0x68 | ESP32, STM32 |
-| INA219 | Bus voltage, current, power | I2C 0x40 | ESP32 |
-| MLX90614 | Contactless IR surface temperature | I2C 0x5A | ESP32 |
-| VL53L0X | Time-of-flight distance | I2C 0x29 | ESP32 |
-| MQ-2 | Gas and smoke concentration | Analog GPIO34 | ESP32 |
-| AS5600 | Magnetic shaft angle and RPM | I2C 0x36 | ESP32 |
-| MAX4466 | Acoustic / sound level | Analog GPIO32 | ESP32 |
-| DS18B20 | Precision contact temperature | OneWire GPIO4 | ESP32 |
-| LDR | Ambient light | Analog GPIO33 | ESP32, Nano, Pico 2W |
-| FC-28 | Moisture / water ingress | Analog GPIO36 | ESP32, Nano |
+The docs live in [`docs/`](docs/) and build into a site with `make docs`. Start with [docs/index.md](docs/index.md). The tech stack is in [docs/tech-stack.md](docs/tech-stack.md), the release flow in [docs/releases.md](docs/releases.md) and the brand in [assets/brand/](assets/brand/).
 
-See [hardware/wiring/](hardware/wiring/) for full pin connection tables and [docs/sensor_reference.md](docs/sensor_reference.md) for library details.
+## Licence
 
-## Tech stack
+PHAEMOS is licensed under the GNU Affero General Public License v3.0, see [LICENSE](LICENSE). Anyone running a modified version as a network service must publish its source under the same terms. [NOTICE.md](NOTICE.md) lists the third-party packages and their own licences.
 
-| Layer | Technology |
-| --- | --- |
-| Frontend | Next.js 15, TypeScript, Tailwind CSS |
-| Backend | FastAPI (Python 3.11) |
-| Database | PostgreSQL 15 |
-| Cache | Redis 7 |
-| ML | scikit-learn (Isolation Forest), pandas, numpy |
-| Auth | JWT (python-jose), bcrypt, TOTP 2FA, Google/GitHub OAuth |
-| Firmware | C++ (Arduino IDE), C (STM32 HAL), MicroPython |
-| Hardware | ESP32, STM32 Black Pill F411CEU6, Arduino Nano, Raspberry Pi Pico 2W |
-| Containers | Docker, Docker Compose |
-| Monitoring | Prometheus, Grafana |
-| Deployment | Vercel (frontend + docs), DigitalOcean VPS (backend + DB) |
+## Contributing and support
 
-## Languages & tools used
-
-<div align="center">
-
-### Frontend
-
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" width="60" /> | <img src="https://techstack-generator.vercel.app/react-icon.svg" width="60" /> | <img src="https://techstack-generator.vercel.app/ts-icon.svg" width="60" /> | <img src="https://skillicons.dev/icons?i=tailwind" width="60" /> | <img src="https://techstack-generator.vercel.app/js-icon.svg" width="60" /> |
-| :----------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :--------------------------------------------------------------: | :-------------------------------------------------------------------------: |
-|                                              **Next.js**                                               |                                   **React**                                    |                               **TypeScript**                                |                         **Tailwind CSS**                         |                               **JavaScript**                                |
-
-### Backend & data
-
-| <img src="https://techstack-generator.vercel.app/python-icon.svg" width="60" /> | <img src="https://cdn.simpleicons.org/fastapi/009688" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="60" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" width="60" /> | <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" width="60" /> |
-| :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
-|                                   **Python**                                    |                             **FastAPI**                             |                                                 **PostgreSQL**                                                 |                                              **Redis**                                               |                                             **Scikit-Learn**                                             |
-
-### Infrastructure & DevOps
-
-| <img src="https://techstack-generator.vercel.app/docker-icon.svg" width="60" alt="Docker" /> | <img src="https://techstack-generator.vercel.app/github-icon.svg" width="60" alt="GitHub" /> | <img src="https://cdn.simpleicons.org/vercel/000000" width="60" alt="Vercel" /> | <img src="https://cdn.simpleicons.org/digitalocean/0080FF" width="60" alt="DigitalOcean" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="60" alt="Git" /> |
-| :-------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: |
-|                                           **Docker**                                          |                                           **GitHub**                                          |                                   **Vercel**                                    |                                      **DigitalOcean**                                       |                                                  **Git**                                                    |
-
-### Firmware & hardware
-
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" width="60" alt="Arduino" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="60" alt="C" /> | <img src="https://techstack-generator.vercel.app/cpp-icon.svg" width="60" alt="C++" /> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" width="60" alt="Shell/Bash" /> | <img src="https://cdn.simpleicons.org/stmicroelectronics/03234B" width="60" alt="STM32" /> | <img src="https://cdn.simpleicons.org/espressif/E7352C" width="60" alt="ESP32" /> |
-| :---------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-|                                                      **Arduino**                                                        |                                               **C**                                                   |                                         **C++**                                          |                                               **Shell/Bash**                                                         |                                          **STM32**                                         |                                     **ESP32**                                      |
-
-</div>
-
-## Contributing
-
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branch naming convention, commit format, code standards and PR checklist before opening a pull request.
-
-## Community
-
-- [GitHub Discussions](https://github.com/phaemos/phaemos/discussions): questions, ideas and show-and-tell
-- [GitHub Issues](https://github.com/phaemos/phaemos/issues): bug reports and feature requests
-
-## Contact and support
-
-For general enquiries use the [contact form](https://phaemos.com/contact) or email [contact@phaemos.com](mailto:contact@phaemos.com). For user support email [support@phaemos.com](mailto:support@phaemos.com). See [SUPPORT.md](SUPPORT.md) for the full list of help channels and [SECURITY.md](SECURITY.md) to report a vulnerability.
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved and [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for questions and ideas. [SUPPORT.md](SUPPORT.md) lists every help channel and [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).
