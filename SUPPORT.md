@@ -2,15 +2,13 @@
 
 ## Getting help
 
-**Platform status and incidents:** Check [status.phaemos.com](https://status.phaemos.com) first during an outage. Subscribe to incident updates on the status page.
+**Platform status and incidents:** The status page at status.phaemos.com goes live with the [Launch milestone](https://github.com/phaemos/phaemos/milestone/3). Until then, outages and incidents are announced in [GitHub Discussions](https://github.com/phaemos/phaemos/discussions).
 
 **Questions and discussion:** Start a thread in [GitHub Discussions](https://github.com/phaemos/phaemos/discussions). This is the primary help channel for setup questions, usage questions and feature ideas.
 
 **Bugs and confirmed issues:** Open an issue on the [GitHub repository](https://github.com/phaemos/phaemos/issues). Use the bug report template and include reproduction steps.
 
 **Security vulnerabilities:** Do not open a public issue. See [SECURITY.md](SECURITY.md) for the responsible disclosure process.
-
-**Contact form:** Use the [contact form](https://phaemos.com/contact) for general enquiries.
 
 **General enquiries by email:** [contact@phaemos.com](mailto:contact@phaemos.com)
 
@@ -26,7 +24,8 @@
 - [docs/architecture.md](docs/architecture.md) - System architecture overview
 - [docs/sensor_reference.md](docs/sensor_reference.md) - Sensor wiring and data dictionary
 - [docs/VERIFICATION.md](docs/VERIFICATION.md) - Feature completion checklist
-- [docs.phaemos.com](https://docs.phaemos.com) - Browsable documentation site
+- [docs/development.md](docs/development.md) - Running locally, the smoke test, the simulator and the test commands
+- The browsable documentation site at docs.phaemos.com goes live with the Launch milestone. `make docs` serves it locally today
 - `http://localhost:8000/docs` - Interactive Swagger UI when the backend is running locally
 
 ---

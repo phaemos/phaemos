@@ -118,7 +118,7 @@ Use the issue templates provided:
 - **Bug report** for something that is broken.
 - **Feature request** for a new capability.
 
-Do not open public issues for security vulnerabilities. See [SECURITY.md](SECURITY.md) or the [security policy page](https://phaemos.com/security) for responsible disclosure instructions.
+Do not open public issues for security vulnerabilities. See [SECURITY.md](SECURITY.md) or the [security policy](https://github.com/phaemos/phaemos/security/policy) for responsible disclosure instructions.
 
 ---
 

@@ -41,6 +41,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `SUPPORT.md`, `CONTRIBUTING.md` and the new issue page no longer link to phaemos.com, its status page or its docs site, none of which resolve before the Launch milestone. The new issue page links the roadmap board and `SUPPORT.md` instead
 - `.github/dependabot.yml` had `open-pull-requests-limit: 0` on all three ecosystems, silently blocking every Dependabot PR since the pause was added; raised back to 5 on each ecosystem to match the limit already used in repo-ops and mirror-ops
 - The `pydantic` bump to 2.13 split `email-validator` into an optional extra; schemas here use `EmailStr`, so bare `pydantic` no longer shipped it, added `pydantic[email]` to requirements.txt
 - `prometheus-fastapi-instrumentator` 7.1.0 accessed a router attribute the newer `fastapi`/`starlette` no longer exposes; bumped to 8.1.0 alongside the `fastapi` bump it depends on rather than as a separate PR
