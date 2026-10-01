@@ -18,6 +18,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A **Research** discussion form for papers, datasets and open questions that are not an issue yet
 - A **Docs update** issue form and a **Q&A** discussion form
 - `assets/brand/`: the PHAEMOS logo and emblem in light and dark versions with transparent backgrounds, the single-colour emblem, a 1280 by 640 social preview card and the full brand board, with the colours, type and usage rules
 - New docs pages: `development.md` (running locally, the smoke test, the simulator and the test commands), `releases.md`, `tech-stack.md` and `repositories.md` (the monorepo layout and how publishing works), all in the docs site navigation
