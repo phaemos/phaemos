@@ -176,7 +176,8 @@ Use a 100 ohm series resistor to limit drive current.
 | GND       | GND        |                                                     |
 | DIN       | GPIO 26    | Add a 330 ohm series resistor on the data line      |
 
-RGB_LED_COUNT = 30 (config.h). At full white each pixel draws ~60 mA; total strip max is 1.8 A at 5 V - size your LM2596 output accordingly.
+> [!IMPORTANT]
+> With `RGB_LED_COUNT = 30` in `config.h`, each pixel draws about 60 mA at full white, so the strip alone can pull 1.8 A at 5 V. Size the LM2596 output for that load.
 
 ### 4-Channel Relay Module (active-low)
 

@@ -52,8 +52,9 @@ Lower ADC value = wetter soil. Values below 500 trigger `WATER:1` in output.
 
 ## Connecting to ESP32
 
-The Nano outputs at 5V logic. The ESP32 UART RX is 3.3V tolerant - a level
-shifter is required to avoid damaging the ESP32.
+> [!WARNING]
+> The Nano's UART outputs 5V logic but the ESP32's RX pin only tolerates 3.3V. Put a level shifter
+> or the resistor divider below between them, otherwise the ESP32 can be damaged.
 
 ### Simple resistor divider level shifter (TX only)
 

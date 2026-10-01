@@ -19,9 +19,9 @@ Add two components to track the main platform surfaces:
 | Component name | Monitor type | URL | Check interval |
 | --- | --- | --- | --- |
 | Platform | HTTP | `https://phaemos.com` | 60 seconds |
-| API | HTTP with keyword | `https://api.phaemos.com/health` | 60 seconds |
+| API | HTTP with keyword | `https://api.phaemos.com/status` | 60 seconds |
 
-For the API component, enable **Keyword monitoring** and set the keyword to `ok`. The health endpoint returns `{"status":"ok",...}` when all services are healthy - keyword matching confirms the backend is genuinely responding, not just returning a 200 from a proxy cache.
+For the API component, enable **Keyword monitoring** and set the keyword to `operational`. The status endpoint returns `{"status":"operational",...}` only when the API, the database and Redis are all healthy. Otherwise it returns `degraded`. Keyword matching confirms the backend is genuinely responding, not just returning a 200 from a proxy cache.
 
 ---
 
