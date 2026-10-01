@@ -61,6 +61,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Each publish run checks out the latest `main`, so a push event that arrives late can no longer publish stale history to the component repositories.
 - The pull request template's links, the conduct reporting route and two support answers now match the project. Older blog posts note where the hardware or the model has changed since they were written. The docs site builds with no warnings.
 - `.github/CODEOWNERS` read `- @zaccesss` instead of `* @zaccesss`, so no pull request requested a review. It now carries the standard header and rule
 - UK spelling and sentence joins in `docs/decisions.md`, `edge/README.md` and the audit log page range

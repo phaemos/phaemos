@@ -40,6 +40,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.token.outputs.present == 'true'
         with:
+          # the latest main rather than the pushed commit, so a late push event never publishes stale history.
+          ref: main
           fetch-depth: 0
           persist-credentials: false
       - name: Split and push
