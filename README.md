@@ -104,4 +104,4 @@ Software is licensed under the GNU Affero General Public License v3.0 or later, 
 
 ## Contributing and support
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved and [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for questions and ideas. [SUPPORT.md](SUPPORT.md) lists every help channel and [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved and [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for questions and ideas. [SUPPORT.md](SUPPORT.md) lists every help channel, [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately and [ACCESSIBILITY.md](ACCESSIBILITY.md) says what the platform does for accessibility. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).
