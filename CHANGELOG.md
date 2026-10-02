@@ -9,6 +9,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `ACCESSIBILITY.md`: what the dashboard, the nodes and the documentation do for accessibility, the known gaps and how to report a barrier.
+
 ### Security
 
 - Sign-in is hardened across every method. Once enrolled, two-factor authentication is required at every sign-in, including Google and GitHub, through a short-lived challenge. Each code is accepted once. Tokens are only accepted for their own purpose. Changing the password or two-factor settings ends every other session. OAuth sign-in checks a state value, accepts only verified emails and keeps tokens out of URLs. Device changes follow each role's permissions. Rate limits trust proxy headers only from the proxy. The stack's ports listen on localhost only. Migration 010 adds the columns this relies on, so run `make migrate` on an existing database.
