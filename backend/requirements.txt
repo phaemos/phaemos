@@ -1,4 +1,4 @@
-fastapi==0.141.1
+fastapi==0.142.2
 slowapi==0.1.10
 uvicorn[standard]==0.54.0
 sqlalchemy==2.0.54
@@ -20,13 +20,13 @@ authlib==1.8.0
 pyotp==2.10.0
 qrcode==8.2
 prometheus-fastapi-instrumentator==8.1.0
-resend==2.48.0
+resend==2.49.0
 sib-api-v3-sdk==7.6.0
 apscheduler==3.11.3
 matplotlib==3.11.2
 pytest==9.1.1
 pytest-cov==7.1.0
 # python-dotenv added in v2.0 for local .env loading in scripts and evaluate.py
-python-dotenv==1.2.3
+python-dotenv==1.2.4
 # pytest-asyncio needed for async FastAPI endpoint tests
 pytest-asyncio==1.4.0
