@@ -11,6 +11,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `assets/brand/linkedin/`: the logo, cover image and profile text for the [PHAEMOS LinkedIn page](https://www.linkedin.com/company/phaemos/), linked from the brand README.
 - `ACCESSIBILITY.md`: what the dashboard, the nodes and the documentation do for accessibility, the known gaps and how to report a barrier.
 
 ### Security
