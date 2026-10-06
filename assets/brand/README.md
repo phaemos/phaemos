@@ -12,6 +12,7 @@ revealed, which is what the name means. The tagline is **Reveal before failure**
 | [`phaemos-emblem-mono.png`](phaemos-emblem-mono.png) | Single-colour emblem with the name, used as the organisation avatar |
 | [`phaemos-social-preview.png`](phaemos-social-preview.png) | 1280 by 640 card shown when a repository link is shared |
 | [`phaemos-brand-board.png`](phaemos-brand-board.png) | The full board: every logo variant, banners, colours and type |
+| [`linkedin/`](linkedin/README.md) | The logo, cover image and profile text for our [LinkedIn page](https://www.linkedin.com/company/phaemos/) |
 
 ## Colours
 
