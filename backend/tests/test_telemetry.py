@@ -1,3 +1,9 @@
+import pytest
+from starlette.websockets import WebSocketDisconnect
+
+from app.main import app
+
+
 def test_ingest_missing_api_key(client, device):
     # X-API-Key is a required header - omitting it returns 422 (validation error).
     res = client.post(
@@ -82,3 +88,20 @@ def test_get_latest_after_ingest(client, device, auth_headers):
     res = client.get(f"/api/v1/telemetry/{device.id}/latest", headers=auth_headers)
     assert res.status_code == 200
     assert res.json()["temperature"] == 30.0
+
+
+# ── WebSocket path ────────────────────────────────────────────────────────────
+
+def test_telemetry_websocket_lives_outside_the_versioned_prefix():
+    # the dashboard builds this URL in frontend/lib/wsUrl.ts, so the two must agree.
+    path = app.url_path_for("telemetry_ws", device_id="abc")
+    assert path == "/ws/telemetry/abc"
+
+
+def test_telemetry_websocket_answers_at_its_path(client, device):
+    # a missing token is refused with 1008, which only the telemetry route sends,
+    # so this proves the route is served at /ws/telemetry/{device_id}.
+    with pytest.raises(WebSocketDisconnect) as exc:
+        with client.websocket_connect(f"/ws/telemetry/{device.id}") as ws:
+            ws.receive_text()
+    assert exc.value.code == 1008
