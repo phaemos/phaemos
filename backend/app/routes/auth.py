@@ -14,7 +14,8 @@ import qrcode
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
+import jwt
+from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -135,7 +136,7 @@ def decode_token(token: str, token_type: str = "access") -> dict:
     # passed as query params without depending on the HTTPBearer scheme.
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(status_code=401, detail="Could not validate token")
     if not payload.get("sub") or payload.get("type") != token_type:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -756,7 +757,7 @@ def get_invite_info(request: Request, token: str):
     # (expired, invalid) before the user fills in their name and password.
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(status_code=400, detail="Invalid or expired invite token")
     if payload.get("type") != "invite":
         raise HTTPException(status_code=400, detail="Invalid token type")
@@ -770,7 +771,7 @@ def accept_invite(request: Request, payload: AcceptInvite, db: Session = Depends
         token_data = jwt.decode(
             payload.token, settings.secret_key, algorithms=[settings.algorithm]
         )
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(status_code=400, detail="Invalid or expired invite token")
     if token_data.get("type") != "invite":
         raise HTTPException(status_code=400, detail="Invalid token type")

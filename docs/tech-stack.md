@@ -10,7 +10,7 @@ Every language and tool PHAEMOS uses, by layer. The reasons behind the main choi
 | Database | PostgreSQL 15 |
 | Cache and pub/sub | Redis 7 |
 | Machine learning | scikit-learn (Isolation Forest), pandas, NumPy |
-| Auth | JWT (python-jose), bcrypt, TOTP two-factor sign-in, Google and GitHub OAuth |
+| Auth | JWT (PyJWT), bcrypt, TOTP two-factor sign-in, Google and GitHub OAuth |
 | Firmware | C++ (Arduino), C (STM32 HAL with CMSIS-DSP), MicroPython |
 | Edge gateway | Rust |
 | SDK and simulator | Python |
