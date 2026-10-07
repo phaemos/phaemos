@@ -66,6 +66,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The architecture, deployment and decision docs match the code. The schema has ten migrations (001 to 010). Decision 004 notes that the telemetry chart now uses a WebSocket with the 5-second poll as its fallback. The deployment docs state the current backend deploy (a disabled workflow holding an earlier Render hook) and the VPS planned for Launch.
 - Each publish run checks out the latest `main`, so a push event that arrives late can no longer publish stale history to the component repositories.
 - The pull request template's links, the conduct reporting route and two support answers now match the project. Older blog posts note where the hardware or the model has changed since they were written. The docs site builds with no warnings.
 - `.github/CODEOWNERS` read `- @zaccesss` instead of `* @zaccesss`, so no pull request requested a review. It now carries the standard header and rule

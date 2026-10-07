@@ -1,11 +1,13 @@
 # Deployment Guide
 
-This guide covers the full production deployment of Phaemos:
+This guide covers the full production deployment of Phaemos at the Launch milestone:
 
 - Backend (FastAPI + PostgreSQL + Redis) on a DigitalOcean VPS via Docker Compose
 - Frontend (Next.js) on Vercel
 - Documentation site (MkDocs) on Vercel
 - Status page on Instatus
+
+The VPS is the planned backend target and is not provisioned yet. Today the `Deploy` workflow still holds an earlier Render deploy hook and is disabled, so the backend is not deployed automatically. See [decision 015](decisions.md).
 
 ---
 

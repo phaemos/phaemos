@@ -78,6 +78,9 @@ Frontend polls `GET /api/v1/telemetry/{device_id}/latest` every 5 seconds. Senso
 - 5-second polling is acceptable given the 5-second sensor cycle
 - Phase 3 upgrade: replace with Server-Sent Events or WebSocket if lower latency is needed
 
+**Update (2026-10-07):**
+The Phase 3 upgrade has landed. Since 2026-06-02 the telemetry chart also opens a WebSocket (`useWebSocketTelemetry`, authenticated as in decision 010) and merges each pushed reading ahead of the polled ones. The 5-second poll of `/telemetry/{device_id}/latest` stays in place as the fallback, so the chart keeps updating when the socket is closed, rejected or reconnecting. Device lists, alerts and maintenance windows are still polled only.
+
 ---
 
 ## 005 - PostgreSQL over SQLite for development
@@ -293,6 +296,9 @@ DigitalOcean VPS with Docker Compose + Nginx reverse proxy.
 - Docker Compose on the VPS mirrors the local dev environment exactly - same `docker-compose.yml`, same env vars.
 - Nginx handles SSL termination (Certbot), reverse proxy to the FastAPI container and sets `X-Real-IP` so rate limiting works correctly.
 - No vendor lock-in: the Docker Compose stack is portable to any VPS provider.
+
+**Update (2026-10-07):**
+The VPS is the production target for the Launch milestone and has not been provisioned yet. Until then the `Deploy` workflow still holds the earlier Render deploy hook and is disabled, so the backend is not deployed automatically. The workflow is updated for the VPS when it goes live.
 
 ---
 
