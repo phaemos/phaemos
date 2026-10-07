@@ -93,6 +93,7 @@ option and for the Go CLI.
 | --- | --- |
 | `make test` | The backend pytest suite inside the backend container |
 | `make lint` | Ruff on the backend and ESLint on the dashboard |
+| `npm test` in `frontend/` | The dashboard unit tests, through the Node test runner (Node 22.18 or later) |
 | `make build` | A production build of the dashboard |
 | `make migrate` | The initial SQL schema against the running database |
 | `make seed` | Demo data, useful after `docker compose down` wipes the volume |

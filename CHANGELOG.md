@@ -9,6 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The dashboard's live telemetry WebSocket now connects to `/ws/telemetry/{device_id}`, the path the backend serves, instead of `/api/v1/ws/telemetry/{device_id}`, which never answered. The URL is built in `frontend/lib/wsUrl.ts` and covered by new frontend unit tests (`npm test`, run in CI on Node 24) and backend route tests.
+- The deployment guide's Nginx config passes the WebSocket upgrade headers.
+- The edge gateway passes the newer `assert_is_empty` clippy lint.
+
 ### Added
 
 - `assets/brand/linkedin/`: the logo, cover image and profile text for the [PHAEMOS LinkedIn page](https://www.linkedin.com/company/phaemos/), linked from the brand README.

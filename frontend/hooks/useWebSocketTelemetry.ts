@@ -7,15 +7,9 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import type { Telemetry } from '../types/index';
+import { buildTelemetryWsUrl } from '../lib/wsUrl';
 
 const BACKOFF_DELAYS_MS = [1000, 2000, 4000, 8000, 16000];
-
-function buildWsUrl(deviceId: string, token: string): string {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-  // swap the scheme so the WS connection uses the same host/port as the REST API.
-  const wsBase = base.replace(/^http/, 'ws');
-  return `${wsBase}/api/v1/ws/telemetry/${deviceId}?token=${encodeURIComponent(token)}`;
-}
 
 export type WsStatus = 'connecting' | 'open' | 'closed' | 'auth_failed' | 'unavailable';
 
@@ -45,7 +39,7 @@ export function useWebSocketTelemetry(deviceId: string, { onMessage, onStatusCha
 
     onStatusRef.current?.('connecting');
 
-    const ws = new WebSocket(buildWsUrl(deviceId, token));
+    const ws = new WebSocket(buildTelemetryWsUrl(deviceId, token));
     wsRef.current = ws;
 
     ws.onopen = () => {
