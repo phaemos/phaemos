@@ -135,7 +135,7 @@ Outside `/api/v1`, `GET /` answers liveness checks and `GET /status` reports `op
 
 ## Storage
 
-- **PostgreSQL 15** holds devices, telemetry, alerts, rules, tickets, users, webhooks, maintenance windows and the audit log. The schema is built from the nine SQL files in `backend/migrations/`.
+- **PostgreSQL 15** holds devices, telemetry, alerts, rules, tickets, users, webhooks, maintenance windows and the audit log. The schema is built from the ten SQL files in `backend/migrations/` (001 to 010).
 - **Redis 7** runs in the Compose stack and is part of the `/status` check. WebSocket fan-out and rate limits currently live inside the API process, so a deployment with several API workers would move both onto Redis.
 
 ## Dashboard
@@ -163,6 +163,8 @@ Both tasks open their own SQLAlchemy sessions rather than the request-scoped `De
 Every alert a rule raises goes to each enabled webhook (Slack incoming webhooks, Discord webhook URLs or Microsoft Teams connector cards) and by email over SMTP to the configured alert address. Warning and critical alerts also post to the project's Discord channel. A webhook can carry an optional template rendered with the alert's device, metric, value, threshold and severity. Critical alerts also send an SMS through Brevo to the device owner's phone number. Each channel is a no-op until its credentials are configured.
 
 ## Deployment
+
+**Current state:** the backend's `Deploy` workflow (`.github/workflows/deploy.yml`) still posts to a Render deploy hook after CI passes on `main`. That workflow is disabled and no backend is deployed automatically today. At the Launch milestone the backend moves to the VPS layout below ([decision 015](decisions.md)) and the workflow is updated to match.
 
 The target layout for the Launch milestone:
 
