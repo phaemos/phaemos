@@ -105,7 +105,7 @@ mod tests {
         spool.ack(2).unwrap();
         assert_eq!(spool.pending().unwrap(), vec![r#"{"device_id":"c"}"#]);
         spool.ack(5).unwrap();
-        assert!(spool.pending().unwrap().is_empty());
+        assert_eq!(spool.pending().unwrap(), Vec::<String>::new());
     }
 
     #[test]
