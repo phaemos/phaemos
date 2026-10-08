@@ -4,7 +4,7 @@ Isolation Forest anomaly detection pipeline.
 
 | File | Purpose |
 |---|---|
-| train.py | Train model on a telemetry CSV export - outputs model.pkl |
+| train.py | Train the general and per-node models on a telemetry CSV export, the same way the API retrains - outputs model.pkl |
 | preprocess.py | Feature engineering - rolling stats, time-of-day feature |
 | evaluate.py | Evaluate trained model - precision/recall, distribution plot, JSON report |
 

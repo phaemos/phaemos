@@ -74,10 +74,11 @@ sequenceDiagram
     N->>A: POST /api/v1/telemetry with X-API-Key
     A->>A: Look up the device by its key
     A->>M: Score the reading
-    M-->>A: Score from 0 to 1, anomaly at 0.7 or above
+    M-->>A: Score from 0 to 1 from the node type's own model, anomaly at 0.7 or above
     A->>D: Save the reading with its score and anomaly flag
     A->>R: Check the device's rules, skipped during a maintenance window
     R-->>A: Alerts for every rule that fires
+    A->>D: Three anomalous readings in a row raise one alert and open a ticket; three normal ones clear it
     Note over R: Each alert goes to the webhooks and email.<br/>Warning and critical alerts also go to Discord.<br/>Critical alerts also send an SMS.
     A-->>W: Broadcast the reading over WebSocket
     W->>A: Poll /telemetry/{device_id}/latest every 5 s as a fallback
@@ -110,7 +111,7 @@ sequenceDiagram
 - **Two-factor:** TOTP from an authenticator app, required at every sign-in once enrolled, including OAuth. Each code is accepted once. Enrolment cannot restart while two-factor authentication is on.
 - **Lockout:** five failed attempts, wrong passwords and wrong codes alike, lock an account for 15 minutes. The lockout path runs even for unknown emails, so responses do not reveal which emails are registered.
 - **OAuth:** Google and GitHub through `/api/v1/auth/{provider}` and `/api/v1/auth/{provider}/callback`. A random `state` ties each callback to the browser that started it. Only an email the provider reports as verified can sign in or link to an existing account. No token ever appears in a URL: the dashboard exchanges the refresh cookie for an access token. Apple sign-in is reserved and returns 501 until it is set up.
-- **Invites:** an admin invites a user by email (sent through Resend) with one of the three roles, and the invite link creates the account.
+- **Invites:** an admin invites a user by email (sent through Resend) with one of the three roles. The invite link creates the account.
 - **Devices:** every node sends a per-device `X-API-Key`. A key is replaced with `POST /api/v1/devices/{device_id}/rotate-key` by an admin or the technician who manages the device.
 
 ## API surface

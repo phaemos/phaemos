@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -17,39 +17,37 @@ from sklearn.metrics import precision_recall_fscore_support
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-ANOMALY_SCORE_THRESHOLD = float(os.getenv("ANOMALY_SCORE_THRESHOLD", "0.7"))
+# the backend package sits one level up, so the evaluation scores readings exactly as the API does
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from app.services import ml_service
 
-FEATURE_COLS = [
-    "temperature",
-    "humidity",
-    "vibration_x",
-    "vibration_y",
-    "vibration_z",
-    "light_level",
-]
+ANOMALY_SCORE_THRESHOLD = ml_service.ANOMALY_THRESHOLD
 
 
 def load_model(model_path: str) -> Any:
-    model = joblib.load(model_path)
-    if not hasattr(model, "predict"):
-        raise ValueError(f"Loaded object from {model_path} has no predict() method")
-    return model
+    """Load a saved bundle of models (or a single model from an earlier version)."""
+    return joblib.load(model_path)
 
 
-def evaluate_precision_recall(model: Any, X_test: Any, y_true: Any) -> dict:
-    raw = model.predict(X_test)
-    # remap IsolationForest's convention (-1=anomaly, 1=normal) to binary (1=anomaly, 0=normal)
-    # so standard sklearn metrics work without caller-side remapping.
-    y_pred = np.where(raw == -1, 1, 0)
-    y_true_arr = np.asarray(y_true)
-    precision, recall, f1, support = precision_recall_fscore_support(
-        y_true_arr, y_pred, average="binary", zero_division=0
-    )
+def score_rows(model: Any, rows: list[dict]) -> np.ndarray:
+    """Score each reading on the 0-1 scale the dashboard shows."""
+    ml_service._model = model
+    try:
+        return np.array([ml_service.score_reading(r)[0] for r in rows])
+    finally:
+        ml_service._model = None
+
+
+def evaluate_precision_recall(scores: np.ndarray, y_true: Any) -> dict:
+    y_pred = (scores >= ANOMALY_SCORE_THRESHOLD).astype(int)
+    y_true = np.asarray(y_true)
+    precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average="binary", zero_division=0)
     return {
         "precision": float(precision),
         "recall":    float(recall),
         "f1":        float(f1),
-        "support":   int(support),
+        # support is None for a binary average, so the labelled anomalies are counted directly
+        "support":   int(y_true.sum()),
     }
 
 
@@ -82,18 +80,13 @@ def generate_report(model_path: str, data_path: str, output_path: str) -> None:
     if "is_anomaly" not in df.columns:
         raise ValueError("data_path CSV must include an 'is_anomaly' column for ground-truth labels")
 
-    feature_cols = [c for c in FEATURE_COLS if c in df.columns]
-    X = df[feature_cols].fillna(0).to_numpy()
+    cols = [c for c in ["node_type", *ml_service.SENSOR_COLS] if c in df.columns]
+    rows = df[cols].astype(object).where(df[cols].notna(), None).to_dict("records")
     y_true = df["is_anomaly"].astype(int).to_numpy()
 
-    metrics = evaluate_precision_recall(model, X, y_true)
-
-    # use decision_function scores for the distribution plot when available because
-    # they are continuous, making the histogram more informative than binary predict().
-    if hasattr(model, "decision_function"):
-        scores = model.decision_function(X).tolist()
-    else:
-        scores = model.predict(X).tolist()
+    scores = score_rows(model, rows)
+    metrics = evaluate_precision_recall(scores, y_true)
+    scores = scores.tolist()
 
     n_anomalies = int(y_true.sum())
     plot_path = str(Path(output_path) / "anomaly_distribution.png")

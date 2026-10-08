@@ -154,7 +154,7 @@ def test_oauth_start_sets_a_state(client, monkeypatch):
     assert state and f"state={state}" in res.headers["location"]
 
 
-@pytest.mark.parametrize("provider", ["google", "github"])
+@pytest.mark.parametrize("provider", ["google", "github", "microsoft"])
 def test_oauth_callback_needs_the_matching_state(client, monkeypatch, provider):
     monkeypatch.setattr(settings, f"{provider}_client_id", "test-client")
     client.cookies.set("oauth_state", "expected", path="/api/v1/auth")
@@ -242,3 +242,24 @@ def test_spoofed_proxy_headers_do_not_escape_the_sign_in_limit(client, db):
         codes.append(res.status_code)
     # the test client is not a trusted proxy, so every request shares one bucket.
     assert 429 in codes
+
+
+def test_microsoft_never_links_to_an_existing_email(db):
+    from fastapi import HTTPException
+    from app.routes.auth import _microsoft_user
+    from app.models.user import User
+
+    db.add(User(name="Owner", email="owner@example.com", password_hash="x"))
+    db.flush()
+    with pytest.raises(HTTPException) as refused:
+        _microsoft_user(db, "ms-1", "owner@example.com", "Someone")
+    assert refused.value.status_code == 409
+
+
+def test_microsoft_signs_in_the_account_it_created(db):
+    from app.routes.auth import _microsoft_user
+
+    created = _microsoft_user(db, "ms-2", "new@example.com", "New Person")
+    assert created.oauth_provider == "microsoft"
+    # the same identity signs straight back in, even if its email changed since
+    assert _microsoft_user(db, "ms-2", "renamed@example.com", "New Person").id == created.id

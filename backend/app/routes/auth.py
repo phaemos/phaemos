@@ -77,7 +77,7 @@ _REFRESH_DAYS = 7
 _REFRESH_COOKIE = "refresh_token"
 _REFRESH_PATH = "/api/v1/auth/refresh"
 
-# the challenge issued after a correct password, or after OAuth, when the
+# the challenge issued after a correct password or after OAuth when the
 # account has two-factor authentication. It only works at /2fa/verify and
 # expires quickly so an unfinished sign-in cannot be resumed later.
 _CHALLENGE_MINUTES = 5
@@ -605,7 +605,7 @@ async def google_callback(
             headers={"Authorization": f"Bearer {token_data['access_token']}"},
         )
     profile = profile_res.json()
-    # only a verified address may sign in to, or link with, an account.
+    # only a verified address may sign in to an account or link with one.
     if not profile.get("email") or profile.get("email_verified") is not True:
         raise HTTPException(status_code=400, detail="Your Google account email is not verified")
     user = _oauth_upsert(db, profile["email"], profile.get("name", ""), "google", profile["sub"])
@@ -662,7 +662,7 @@ async def github_callback(
     emails = emails_res.json()
     if not isinstance(emails, list):
         emails = []
-    # only a verified address may sign in to, or link with, an account. The
+    # only a verified address may sign in to an account or link with one. The
     # public profile email is not checked by GitHub, so it is never used.
     verified = [e["email"] for e in emails if e.get("verified") and e.get("email")]
     primary = next((e["email"] for e in emails if e.get("primary") and e.get("verified")), None)
@@ -670,6 +670,83 @@ async def github_callback(
     if not email:
         raise HTTPException(status_code=400, detail="Could not retrieve a verified email from GitHub")
     user = _oauth_upsert(db, email, profile.get("name") or profile.get("login", ""), "github", str(profile["id"]))
+    return _oauth_finish(db, user)
+
+
+def _microsoft_user(db: Session, microsoft_id: str, email: str | None, name: str) -> User:
+    """
+    Find or create the account for a Microsoft sign-in.
+
+    A work or school tenant can set any email on its users without verifying it, so unlike Google
+    and GitHub a Microsoft email never links to an existing account. Only an account this
+    Microsoft identity created before is signed in, otherwise a brand-new one is made.
+    """
+    user = db.query(User).filter(User.oauth_provider == "microsoft", User.oauth_id == microsoft_id).first()
+    if user:
+        return user
+    if not email:
+        raise HTTPException(status_code=400, detail="Your Microsoft account has no email address to sign in with")
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(
+            status_code=409,
+            detail="An account already uses this email. Sign in with your password or the provider you used before.",
+        )
+    user = User(name=name, email=email, password_hash=None, oauth_provider="microsoft", oauth_id=microsoft_id)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.get("/microsoft")
+def microsoft_login():
+    if not settings.microsoft_client_id:
+        raise HTTPException(status_code=501, detail="Microsoft OAuth not configured")
+    return _oauth_start(f"https://login.microsoftonline.com/{settings.microsoft_tenant}/oauth2/v2.0/authorize", {
+        "client_id": settings.microsoft_client_id,
+        "redirect_uri": settings.microsoft_redirect_uri,
+        "response_type": "code",
+        "response_mode": "query",
+        "scope": "openid email profile User.Read",
+    })
+
+
+@router.get("/microsoft/callback")
+async def microsoft_callback(
+    code: str,
+    state: str | None = None,
+    oauth_state: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+):
+    if not settings.microsoft_client_id:
+        raise HTTPException(status_code=501, detail="Microsoft OAuth not configured")
+    _check_state(state, oauth_state)
+    async with httpx.AsyncClient() as client:
+        token_res = await client.post(
+            f"https://login.microsoftonline.com/{settings.microsoft_tenant}/oauth2/v2.0/token",
+            data={
+                "client_id": settings.microsoft_client_id,
+                "client_secret": settings.microsoft_client_secret,
+                "code": code,
+                "redirect_uri": settings.microsoft_redirect_uri,
+                "grant_type": "authorization_code",
+                "scope": "openid email profile User.Read",
+            },
+        )
+    token_data = token_res.json()
+    if "error" in token_data:
+        raise HTTPException(status_code=400, detail=token_data.get("error_description", "OAuth error"))
+
+    async with httpx.AsyncClient() as client:
+        profile_res = await client.get(
+            "https://graph.microsoft.com/v1.0/me",
+            headers={"Authorization": f"Bearer {token_data['access_token']}"},
+        )
+    profile = profile_res.json()
+    if not profile.get("id"):
+        raise HTTPException(status_code=400, detail="Could not read your Microsoft profile")
+    email = profile.get("mail") or profile.get("userPrincipalName")
+    user = _microsoft_user(db, profile["id"], email, profile.get("displayName") or "")
     return _oauth_finish(db, user)
 
 

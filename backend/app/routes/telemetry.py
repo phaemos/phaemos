@@ -14,7 +14,7 @@ from app.models.user import User
 from app.routes.auth import get_current_user
 from app.schemas.telemetry import TelemetryIngest, TelemetryResponse
 from app.services.ml_service import score_reading
-from app.services.alert_service import evaluate_rules
+from app.services.alert_service import evaluate_anomaly, evaluate_rules
 from app.services import ws_manager
 
 router = APIRouter()
@@ -49,6 +49,9 @@ def ingest_telemetry(
         device_id=device.id,
         anomaly_score=anomaly_score,
         is_anomaly=is_anomaly,
+        # stamped here rather than by the database's now(), which is fixed for a whole transaction,
+        # so every reading orders correctly when the latest few are compared
+        recorded_at=datetime.now(timezone.utc),
         **reading,
     )
     db.add(row)
@@ -61,6 +64,8 @@ def ingest_telemetry(
 
     # evaluate alert rules after persistence so alerts reference committed state.
     evaluate_rules(device, reading, db)
+    # the model's own alert, raised only when a run of readings stays anomalous
+    evaluate_anomaly(device, db)
 
     # serialize before scheduling - the DB session closes after this function returns.
     row_json = TelemetryResponse.model_validate(row).model_dump_json()
