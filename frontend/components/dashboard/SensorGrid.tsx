@@ -30,7 +30,7 @@ function buildCategories(r: Telemetry): SensorCategory[] {
     {
       title: 'Environment (BME280)',
       fields: [
-        { label: 'Temperature', value: formatSensorValue(r.temperature, 'degC') },
+        { label: 'Temperature', value: formatSensorValue(r.temperature, '°C') },
         { label: 'Humidity', value: formatSensorValue(r.humidity, '%') },
         { label: 'Pressure', value: formatSensorValue(r.pressure, 'hPa') },
       ],
@@ -41,9 +41,9 @@ function buildCategories(r: Telemetry): SensorCategory[] {
         { label: 'Vibration X', value: formatSensorValue(r.vibration_x, 'g', 3) },
         { label: 'Vibration Y', value: formatSensorValue(r.vibration_y, 'g', 3) },
         { label: 'Vibration Z', value: formatSensorValue(r.vibration_z, 'g', 3) },
-        { label: 'Gyro X', value: formatSensorValue(r.gyro_x, 'deg/s', 2) },
-        { label: 'Gyro Y', value: formatSensorValue(r.gyro_y, 'deg/s', 2) },
-        { label: 'Gyro Z', value: formatSensorValue(r.gyro_z, 'deg/s', 2) },
+        { label: 'Gyro X', value: formatSensorValue(r.gyro_x, '°/s', 2) },
+        { label: 'Gyro Y', value: formatSensorValue(r.gyro_y, '°/s', 2) },
+        { label: 'Gyro Z', value: formatSensorValue(r.gyro_z, '°/s', 2) },
       ],
     },
     {
@@ -59,11 +59,11 @@ function buildCategories(r: Telemetry): SensorCategory[] {
       fields: [
         {
           label: 'IR Temp (MLX90614)',
-          value: formatSensorValue(r.ir_temperature, 'degC'),
+          value: formatSensorValue(r.ir_temperature, '°C'),
         },
         {
           label: 'Contact Temp (DS18B20)',
-          value: formatSensorValue(r.contact_temp, 'degC'),
+          value: formatSensorValue(r.contact_temp, '°C'),
         },
       ],
     },
@@ -89,7 +89,7 @@ function buildCategories(r: Telemetry): SensorCategory[] {
     {
       title: 'Rotation (AS5600)',
       fields: [
-        { label: 'Shaft Angle', value: formatSensorValue(r.shaft_angle, 'deg', 1) },
+        { label: 'Shaft Angle', value: formatSensorValue(r.shaft_angle, '°', 1) },
         { label: 'Shaft RPM', value: formatSensorValue(r.shaft_rpm, 'RPM', 0) },
       ],
     },
@@ -142,7 +142,7 @@ export default function SensorGrid({ reading }: Props) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 11 }).map((_, i) => (
-          <div key={i} className="bg-surface-50 dark:bg-white/5 rounded-xl p-4 border border-surface-200 dark:border-surface-800">
+          <div key={i} className="rounded-lg border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900">
             <LoadingSkeleton rows={3} />
           </div>
         ))}
@@ -157,9 +157,9 @@ export default function SensorGrid({ reading }: Props) {
       {categories.map((cat) => (
         <div
           key={cat.title}
-          className="bg-surface-50 dark:bg-white/5 rounded-xl p-4 border border-surface-200 dark:border-surface-800"
+          className="rounded-lg border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900"
         >
-          <h3 className="text-xs font-semibold text-surface-600 dark:text-surface-400 uppercase tracking-wider mb-3">
+          <h3 className="mb-3 text-xs font-semibold text-surface-900 dark:text-surface-50">
             {cat.title}
           </h3>
           <dl className="space-y-1.5">

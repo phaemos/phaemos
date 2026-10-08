@@ -67,7 +67,7 @@ export default function AuditLog() {
               </tr>
             ) : (
               entries.map((e) => (
-                <tr key={e.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colours">
+                <tr key={e.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colors">
                   <td className="px-4 py-3 text-surface-400 dark:text-surface-600 text-xs whitespace-nowrap">
                     {new Date(e.created_at).toLocaleString('en-GB', {
                       day: '2-digit',

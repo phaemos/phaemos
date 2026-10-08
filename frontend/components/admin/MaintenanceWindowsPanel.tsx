@@ -120,7 +120,7 @@ export default function MaintenanceWindowsPanel() {
                 className="flex items-start justify-between gap-4 rounded-lg border border-surface-200 dark:border-surface-800 px-4 py-3"
               >
                 <div className="space-y-0.5 min-w-0">
-                  <div className="flex items-centre gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-surface-900 dark:text-surface-50 truncate">
                       {w.label}
                     </span>
@@ -189,7 +189,7 @@ export default function MaintenanceWindowsPanel() {
           </div>
         </div>
 
-        <label className="flex items-centre gap-2 text-sm text-surface-600 dark:text-surface-400 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400 cursor-pointer">
           <input
             type="checkbox"
             checked={suppress}
