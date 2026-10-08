@@ -151,7 +151,7 @@ Get a single device with latest status.
 
 Update device name, location or status.
 
-**Auth:** Bearer JWT (admin, or a technician for their own or unassigned devices)
+**Auth:** Bearer JWT (an admin or a technician for their own or unassigned devices)
 
 ---
 
@@ -159,7 +159,7 @@ Update device name, location or status.
 
 Replace the device's API key. The response includes the new key, so the old one stops working straight away and the firmware needs the new value.
 
-**Auth:** Bearer JWT (admin, or a technician for their own or unassigned devices)
+**Auth:** Bearer JWT (an admin or a technician for their own or unassigned devices)
 
 ---
 
@@ -535,6 +535,24 @@ No token is ever put in the redirect URL. Without 2FA it sets the refresh cookie
 
 ---
 
+### GET /auth/microsoft
+
+Initiate Microsoft sign-in. Redirects to the Microsoft identity platform for the tenant in `MICROSOFT_TENANT` (`common` accepts personal and work or school accounts) with a random `state` value, which is also stored in a short-lived httpOnly cookie.
+
+**Auth:** None (public)
+
+---
+
+### GET /auth/microsoft/callback
+
+Microsoft sign-in callback. Refuses the request unless its `state` matches the cookie set by `GET /auth/microsoft`, then reads the profile from Microsoft Graph.
+
+A work or school tenant can set any email on its users without verifying it, so a Microsoft email never links to an existing account. The callback signs in the account this Microsoft identity created before. With no such account it creates a new one when the email is unused. If the email already belongs to another account it returns 409 and the person signs in with their password or original provider instead. The redirect then works exactly as for Google and GitHub.
+
+**Auth:** None (public)
+
+---
+
 ### GET /auth/users
 
 Return a paginated list of all users.
@@ -639,7 +657,7 @@ Confirm TOTP enrolment by submitting the first valid code from the authenticator
 
 ### POST /auth/2fa/verify
 
-The second step of sign-in for an account with 2FA. Needs the challenge from the first step: the `mfa_token` from `POST /auth/login`, or the challenge cookie an OAuth callback set (leave `mfa_token` out then). A code on its own never signs anyone in.
+The second step of sign-in for an account with 2FA. Needs the challenge from the first step: the `mfa_token` from `POST /auth/login` or the challenge cookie an OAuth callback set (leave `mfa_token` out then). A code on its own never signs anyone in.
 
 **Auth:** None (uses the sign-in challenge)
 

@@ -18,6 +18,10 @@ const PUBLIC_PATHS = [
   '/contact',
 ];
 
+// files served from public/ and the generated metadata routes (icon, apple-icon, opengraph-image,
+// robots.txt, sitemap.xml) are never private, so signed-out visitors and crawlers must reach them
+const STATIC_FILE = /\.(?:png|jpe?g|gif|webp|avif|svg|ico|txt|xml|webmanifest|json|woff2?|mp4|webm)$/i;
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -27,6 +31,7 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
+    STATIC_FILE.test(pathname) ||
     PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
   ) {
     return NextResponse.next();

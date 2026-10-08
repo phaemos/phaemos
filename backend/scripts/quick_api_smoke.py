@@ -47,7 +47,7 @@ def run(base_url: str) -> None:
             device_payload = {
                 "name": "Smoke Device",
                 "location": "Desk",
-                "device_type": "esp32",
+                "type": "esp32",
                 "status": "online",
             }
             device_res = client.post("/api/v1/devices", json=device_payload)

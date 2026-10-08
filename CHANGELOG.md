@@ -11,11 +11,21 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Anomaly scores are calibrated against the trained model. The old fixed formula turned every normal reading into a score of 0.9 or more, so after training every reading counted as an anomaly. A typical healthy reading now scores near 0 and the model's own decision boundary sits at the 0.7 threshold, so about 5% of healthy readings are flagged as configured.
+- Each node type is scored by its own model trained on the sensors it really has, plus a general model for readings without a node type. An STM32's eight vibration fields no longer sit beside an ESP32's 23 sensors as zeros. `backend/ml/train.py` and `evaluate.py` train and score through the same code as the API. `evaluate.py` also reports support correctly instead of failing.
+- Tickets are numbered again. The backend creates its tables before the migrations run, so the `SERIAL` column from migration 004 was never added and every ticket number stayed empty.
+- Readings are stamped as they arrive, so the latest few always sort in order.
+- Static files (the icon, the share image, `robots.txt` and everything in `public/`) load for signed-out visitors and crawlers instead of redirecting to the sign-in page.
+- The API smoke test registers its device with the `type` field the API expects.
+
 - The dashboard's live telemetry WebSocket now connects to `/ws/telemetry/{device_id}`, the path the backend serves, instead of `/api/v1/ws/telemetry/{device_id}`, which never answered. The URL is built in `frontend/lib/wsUrl.ts` and covered by new frontend unit tests (`npm test`, run in CI on Node 24) and backend route tests.
 - The deployment guide's Nginx config passes the WebSocket upgrade headers.
 - The edge gateway passes the newer `assert_is_empty` clippy lint.
 
 ### Added
+
+- The anomaly model raises its own alerts. Three anomalous readings in a row raise one alert (critical at a score of 0.85 or more) and open a maintenance ticket; three normal readings clear it. A fault that returns reuses the open ticket. Healthy readings are flagged about 5% of the time by design, so a chance run of three is about one in 8,000.
+- Microsoft sign-in beside Google and GitHub, configured with `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_REDIRECT_URI` and `MICROSOFT_TENANT`. A Microsoft email never links to an existing account, since a work or school tenant can set an address it never verified.
 
 - `assets/brand/linkedin/`: the logo, cover image and profile text for the [PHAEMOS LinkedIn page](https://www.linkedin.com/company/phaemos/), linked from the brand README.
 - `ACCESSIBILITY.md`: what the dashboard, the nodes and the documentation do for accessibility, the known gaps and how to report a barrier.
