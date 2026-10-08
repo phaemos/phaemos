@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { Device } from '../../types/index';
 import api from '../../lib/api';
 import ErrorToast from '../ui/ErrorToast';
 
@@ -16,6 +17,12 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
   const [deviceId, setDeviceId] = useState(prefill?.device_id ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [devices, setDevices] = useState<Device[]>([]);
+
+  // machines are picked by name; the form still sends the device id the API expects
+  useEffect(() => {
+    api.get<Device[]>('/devices').then((r) => setDevices(r.data)).catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,11 +64,10 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 bg-surface-50 dark:bg-white/5 border border-surface-200 dark:border-surface-800 rounded-xl p-6"
+        className="grid gap-4 sm:grid-cols-2"
       >
-        <h2 className="text-base font-semibold text-surface-900 dark:text-surface-200">New Ticket</h2>
-
-        <div>
+        
+        <div className="sm:col-span-2">
           <label htmlFor="ticket-title" className={labelClass}>Title</label>
           <input
             id="ticket-title"
@@ -74,7 +80,7 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
           />
         </div>
 
-        <div>
+        <div className="sm:col-span-2">
           <label htmlFor="ticket-description" className={labelClass}>Description</label>
           <textarea
             id="ticket-description"
@@ -103,23 +109,20 @@ export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
         </div>
 
         <div>
-          <label htmlFor="ticket-device-id" className={labelClass}>Device ID</label>
-          <input
-            id="ticket-device-id"
-            type="text"
-            value={deviceId}
-            onChange={(e) => setDeviceId(e.target.value)}
-            placeholder="UUID of the associated device (optional)"
-            className={`${inputClass} font-mono`}
-          />
+          <label htmlFor="ticket-device-id" className={labelClass}>Machine</label>
+          <select id="ticket-device-id" value={deviceId} onChange={(e) => setDeviceId(e.target.value)} className={inputClass}>
+            <option value="">No specific machine</option>
+            {devices.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}{d.location ? ` (${d.location})` : ''}</option>
+            ))}
+          </select>
         </div>
-
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="sm:col-span-2 justify-self-start rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {submitting ? 'Submitting...' : 'Submit Ticket'}
+          {submitting ? 'Creating…' : 'Create ticket'}
         </button>
       </form>
     </>

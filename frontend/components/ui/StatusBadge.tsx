@@ -47,11 +47,10 @@ const statusConfig: Record<
 export default function StatusBadge({ status }: Props) {
   const cfg = statusConfig[status] ?? statusConfig.offline;
 
+  // a coloured dot beside the word: the word carries the meaning, so colour is never the only signal
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bg}`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-surface-700 dark:text-surface-300">
+      <span className={`h-2 w-2 rounded-full ${cfg.dot}`} aria-hidden="true" />
       {cfg.label}
     </span>
   );

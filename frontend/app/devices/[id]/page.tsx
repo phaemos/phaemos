@@ -6,6 +6,9 @@
 // React.use() unwraps it synchronously within the render so the page can read
 // the dynamic segment without adding an extra async wrapper.
 
+import PageHeader from '@/components/ui/PageHeader';
+import Card from '@/components/ui/Card';
+import Link from 'next/link';
 import { use, useState, useEffect } from 'react';
 import type { Device } from '../../../types/index';
 import api from '../../../lib/api';
@@ -146,118 +149,73 @@ export default function DeviceDetailPage({ params }: PageProps) {
         <ErrorToast message={devErr} onDismiss={() => setDevErr(null)} />
       )}
 
-      {/* device header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-surface-900 dark:text-surface-50">{device.name}</h1>
-          <p className="text-sm text-surface-600 dark:text-surface-400 mt-0.5">
-            {device.location ?? 'No location'} &middot;{' '}
-            <span className="font-mono text-xs text-surface-400 dark:text-surface-600">{device.type ?? 'unknown'}</span>
-          </p>
-          <p className="text-xs text-surface-400 dark:text-surface-600 mt-1 font-mono">{id}</p>
-        </div>
-        <StatusBadge
-          status={device.status as 'online' | 'offline' | 'warning' | 'fault'}
+      <div className="space-y-2">
+        <Link href="/devices" className="text-xs font-medium text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100">← Devices</Link>
+        <PageHeader
+          title={device.name}
+          description={`${device.location ?? 'No location'} · ${device.type ?? 'unknown node'}`}
+          actions={
+            <>
+              <StatusBadge status={device.status as 'online' | 'offline' | 'warning' | 'fault'} />
+              <a href={`${API_BASE}/api/v1/telemetry/export?device_id=${id}`} download
+                className="rounded-lg border border-surface-200 px-3 py-1.5 text-sm font-medium text-surface-700 hover:bg-surface-50 dark:border-surface-700 dark:text-surface-200 dark:hover:bg-surface-800">
+                Export CSV
+              </a>
+            </>
+          }
         />
       </div>
 
-      {/* owner picker - admins only */}
-      {isAdmin && (
-        <section className="card p-4">
-          <label className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500 mb-2 block">
-            Assigned Owner
-          </label>
-          <select
-            aria-label="Device owner"
-            value={device.owner_id ?? ''}
-            onChange={(e) => handleOwnerChange(e.target.value)}
-            disabled={savingOwner}
-            className="w-full max-w-xs px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-sm text-surface-900 dark:text-surface-50 focus:ring-2 focus:ring-brand-500 outline-none disabled:opacity-60"
-          >
-            <option value="">Unassigned</option>
-            {technicians.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name ?? u.email}
-              </option>
-            ))}
-          </select>
-        </section>
-      )}
+      <TelemetryChart deviceId={id} />
 
-      {/* tags - admins can add and remove; all roles see the chips */}
-      <section className="card p-4 space-y-3">
-        <label className="text-xs font-semibold uppercase tracking-widest text-surface-400 dark:text-surface-500 block">
-          Tags
-        </label>
-        <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
-          {(device.tags ?? []).length === 0 && (
-            <span className="text-xs text-surface-400 dark:text-surface-600">No tags</span>
-          )}
-          {(device.tags ?? []).map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-centre gap-1 bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 text-xs px-2 py-0.5 rounded-full"
-            >
-              {tag}
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="ml-0.5 hover:text-brand-800 dark:hover:text-brand-200 leading-none"
-                  aria-label={`Remove tag ${tag}`}
-                >
-                  &times;
-                </button>
-              )}
-            </span>
-          ))}
-        </div>
-        {isAdmin && (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="new-tag"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(); }}
-              className="flex-1 max-w-xs px-3 py-1.5 rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-sm text-surface-900 dark:text-surface-50 focus:ring-2 focus:ring-brand-500 outline-none"
-            />
-            <button
-              type="button"
-              onClick={handleAddTag}
-              disabled={savingTag || !newTag.trim()}
-              className="bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colours disabled:opacity-50"
-            >
-              Add
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* latest sensor readings grid */}
-      <section>
-        <h2 className="text-sm font-medium text-surface-600 dark:text-surface-400 mb-3 uppercase tracking-wider">
-          Live Sensor Readings
-        </h2>
+      <section aria-labelledby="latest-title" className="space-y-3">
+        <h2 id="latest-title" className="text-sm font-semibold text-surface-900 dark:text-surface-50">Latest readings</h2>
         <SensorGrid reading={liveReadings[0] ?? null} />
       </section>
 
-      {/* historical telemetry chart */}
-      <section>
-        <div className="flex items-centre justify-between mb-3">
-          <h2 className="text-sm font-medium text-surface-600 dark:text-surface-400 uppercase tracking-wider">
-            Telemetry History
-          </h2>
-          <a
-            href={`${API_BASE}/api/v1/telemetry/export?device_id=${id}`}
-            download
-            className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colours duration-150"
-          >
-            Export CSV
-          </a>
+      <Card title="Details" bodyClassName="grid gap-6 p-4 md:grid-cols-2">
+        <div>
+          <p className="mb-1.5 text-xs font-medium text-surface-500 dark:text-surface-400">Assigned technician</p>
+          {isAdmin ? (
+            <select aria-label="Assigned technician" value={device.owner_id ?? ''} onChange={(e) => handleOwnerChange(e.target.value)} disabled={savingOwner}
+              className="w-full max-w-xs rounded-lg border border-surface-200 bg-white px-3 py-1.5 text-sm text-surface-900 outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-50">
+              <option value="">Unassigned</option>
+              {technicians.map((u) => (
+                <option key={u.id} value={u.id}>{u.name ?? u.email}</option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-sm text-surface-800 dark:text-surface-200">{technicians.find((u) => u.id === device.owner_id)?.name ?? 'Unassigned'}</p>
+          )}
+          <p className="mt-3 font-mono text-xs text-surface-500 dark:text-surface-400">ID {id}</p>
         </div>
-        <TelemetryChart deviceId={id} />
-      </section>
+        <div>
+          <p className="mb-1.5 text-xs font-medium text-surface-500 dark:text-surface-400">Tags</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-surface-800 dark:text-surface-200">
+            {(device.tags ?? []).length === 0 && <span className="text-surface-500 dark:text-surface-400">No tags</span>}
+            {(device.tags ?? []).map((tag) => (
+              <span key={tag} className="inline-flex items-center gap-1">
+                {tag}
+                {isAdmin && (
+                  <button type="button" onClick={() => handleRemoveTag(tag)} aria-label={`Remove tag ${tag}`}
+                    className="text-surface-400 hover:text-critical-600">&times;</button>
+                )}
+              </span>
+            ))}
+          </div>
+          {isAdmin && (
+            <div className="mt-2 flex gap-2">
+              <input type="text" placeholder="Add a tag" aria-label="New tag" value={newTag} onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(); }}
+                className="max-w-xs flex-1 rounded-lg border border-surface-200 bg-white px-3 py-1.5 text-sm text-surface-900 outline-none focus:ring-2 focus:ring-brand-500 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-50" />
+              <button type="button" onClick={handleAddTag} disabled={savingTag || !newTag.trim()}
+                className="rounded-lg border border-surface-200 px-3 py-1.5 text-sm font-medium text-surface-700 hover:bg-surface-50 disabled:opacity-50 dark:border-surface-700 dark:text-surface-200 dark:hover:bg-surface-800">
+                Add
+              </button>
+            </div>
+          )}
+        </div>
+      </Card>
     </main>
   );
 }

@@ -47,7 +47,7 @@ export default function UserTable() {
               </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colours">
+                <tr key={u.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colors">
                   <td className="px-4 py-3 font-medium text-surface-800 dark:text-surface-200">
                     {u.name ?? '-'}
                   </td>
