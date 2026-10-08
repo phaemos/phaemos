@@ -29,7 +29,7 @@ class User(Base):
     locked_until = Column(DateTime(timezone=True), nullable=True)
 
     # OAuth - set when a user signs in via Google or GitHub instead of a password
-    oauth_provider = Column(String(50), nullable=True)   # "google" | "github" | None
+    oauth_provider = Column(String(50), nullable=True)   # "google" | "github" | "microsoft" | None
     oauth_id       = Column(String(200), nullable=True)  # provider's user sub/id
 
     # profile - phone number for SMS alert delivery (Step 20g)

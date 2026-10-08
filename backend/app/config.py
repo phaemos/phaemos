@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     github_client_id:     str = ""
     github_client_secret: str = ""
     github_redirect_uri:  str = "http://localhost:8000/api/v1/auth/github/callback"
+    microsoft_client_id:     str = ""
+    microsoft_client_secret: str = ""
+    microsoft_redirect_uri:  str = "http://localhost:8000/api/v1/auth/microsoft/callback"
+    # "common" accepts personal and work or school accounts; a tenant id limits sign-in to one organisation
+    microsoft_tenant:        str = "common"
 
     # -- Notifications --
     discord_webhook_url: str = ""  # leave empty to disable Discord alerts

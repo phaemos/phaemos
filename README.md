@@ -92,7 +92,7 @@ The simulator produces readings for any of the four node types and can inject fa
 
 ## Hardware
 
-Four nodes are planned, each with its own role and sensors. The firmware and backend are ready, but the boards are still being wired and validated, so readings so far come from the simulator. Every node's circuit is simulated in Proteus first, and the schematics and PCB layouts that get manufactured are planned in KiCad. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
+Four nodes are planned, each with its own role and sensors. The firmware and backend are ready, but the boards are still being wired and validated, so readings so far come from the simulator. Every node's circuit is simulated in Proteus first. The schematics and PCB layouts that get manufactured are planned in KiCad. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
 
 ## Documentation
 

@@ -69,7 +69,7 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 - [x] GET /devices and GET /tickets pagination via skip/limit
 - [x] Multi-tenant device ownership - nullable owner_id FK on devices, GET /devices auth-gated with role filter
 - [x] All routes protected (auth hardening sweep)
-- [x] OAuth backend - Google and GitHub OAuth2 via authlib (email-matched)
+- [x] OAuth backend - Google and GitHub OAuth2 via authlib (email-matched) and Microsoft (identity-matched, never linked by email)
 - [x] 2FA TOTP backend - enable, confirm, verify, disable (pyotp)
 - [x] User profile endpoints - PATCH /auth/me, change-password, DELETE /auth/me (GDPR), GET /auth/me/export
 - [x] Webhooks backend - Slack/Discord/Teams (migration 006)
