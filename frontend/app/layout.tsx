@@ -9,8 +9,9 @@ import GoogleAnalytics from '@/components/GoogleAnalytics';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'PHAEMOS',
-  description: 'Smart Maintenance Platform',
+  title: { default: 'PHAEMOS', template: '%s | PHAEMOS' },
+  description: 'Reveal before failure: live machine monitoring, anomaly scoring and maintenance tickets.',
+  applicationName: 'PHAEMOS',
 };
 
 // apply the stored theme class before the page renders to prevent a flash

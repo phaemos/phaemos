@@ -9,8 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- A redesigned dashboard. Filters are single segmented controls instead of rows of pills. Status, severity and priority show as a dot and a word. Alerts form one list and tickets open from a button with the machine picked by name. Devices are a table and every page has the same header and card layout.
+- Live readings are drawn as one small chart per sensor with its own scale, unit and latest value, so pressure near 1000 hPa no longer flattens a 23 degree temperature. The anomaly score comes first with the 0.7 alert threshold and a 10-reading average drawn on it.
+- The dashboard opens on the machine with the newest active alert. A device page leads with its charts, then the latest readings and its details.
+- The PHAEMOS emblem in the sidebar and on the sign-in page, the favicon, app icon and share image from `assets/brand`, plus a Microsoft button on the sign-in page. The sign-in page no longer shows the app navigation.
+- The brand colour is the royal blue of the PHAEMOS emblem.
+
 ### Fixed
 
+- The colour palette defines every shade the components use. Missing shades such as `surface-300`, `surface-500` and every `-400` rendered with no colour, so much of the text and many borders were invisible, above all in the light theme.
+- Layout classes such as `items-center`, `justify-center` and `transition-colors` were spelt `items-centre`, `justify-centre` and `transition-colours`, which Tailwind ignores, so alignment and transitions were lost on 16 components.
+- The fleet health card is readable in the light theme.
 - Anomaly scores are calibrated against the trained model. The old fixed formula turned every normal reading into a score of 0.9 or more, so after training every reading counted as an anomaly. A typical healthy reading now scores near 0 and the model's own decision boundary sits at the 0.7 threshold, so about 5% of healthy readings are flagged as configured.
 - Each node type is scored by its own model trained on the sensors it really has, plus a general model for readings without a node type. An STM32's eight vibration fields no longer sit beside an ESP32's 23 sensors as zeros. `backend/ml/train.py` and `evaluate.py` train and score through the same code as the API. `evaluate.py` also reports support correctly instead of failing.
 - Tickets are numbered again. The backend creates its tables before the migrations run, so the `SERIAL` column from migration 004 was never added and every ticket number stayed empty.

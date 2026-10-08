@@ -36,7 +36,7 @@ export default function MaintenanceBanner() {
   if (!active) return null;
 
   return (
-    <div className="rounded-lg border border-warning-300 dark:border-warning-700 bg-warning-50 dark:bg-warning-900/20 px-4 py-3 flex items-centre gap-3">
+    <div className="rounded-lg border border-warning-300 dark:border-warning-700 bg-warning-50 dark:bg-warning-900/20 px-4 py-3 flex items-center gap-3">
       <span className="shrink-0 w-2 h-2 rounded-full bg-warning-500 animate-pulse mt-0.5" />
       <p className="text-sm text-warning-800 dark:text-warning-300">
         <span className="font-semibold">Maintenance in progress:</span> {active.label}

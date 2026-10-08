@@ -6,6 +6,9 @@ import type { Device } from '@/types';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 import { useToast } from '@/hooks/useToast';
+import Card from '@/components/ui/Card';
+import PageHeader from '@/components/ui/PageHeader';
+import Segmented from '@/components/ui/Segmented';
 
 function getTokenRole(): string | null {
   if (typeof window === 'undefined') return null;
@@ -24,7 +27,7 @@ const STATUS_TABS = [
   { label: 'Offline', value: 'offline' },
   { label: 'Warning', value: 'warning' },
   { label: 'Fault', value: 'fault' },
-];
+] as const;
 
 const STATUS_DOT: Record<string, string> = {
   online:  'bg-success-500',
@@ -40,7 +43,7 @@ export default function DevicesPage() {
   const [page, setPage]           = useState(1);
   const [search, setSearch]       = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatus] = useState('');
+  const [statusFilter, setStatus] = useState<(typeof STATUS_TABS)[number]['value']>('');
 
   // batch firmware update
   const [selected, setSelected]     = useState<Set<string>>(new Set());
@@ -114,117 +117,92 @@ export default function DevicesPage() {
   };
 
   return (
-    <main className="p-6 max-w-5xl mx-auto space-y-4">
-      <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-50">Devices</h1>
-
-      {/* search */}
-      <input
-        type="search"
-        placeholder="Search devices..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full max-w-sm px-3 py-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-sm text-surface-900 dark:text-surface-50 focus:ring-2 focus:ring-brand-500 outline-none"
+    <main className="mx-auto max-w-6xl space-y-6 p-6">
+      <PageHeader
+        title="Devices"
+        description="Every registered machine, its node and when it last reported."
+        actions={
+          <>
+            <input
+              type="search"
+              placeholder="Search machines"
+              aria-label="Search machines"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-56 rounded-lg border border-surface-200 bg-white px-3 py-1.5 text-sm text-surface-900 outline-none focus:ring-2 focus:ring-brand-500 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-50"
+            />
+            <Segmented label="Status" options={STATUS_TABS} value={statusFilter} onChange={setStatus} />
+          </>
+        }
       />
 
-      {/* status filter tabs */}
-      <div className="flex gap-1 flex-wrap">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => setStatus(tab.value)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colours duration-150 ${
-              statusFilter === tab.value
-                ? 'bg-brand-600 text-white'
-                : 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <LoadingSkeleton />
-      ) : devices.length === 0 ? (
-        <EmptyState
-          icon="📡"
-          heading="No devices found"
-          subMessage={
-            debouncedSearch || statusFilter
-              ? 'Try clearing your filters.'
-              : 'Register a device to get started.'
-          }
-        />
-      ) : (
-        <>
-          {/* select-all row - admins only */}
-          {isAdmin && (
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={selected.size === devices.length && devices.length > 0}
-                  onChange={toggleAll}
-                  className="rounded border-surface-300 text-brand-600"
-                />
-                Select all
-              </label>
-              {selected.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowModal(true)}
-                  className="bg-brand-600 hover:bg-brand-700 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colours"
-                >
-                  Bulk firmware update ({selected.size})
+      <Card bodyClassName="">
+        {loading ? (
+          <div className="p-4"><LoadingSkeleton /></div>
+        ) : devices.length === 0 ? (
+          <EmptyState
+            heading="No machines found"
+            subMessage={debouncedSearch || statusFilter ? 'Try clearing the search or the status filter.' : 'Register a device to get started.'}
+          />
+        ) : (
+          <>
+            {isAdmin && selected.size > 0 && (
+              <div className="flex items-center justify-between border-b border-surface-200 bg-surface-50 px-4 py-2 text-sm dark:border-surface-800 dark:bg-surface-900/60">
+                <span className="text-surface-600 dark:text-surface-300">{selected.size} selected</span>
+                <button type="button" onClick={() => setShowModal(true)} className="rounded-md bg-brand-600 px-3 py-1 text-xs font-medium text-white hover:bg-brand-700">
+                  Bulk firmware update
                 </button>
-              )}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {devices.map((d) => (
-              <div key={d.id} className="relative">
-                {isAdmin && (
-                  <input
-                    type="checkbox"
-                    checked={selected.has(d.id)}
-                    onChange={() => toggleSelect(d.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute top-3 right-3 z-10 rounded border-surface-300 text-brand-600 cursor-pointer"
-                    aria-label={`Select ${d.name}`}
-                  />
-                )}
-                <a
-                  href={`/devices/${d.id}`}
-                  className={`card p-4 space-y-1 block hover:-translate-y-0.5 transition-all duration-200 ${selected.has(d.id) ? 'ring-2 ring-brand-500' : ''}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${STATUS_DOT[d.status] ?? 'bg-surface-400'}`} />
-                    <span className="font-semibold text-surface-900 dark:text-surface-50">{d.name}</span>
-                  </div>
-                  <p className="text-sm text-surface-600 dark:text-surface-400">{d.location ?? 'No location set'}</p>
-                  <p className="text-xs text-surface-400 dark:text-surface-600 uppercase tracking-wide">
-                    {d.type ?? 'Unknown type'}
-                  </p>
-                  <p className="text-xs text-surface-400 dark:text-surface-600">
-                    Last seen: {d.last_seen ? new Date(d.last_seen).toLocaleString() : 'Never'}
-                  </p>
-                  {d.tags && d.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {d.tags.map((tag) => (
-                        <span key={tag} className="bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 text-xs px-2 py-0.5 rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </a>
               </div>
-            ))}
-          </div>
-        </>
-      )}
+            )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-xs text-surface-500 dark:text-surface-400">
+                  <tr className="border-b border-surface-200 dark:border-surface-800">
+                    {isAdmin && (
+                      <th scope="col" className="w-10 px-4 py-2.5">
+                        <input type="checkbox" checked={selected.size === devices.length && devices.length > 0} onChange={toggleAll}
+                          aria-label="Select all machines" className="rounded border-surface-300 text-brand-600" />
+                      </th>
+                    )}
+                    <th scope="col" className="px-4 py-2.5 font-medium">Machine</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Node</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Last seen</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Tags</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-200 dark:divide-surface-800">
+                  {devices.map((d) => (
+                    <tr key={d.id} className={`hover:bg-surface-50 dark:hover:bg-surface-800/40 ${selected.has(d.id) ? 'bg-brand-50/60 dark:bg-brand-500/10' : ''}`}>
+                      {isAdmin && (
+                        <td className="px-4 py-3">
+                          <input type="checkbox" checked={selected.has(d.id)} onChange={() => toggleSelect(d.id)}
+                            aria-label={`Select ${d.name}`} className="rounded border-surface-300 text-brand-600" />
+                        </td>
+                      )}
+                      <td className="px-4 py-3">
+                        <a href={`/devices/${d.id}`} className="font-medium text-surface-900 hover:text-brand-600 dark:text-surface-50 dark:hover:text-brand-400">{d.name}</a>
+                        <p className="text-xs text-surface-500 dark:text-surface-400">{d.location ?? 'No location set'}</p>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-surface-600 dark:text-surface-300">{d.type ?? '-'}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-surface-700 dark:text-surface-300">
+                          <span className={`h-2 w-2 rounded-full ${STATUS_DOT[d.status] ?? 'bg-surface-400'}`} aria-hidden="true" />
+                          {STATUS_TABS.find((t) => t.value === d.status)?.label ?? d.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-surface-500 dark:text-surface-400">
+                        {d.last_seen ? new Date(d.last_seen).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Never'}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-surface-500 dark:text-surface-400">{d.tags?.length ? d.tags.join(', ') : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </Card>
 
       {/* bulk firmware update modal */}
       {showModal && (
@@ -260,7 +238,7 @@ export default function DevicesPage() {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 transition-colours"
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 transition-colors"
               >
                 Cancel
               </button>
@@ -268,7 +246,7 @@ export default function DevicesPage() {
                 type="button"
                 onClick={handleBatchFirmware}
                 disabled={batching || !batchTag.trim() || !batchVersion.trim()}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white transition-colours disabled:opacity-50"
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white transition-colors disabled:opacity-50"
               >
                 {batching ? 'Updating...' : 'Update'}
               </button>
@@ -282,7 +260,7 @@ export default function DevicesPage() {
           type="button"
           disabled={page === 1}
           onClick={() => setPage((p) => p - 1)}
-          className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colours duration-150 disabled:opacity-40"
+          className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 disabled:opacity-40"
         >
           Previous
         </button>
@@ -291,7 +269,7 @@ export default function DevicesPage() {
           type="button"
           disabled={devices.length < PAGE_SIZE}
           onClick={() => setPage((p) => p + 1)}
-          className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colours duration-150 disabled:opacity-40"
+          className="bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-900 dark:text-surface-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 disabled:opacity-40"
         >
           Next
         </button>

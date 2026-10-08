@@ -8,15 +8,15 @@ interface EmptyStateProps {
   };
 }
 
-export default function EmptyState({ icon = '📭', heading, subMessage, action }: EmptyStateProps) {
+export default function EmptyState({ icon, heading, subMessage, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <span className="text-5xl mb-4" role="img" aria-hidden="true">{icon}</span>
-      <h3 className="text-lg font-semibold text-surface-900 dark:text-surface-50 mb-1">
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+      {icon && <span className="text-3xl mb-3" aria-hidden="true">{icon}</span>}
+      <h3 className="text-sm font-semibold text-surface-900 dark:text-surface-50 mb-1">
         {heading}
       </h3>
       {subMessage && (
-        <p className="text-sm text-surface-400 dark:text-surface-500 max-w-xs">
+        <p className="text-sm text-surface-500 dark:text-surface-400 max-w-sm">
           {subMessage}
         </p>
       )}

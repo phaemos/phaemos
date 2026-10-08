@@ -116,7 +116,7 @@ export default function AlertRulesPanel() {
     <div className="space-y-4">
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
 
-      <div className="flex items-centre justify-between">
+      <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-surface-800 dark:text-surface-200 uppercase tracking-wider">
           Alert Rules ({rules.length})
         </h3>
@@ -166,7 +166,7 @@ export default function AlertRulesPanel() {
               </select>
             </div>
           </div>
-          <button type="button" onClick={handleCreate} className="px-4 py-1.5 rounded text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white transition-colours">
+          <button type="button" onClick={handleCreate} className="px-4 py-1.5 rounded text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white transition-colors">
             Create Rule
           </button>
         </div>
@@ -189,7 +189,7 @@ export default function AlertRulesPanel() {
             </thead>
             <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
               {rules.map((rule) => (
-                <tr key={rule.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colours">
+                <tr key={rule.id} className="hover:bg-surface-50 dark:hover:bg-white/5 transition-colors">
                   <td className="px-3 py-2 font-mono text-surface-600 dark:text-surface-200">{deviceName(rule.device_id)}</td>
                   <td className="px-3 py-2 text-surface-800 dark:text-surface-200">{rule.metric}</td>
 
