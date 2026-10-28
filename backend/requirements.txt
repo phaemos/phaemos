@@ -16,6 +16,7 @@ pandas==3.1.0
 numpy==2.5.4
 joblib==1.6.0
 httpx==0.28.1
+# authlib 1.9.1 is the first release with every published authlib advisory fixed, so keep it at or above
 authlib==1.9.1
 pyotp==2.10.0
 qrcode==8.2
