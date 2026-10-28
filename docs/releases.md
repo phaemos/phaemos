@@ -5,21 +5,22 @@ PHAEMOS uses tag-based releases with changelog validation. Every change lands in
 
 ## Cutting a release
 
-1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a new version heading: `## [X.Y.Z] - DD-MM-YYYY`.
+1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a new version heading: `## [X.Y.Z] - YYYY-MM-DD`.
 2. Merge that change to `main` through a pull request.
-3. Tag the merge commit and push the tag:
+3. A maintainer creates a signed tag on the merge commit, pushes it and creates the GitHub release with
+   that version's changelog section as its notes:
 
     ```bash
-    git tag vX.Y.Z
+    git tag -s vX.Y.Z -m "phaemos vX.Y.Z"
     git push origin vX.Y.Z
+    gh release create vX.Y.Z --verify-tag --title vX.Y.Z --notes-file notes.md
     ```
 
-4. The `Release` workflow checks that `CHANGELOG.md` has a heading for that exact version, then creates
-   the GitHub release with that section as its notes.
+4. The `Release` workflow checks that `CHANGELOG.md` has a heading for that exact version.
 
 > [!IMPORTANT]
-> The workflow fails if the tag and the changelog heading do not match, so a release can never go out
-> without its notes.
+> The workflow fails if the tag and the changelog heading do not match, so a tag without its notes is
+> caught straight away.
 
 ## Versioning
 

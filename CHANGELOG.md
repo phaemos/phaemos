@@ -9,7 +9,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-28
+
 ### Changed
+
+- The Release workflow only checks that a version tag has a matching changelog heading, now in the `YYYY-MM-DD` date format the changelog uses. A maintainer creates the signed tag and the GitHub release with the changelog section as its notes, so every release is made by a person.
 
 - A redesigned dashboard. Filters are single segmented controls instead of rows of pills. Status, severity and priority show as a dot and a word. Alerts form one list and tickets open from a button with the machine picked by name. Devices are a table and every page has the same header and card layout.
 - Live readings are drawn as one small chart per sensor with its own scale, unit and latest value, so pressure near 1000 hPa no longer flattens a 23 degree temperature. The anomaly score comes first with the 0.7 alert threshold and a 10-reading average drawn on it.

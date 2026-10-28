@@ -1,10 +1,8 @@
 # release workflow - runs when a semantic version tag is pushed.
 #
-# purpose:
-# 1) Validate that CHANGELOG.md contains a matching version heading.
-# 2) Create a GitHub release entry from the pushed tag.
-#
-# this ties repository version tags directly to changelog discipline.
+# purpose: validate that CHANGELOG.md contains a matching version heading.
+# the signed tag and the GitHub release are created by a maintainer, so this
+# workflow only checks and never publishes.
 
 name: Release
 
@@ -14,11 +12,11 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write # required for creating a GitHub release
+  contents: read
 
 jobs:
   release:
-    name: Validate changelog and publish release
+    name: Validate changelog
     runs-on: ubuntu-latest
 
     steps:
@@ -38,23 +36,13 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       # ensure CHANGELOG.md has a heading for this version.
-      # expected format: ## [0.3.0] - DD-MM-YYYY
+      # expected format: ## [0.3.0] - YYYY-MM-DD (Keep a Changelog uses ISO dates)
       - name: Validate changelog entry
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if ! grep -Eq "^## \[${VERSION}\] - [0-9]{2}-[0-9]{2}-[0-9]{4}$" CHANGELOG.md; then
+          if ! grep -Eq "^## \[${VERSION}\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
             echo "Missing changelog section for version ${VERSION}."
-            echo "Expected line format: ## [${VERSION}] - DD-MM-YYYY"
+            echo "Expected line format: ## [${VERSION}] - YYYY-MM-DD"
             exit 1
           fi
-
-      # create a GitHub Release from the tag.
-      # release notes are generated automatically from merged pull requests.
-      - name: Create GitHub release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "${{ steps.version.outputs.tag }}" \
-            --generate-notes
