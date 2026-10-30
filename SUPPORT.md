@@ -6,6 +6,8 @@
 
 **Questions and discussion:** Start a thread in [GitHub Discussions](https://github.com/phaemos/phaemos/discussions). This is the primary help channel for setup questions, usage questions and feature ideas.
 
+**Community chat:** Join the [PHAEMOS Discord server](https://discord.gg/4StWhGfjHD) for quick questions and conversation. Answers worth keeping belong in GitHub Discussions, where they stay searchable.
+
 **Bugs and confirmed issues:** Open an issue on the [GitHub repository](https://github.com/phaemos/phaemos/issues). Use the bug report template and include reproduction steps.
 
 **Security vulnerabilities:** Do not open a public issue. See [SECURITY.md](SECURITY.md) for the responsible disclosure process.
