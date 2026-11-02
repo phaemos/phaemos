@@ -13,3 +13,6 @@ contact_links:
   - name: Contact
     url: https://github.com/phaemos/phaemos/blob/main/SUPPORT.md
     about: Email addresses and every other way to reach the project.
+  - name: AI policy
+    url: https://github.com/phaemos/.github/blob/main/AI_POLICY.md
+    about: How AI may and may not be used in issues and pull requests here.
