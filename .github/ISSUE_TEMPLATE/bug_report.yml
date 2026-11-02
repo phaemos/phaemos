@@ -52,8 +52,8 @@ body:
       label: AI use
       description: "Required. Did AI help you find, test or check this? Write the title and description yourself either way. See the [AI policy](https://github.com/phaemos/.github/blob/main/AI_POLICY.md). Dictation, translation and spelling tools do not count."
       options:
-        - None
-        - "Assisted: AI helped me find, test or check it"
+        - No AI was used
+        - "Yes: AI helped me find, test or check it"
     validations:
       required: true
   - type: checkboxes
