@@ -46,6 +46,16 @@ body:
       label: Environment
       description: Commit or release, operating system and browser, plus the board if it involves hardware.
       placeholder: main at 1a2b3c4, macOS 15, Chrome 130, ESP32 DevKit V1
+  - type: dropdown
+    id: ai-use
+    attributes:
+      label: AI use
+      description: "Required. Did AI help you find, test or check this? Write the title and description yourself either way. See the [AI policy](https://github.com/phaemos/.github/blob/main/AI_POLICY.md). Dictation, translation and spelling tools do not count."
+      options:
+        - None
+        - "Assisted: AI helped me find, test or check it"
+    validations:
+      required: true
   - type: checkboxes
     id: checks
     attributes:

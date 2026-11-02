@@ -292,7 +292,7 @@ class SetupClient(discord.Client):
         self._started = False
 
     async def on_ready(self) -> None:
-        # on_ready fires again after a reconnect, and the setup must only run once
+        # on_ready fires again after a reconnect and the setup must only run once
         if self._started:
             return
         self._started = True

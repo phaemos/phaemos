@@ -9,9 +9,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Community files follow the [AI policy](https://github.com/phaemos/.github/blob/main/AI_POLICY.md): pull requests declare AI use and issue forms ask whether AI helped. Security reports go to security@phaemos.com.
+
 ### Added
 
-- `scripts/setup_discord.py` builds the PHAEMOS Discord server from `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID`: the Admin, Maintainer, Contributor, Member and Bot roles, the PHAEMOS, Support, Hardware, Community and hidden Admin categories with their channels, and a summary in #bot-logs with every id, the Ticket Tool and Carl-bot invite links and the steps left to do by hand. Running it again changes nothing.
+- `scripts/setup_discord.py` builds the PHAEMOS Discord server from `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID`: the Admin, Maintainer, Contributor, Member and Bot roles, the PHAEMOS, Support, Hardware, Community and hidden Admin categories with their channels and a summary in #bot-logs with every id, the Ticket Tool and Carl-bot invite links and the steps left to do by hand. Running it again changes nothing.
 - A link to the PHAEMOS Discord server in the README and SUPPORT.md.
 
 ## [2.4.0] - 2026-10-28
