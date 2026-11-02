@@ -30,4 +30,4 @@ set -a && . backend/.env && set +a
 python scripts/setup_discord.py
 ```
 
-It prints each change it made, or `No changes` when the server already matches. Run it again after inviting Ticket Tool and Carl-bot so they get the Bot role.
+It prints each change it made or `No changes` when the server already matches. Run it again after inviting Ticket Tool and Carl-bot so they get the Bot role.

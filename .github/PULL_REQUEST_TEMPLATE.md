@@ -17,6 +17,20 @@
 - [ ] infra
 - [ ] docs
 
+## AI use
+
+**Required.** Tick one, following the [AI policy](https://github.com/phaemos/.github/blob/main/AI_POLICY.md). Dictation, translation and spelling tools do not count.
+
+- [ ] None
+- [ ] Assisted: I wrote it and AI helped with parts
+- [ ] Generated: AI wrote most or all of it and I reviewed and tested every part
+
+**Required.** Tick this too:
+
+- [ ] I wrote this title and description myself and I understand every change in it.
+
+If you ticked Assisted or Generated, say which parts and how you checked them:
+
 ## Checked
 
 - [ ] `make lint` and `make test` pass for every component touched

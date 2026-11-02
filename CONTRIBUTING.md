@@ -61,6 +61,10 @@ Pages and templates that show a contact address use the right phaemos.com addres
 
 Never put a personal email address anywhere in this repository.
 
+## Using AI
+
+AI tools are welcome within the [AI policy](https://github.com/phaemos/.github/blob/main/AI_POLICY.md). **Every pull request must say how AI was used, even when the answer is None.** Write your own issue and pull request titles and descriptions, understand everything you submit and test it before you open it.
+
 ## Questions and discussion
 
 Use [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for setup questions, architecture questions, feature ideas, research and anything you have built with PHAEMOS. Issues are for confirmed bugs and accepted feature work.

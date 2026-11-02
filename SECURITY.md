@@ -16,7 +16,7 @@ Only the latest commit on `main` is actively maintained.
 
 Report vulnerabilities privately via [GitHub Security Advisories](https://github.com/phaemos/phaemos/security/advisories/new). This keeps the disclosure private until a fix is ready.
 
-If you cannot use Security Advisories, email [dev@phaemos.com](mailto:dev@phaemos.com) with:
+If you cannot use Security Advisories, email [security@phaemos.com](mailto:security@phaemos.com) with:
 
 - A clear description of the vulnerability
 - Steps to reproduce it
