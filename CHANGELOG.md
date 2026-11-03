@@ -9,6 +9,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `discord/`, a component of its own for the community Discord server: the setup script, its requirements, a licence and a README on what the script builds, what it needs and the bot planned for it. It is published to [phaemos/discord](https://github.com/phaemos/discord) like the other components.
+- Status badges for CI, the secret scan, the latest release and the licence at the top of the README.
+
+### Changed
+
+- `scripts/setup_discord.py` and its requirements moved to `discord/`. The `scripts/` folder is gone.
+- The Discord invite is removed from the README and SUPPORT.md until the organisation runs a server of its own. Discussions is the chat route for now.
+- `CONTRIBUTING.md` sends security disclosures to security@phaemos.com and has a Security section pointing at SECURITY.md.
+
 ## [2.4.1] - 2026-11-03
 
 ### Changed
