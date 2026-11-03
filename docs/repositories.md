@@ -15,6 +15,7 @@ so a component can be browsed, cloned or forked on its own.
 | `edge/` | [phaemos/edge](https://github.com/phaemos/edge) |
 | `client/` | [phaemos/client](https://github.com/phaemos/client) |
 | `infra/` | [phaemos/infra](https://github.com/phaemos/infra) |
+| `discord/` | [phaemos/discord](https://github.com/phaemos/discord) |
 
 `docs/` and `assets/` are not published on their own. The organisation profile and the default community
 files live in [phaemos/.github](https://github.com/phaemos/.github).
@@ -41,6 +42,7 @@ phaemos/
 ├── edge/           phaemos-edge, the Rust store-and-forward gateway
 ├── client/         python/ (SDK and phaemos-sim) and go/ (phaemosctl)
 ├── infra/          Docker Compose stack, Prometheus and Grafana, SQL reports and seed data
+├── discord/        The Discord server setup script and the planned community bot
 ├── docs/           This documentation
 ├── assets/         Logos, colours and the social preview card
 ├── Makefile        make dev, test, lint, build, migrate, seed and docs

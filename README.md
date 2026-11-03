@@ -7,6 +7,11 @@
 
 Reveal before failure. PHAEMOS is an open industrial IoT platform for predictive maintenance: sensor nodes stream what a machine is doing, a live dashboard shows it and a machine learning model flags the readings that drift from normal before they turn into a breakdown.
 
+[![CI](https://github.com/phaemos/phaemos/actions/workflows/ci.yml/badge.svg)](https://github.com/phaemos/phaemos/actions/workflows/ci.yml)
+[![Gitleaks](https://github.com/phaemos/phaemos/actions/workflows/gitleaks-scan.yml/badge.svg)](https://github.com/phaemos/phaemos/actions/workflows/gitleaks-scan.yml)
+[![Release](https://img.shields.io/github/v/release/phaemos/phaemos?label=release)](https://github.com/phaemos/phaemos/releases/latest)
+[![Licence: AGPL-3.0](https://img.shields.io/badge/licence-AGPL--3.0-green.svg)](LICENSE)
+
 > [!NOTE]
 > The platform software runs end to end today: ingest, storage, anomaly scoring, alerts, tickets and the dashboard, with a simulator standing in for real machines. Wiring the physical nodes and training the model on real readings is the current phase. See the [milestones](https://github.com/phaemos/phaemos/milestones) for what is planned and in which order.
 
@@ -69,6 +74,7 @@ This repository is the single source of truth. Each component folder is self-con
 | [`edge/`](edge/) | Rust store-and-forward gateway | [`phaemos/edge`](https://github.com/phaemos/edge) |
 | [`client/`](client/) | Python SDK and simulator, plus a Go CLI | [`phaemos/client`](https://github.com/phaemos/client) |
 | [`infra/`](infra/) | Docker Compose stack, Prometheus and Grafana, SQL reports | [`phaemos/infra`](https://github.com/phaemos/infra) |
+| [`discord/`](discord/) | The Discord server setup script and the planned community bot | [`phaemos/discord`](https://github.com/phaemos/discord) |
 | [`docs/`](docs/) | Architecture, API, deployment, security and decisions | stays here |
 | [`assets/`](assets/) | Logos, colours and the social preview card | stays here |
 
@@ -104,4 +110,4 @@ Software is licensed under the GNU Affero General Public License v3.0 or later, 
 
 ## Contributing and support
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved and [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for questions and ideas. To chat with the community, join the [PHAEMOS Discord server](https://discord.gg/4StWhGfjHD). [SUPPORT.md](SUPPORT.md) lists every help channel, [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately and [ACCESSIBILITY.md](ACCESSIBILITY.md) says what the platform does for accessibility. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved and [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for questions, ideas and chat. A community Discord server is planned. Until it opens, Discussions is the place to talk. [SUPPORT.md](SUPPORT.md) lists every help channel, [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately and [ACCESSIBILITY.md](ACCESSIBILITY.md) says what the platform does for accessibility. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).

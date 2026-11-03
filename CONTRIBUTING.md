@@ -3,7 +3,7 @@
 Thank you for helping build PHAEMOS.
 
 > [!NOTE]
-> All development happens in [phaemos/phaemos](https://github.com/phaemos/phaemos). The component repositories (`backend`, `frontend`, `firmware`, `hardware`, `infra`, `client` and `edge`) are read-only copies published from here, so open issues and pull requests in this repository.
+> All development happens in [phaemos/phaemos](https://github.com/phaemos/phaemos). The component repositories (`backend`, `frontend`, `firmware`, `hardware`, `infra`, `client`, `edge` and `discord`) are read-only copies published from here, so open issues and pull requests in this repository.
 
 ## Where to start
 
@@ -55,7 +55,8 @@ Pages and templates that show a contact address use the right phaemos.com addres
 | --- | --- |
 | `contact@phaemos.com` | Legal pages and general enquiries |
 | `hello@phaemos.com` | The landing page and marketing copy |
-| `dev@phaemos.com` | Technical queries and security disclosures |
+| `dev@phaemos.com` | Technical queries |
+| `security@phaemos.com` | Security disclosures, see [SECURITY.md](SECURITY.md) |
 | `support@phaemos.com` | User support pages |
 | `no-reply@phaemos.com` | Automated application emails, with the reply-to set to `support@phaemos.com` |
 
@@ -73,8 +74,12 @@ Use [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for set
 
 Use the issue forms: **Bug report** for something broken, **Feature request** for a new capability.
 
+## Security
+
 > [!IMPORTANT]
-> Never report a security vulnerability in a public issue. Follow [SECURITY.md](SECURITY.md) or use the [security policy](https://github.com/phaemos/phaemos/security/policy) to report it privately.
+> Never report a security vulnerability in a public issue, pull request or discussion.
+
+[SECURITY.md](SECURITY.md) explains how to report one privately, through [GitHub Security Advisories](https://github.com/phaemos/phaemos/security/advisories/new) or by email to [security@phaemos.com](mailto:security@phaemos.com). It also says what to expect once a report is received.
 
 ## Licence
 
