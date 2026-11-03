@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import discord
 
-REASON = "PHAEMOS server setup (scripts/setup_discord.py)"
+REASON = "PHAEMOS server setup (discord/setup_discord.py)"
 EVERYONE = "@everyone"
 # Discord rejects messages over 2,000 characters, so a longer summary is split by line.
 MESSAGE_LIMIT = 2000

@@ -25,6 +25,7 @@ PHAEMOS depends on third-party open-source packages that are pulled in at build 
 - `client/python/pyproject.toml` (Python packages for the SDK and simulator)
 - `client/go/go.mod` (Go modules for `phaemosctl`)
 - `edge/Cargo.toml` (Rust crates for the edge gateway)
+- `discord/requirements.txt` (Python packages for the Discord server setup script)
 - the firmware sources, which name their Arduino, STM32 HAL and MicroPython libraries in each node's README
 
 Each package is distributed under its own licence by its own authors.

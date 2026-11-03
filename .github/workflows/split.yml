@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        folder: [backend, frontend, firmware, hardware, infra, client, edge]
+        folder: [backend, frontend, firmware, hardware, infra, client, edge, discord]
     steps:
       - name: Check for the publishing token
         id: token

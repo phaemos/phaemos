@@ -15,6 +15,7 @@
 - [ ] edge
 - [ ] client
 - [ ] infra
+- [ ] discord
 - [ ] docs
 
 ## AI use
