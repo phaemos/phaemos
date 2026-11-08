@@ -36,8 +36,10 @@ jobs:
       # writing directly to a privileged directory from a pipe.
       - name: Install Gitleaks
         run: |
-          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz" \
-            | tar -xz -C /tmp gitleaks
+          curl -sSfL --retry 6 --retry-all-errors --retry-delay 10 --max-time 120 \
+            -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz"
+          tar -xz -C /tmp -f /tmp/gitleaks.tar.gz gitleaks
           sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
 
       # scan working tree files only (--no-git) for hard-coded credentials.
