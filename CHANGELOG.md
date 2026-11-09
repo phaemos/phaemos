@@ -20,6 +20,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The Discord invite is removed from the README and SUPPORT.md until the organisation runs a server of its own. Discussions is the chat route for now.
 - `CONTRIBUTING.md` sends security disclosures to security@phaemos.com and has a Security section pointing at SECURITY.md.
 
+### Security
+
+- `minimatch` under the TypeScript lint tooling moved to 11.0.5 and `zod` under the React lint tooling moved to 4.6.7, past their published advisories. Neither ships to users.
+
 ## [2.4.1] - 2026-11-03
 
 ### Changed
