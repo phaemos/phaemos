@@ -9,6 +9,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-11-09
+
 ### Added
 
 - `discord/`, a component of its own for the community Discord server: the setup script, its requirements, a licence and a README on what the script builds, what it needs and the bot planned for it. It is published to [phaemos/discord](https://github.com/phaemos/discord) like the other components.
