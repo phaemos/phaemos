@@ -30,4 +30,4 @@ pytest-cov==7.1.0
 # python-dotenv added in v2.0 for local .env loading in scripts and evaluate.py
 python-dotenv==1.2.4
 # pytest-asyncio needed for async FastAPI endpoint tests
-pytest-asyncio==1.4.1
+pytest-asyncio==1.4.1.post1
