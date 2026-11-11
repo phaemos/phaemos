@@ -1,5 +1,5 @@
 # dependabot configuration.
-# checks for outdated dependencies weekly and opens a pull request for each
+# checks for outdated dependencies on the 1st and 15th of each month and opens a pull request for each
 # update so dependency upgrades are reviewed rather than applied silently.
 
 version: 2
@@ -9,8 +9,9 @@ updates:
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: cron
+      cronjob: "0 18 1,15 * *"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     groups:
       backend-patch-minor:
@@ -34,8 +35,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: cron
+      cronjob: "0 18 1,15 * *"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     groups:
       frontend-patch-minor:
@@ -60,8 +62,9 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: cron
+      cronjob: "0 18 1,15 * *"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     groups:
       actions-patch-minor:
