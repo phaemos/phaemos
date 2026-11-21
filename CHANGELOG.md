@@ -9,6 +9,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `make test` no longer drops the tables of the development database. It runs against a separate `phaemos_test` database that the target creates on first use. `conftest.py` refuses to run unless the database name ends in `_test`.
+- The dashboard maintenance banner no longer says maintenance is in progress for a window that has not started yet.
+- The dashboard content security policy now allows the `ws:` or `wss:` origin of the API next to its `http:` or `https:` origin, so the live telemetry socket connects.
+- `make dev` installs the dashboard dependencies on a fresh clone instead of failing at `npm run dev`.
+
+### Changed
+
+- `docs/development.md` explains how to register the first account, promote it to admin and register a device. It also corrects the warning about which `docker compose` command deletes the database volume.
+- `docs/VERIFICATION.md` records what a full local walk of the stack proved.
+
 ## [2.5.0] - 2026-11-09
 
 ### Added
