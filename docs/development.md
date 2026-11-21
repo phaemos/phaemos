@@ -26,10 +26,36 @@ make dev
 | Interactive API docs | `http://localhost:8000/docs` |
 
 > [!WARNING]
-> `docker compose down` deletes the database volume along with the containers. Use `docker compose stop` to keep your data. After a wipe, `make migrate` and `make seed` rebuild it.
+> `docker compose down -v` deletes the database volume along with the containers. Plain `docker compose down` and `docker compose stop` keep your data. After a wipe, `make migrate` and `make seed` rebuild it.
 
 Without Make, `docker compose up --build` starts the whole stack. The root `docker-compose.yml` includes
 `infra/docker-compose.yml`, so it works from the repository root.
+
+## Sign in for the first time
+
+The dashboard has no sign-up page. Register an account through the API instead. Passwords need at least eight
+characters with an uppercase letter and a digit:
+
+```bash
+curl -s -X POST http://localhost:8000/api/v1/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Your Name", "email": "you@example.com", "password": "Change-Me-123"}'
+```
+
+Every new account is a viewer. The API has no route that changes a role, so promote your first account once in
+the database:
+
+```bash
+docker compose exec -T db psql -U postgres -d phaemos \
+  -c "UPDATE users SET role = 'admin' WHERE email = 'you@example.com'"
+```
+
+Sign in at `http://localhost:3000/login`. The Admin page now lists users, alert rules, maintenance windows,
+webhooks and the audit log.
+
+Devices are registered through the API too and need an admin account. `POST /api/v1/devices` with an admin's
+bearer token from `POST /api/v1/auth/login` returns the device and its `api_key`, which is shown once. Pass that key to
+`phaemos-sim` as described below and the readings appear on the device page.
 
 ## Run without Docker
 
@@ -91,13 +117,17 @@ option and for the Go CLI.
 
 | Command | What it runs |
 | --- | --- |
-| `make test` | The backend pytest suite inside the backend container |
+| `make test` | The backend pytest suite inside the backend container, against its own `phaemos_test` database that the target creates on first use |
 | `make lint` | Ruff on the backend and ESLint on the dashboard |
 | `npm test` in `frontend/` | The dashboard unit tests, through the Node test runner (Node 22.18 or later) |
 | `make build` | A production build of the dashboard |
 | `make migrate` | The initial SQL schema against the running database |
-| `make seed` | Demo data, useful after `docker compose down` wipes the volume |
+| `make seed` | Demo data, useful after `docker compose down -v` wipes the volume |
 | `make docs` | This documentation site, served locally with live reload |
+
+The suite drops every table when it finishes, so `conftest.py` refuses to start unless the database name in
+`DATABASE_URL` ends in `_test`. The name check runs before the application is imported, so a database
+with any other name is never opened.
 
 The SDK, the CLI and the edge gateway each have their own checks, listed in
 [client/README.md](https://github.com/phaemos/phaemos/blob/main/client/README.md) and [edge/README.md](https://github.com/phaemos/phaemos/blob/main/edge/README.md). CI runs every one of them on

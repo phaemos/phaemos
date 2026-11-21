@@ -8,6 +8,19 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379")
 os.environ.setdefault("DISCORD_WEBHOOK_URL", "")
 os.environ.setdefault("ALERT_EMAIL_TO", "")
 
+from sqlalchemy.engine import make_url  # noqa: E402
+
+# the session fixture drops every table when it finishes, so refuse to run
+# against any database that is not named as a test database. The check sits
+# above the app imports because importing app.main already connects to the
+# database and creates its tables.
+_db_name = make_url(os.environ["DATABASE_URL"]).database or ""
+if not _db_name.endswith("_test"):
+    raise RuntimeError(
+        f"refusing to run tests against database '{_db_name}': "
+        "the name must end in _test (use `make test` or a phaemos_test database)"
+    )
+
 import secrets  # noqa: E402
 import pytest  # noqa: E402
 from passlib.context import CryptContext  # noqa: E402
@@ -20,7 +33,7 @@ from app.main import app  # noqa: E402
 from app.models.device import Device  # noqa: E402
 from app.models.user import User  # noqa: E402
 
-# separate test engine so tests never touch the development database.
+# separate test engine, only ever created for a database that passed the check above.
 _engine = create_engine(os.environ["DATABASE_URL"])
 _pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -43,6 +56,12 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
+    # a connection option such as ?dbname= can point the URL at another database
+    # than the one in its path, so the server is asked which one it really opened.
+    with _engine.connect() as conn:
+        connected = conn.execute(text("SELECT current_database()")).scalar() or ""
+    if not connected.endswith("_test"):
+        raise RuntimeError(f"refusing to run tests against database '{connected}'")
     # create all tables once for the whole test session, drop them at the end.
     Base.metadata.create_all(bind=_engine)
     with _engine.connect() as conn:

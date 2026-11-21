@@ -189,6 +189,26 @@ This is a living checklist for verifying every feature in Phaemos. Update status
 
 ---
 
+## Local full-stack walk (issue 259)
+
+Walked in a headless Chromium against `make dev` and `make migrate`.
+
+- [x] `make dev` starts the database, Redis, backend and dashboard (dashboard dependencies install on the first run)
+- [x] `make test` runs against its own `phaemos_test` database and leaves the development data alone
+- [x] conftest refuses to run against a database whose name does not end in `_test`
+- [x] Register through the API, sign in on the login page and register a device through the API
+- [x] `phaemos-sim` posts telemetry and the device page chart and sensor grid update within 5 seconds
+- [x] The browser opens the telemetry socket at `ws://localhost:8000` and receives a frame for each reading the simulator posts (the chart itself still redraws on the 5 second poll)
+- [x] Alert rule created in the admin panel, triggered by `phaemos-sim --fault overheat` and a ticket opened from the dashboard alert banner
+- [x] Admin panel shows users, alert rules, maintenance windows, webhooks and the audit log (a webhook and a maintenance window created from it)
+- [x] Profile page changes the display name and enrols in 2FA. The next sign-in asks for the code
+- [x] About, blog, FAQ, support, security, contact, changelog, docs, status, privacy and terms all load
+- [x] Dark and light mode switch and the choice survives a reload
+- [x] Cookie banner accept and decline both store a choice and the banner stays away after a reload
+- [ ] Contact form submission (needs Cloudflare Turnstile keys, only the page load was checked)
+
+---
+
 ## Hardware
 
 - [x] ESP32 wiring guide

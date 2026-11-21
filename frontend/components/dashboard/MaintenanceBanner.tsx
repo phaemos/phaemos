@@ -6,6 +6,7 @@ import api from '@/lib/api';
 interface MaintenanceWindow {
   id: string;
   label: string;
+  start_at: string;
   end_at: string;
 }
 
@@ -20,8 +21,9 @@ export default function MaintenanceBanner() {
       try {
         const res = await api.get<MaintenanceWindow[]>('/maintenance-windows');
         const now = Date.now();
+        // a window that has not started yet is not in progress, so both ends are checked.
         const current = res.data.find(
-          (w) => new Date(w.end_at).getTime() >= now,
+          (w) => new Date(w.start_at).getTime() <= now && new Date(w.end_at).getTime() >= now,
         ) ?? null;
         setActive(current);
       } catch {

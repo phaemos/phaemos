@@ -212,3 +212,5 @@ cd backend && pytest --cov=app tests/
 ```
 
 Tests require a running PostgreSQL instance. The CI workflow starts a Docker container automatically. Locally, `docker compose up db -d` is the quickest way to get one.
+
+The suite drops its tables when it finishes, so it refuses any database whose name does not end in `_test`. `make test` creates and uses `phaemos_test`. A direct `pytest` run uses `phaemos_test` on localhost unless `DATABASE_URL` says otherwise.

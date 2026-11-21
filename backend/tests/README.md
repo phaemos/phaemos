@@ -12,4 +12,4 @@ pytest test suite. Uses a real PostgreSQL test DB (not mocks).
 | test_ml.py | ML score endpoint, retrain admin guard, retrain cooldown |
 | test_devices.py | list_devices role filter (admin/viewer/technician), auth guard, owner_id in response |
 
-Run: `cd backend && pytest` (requires DB running via docker compose)
+Run: `make test` from the repository root. It creates a `phaemos_test` database next to the development one. To run `pytest` directly, point `DATABASE_URL` at a database whose name ends in `_test`: the suite drops its tables at the end and refuses any other name.
