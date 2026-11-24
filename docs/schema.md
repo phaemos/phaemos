@@ -31,13 +31,29 @@ CREATE TABLE devices (
   name             VARCHAR(100) NOT NULL,
   location         VARCHAR(100),
   type             VARCHAR(50),        -- 'esp32', 'arduino', 'stm32'
-  api_key          VARCHAR(255) UNIQUE NOT NULL,
+  key_id           VARCHAR(16),        -- the first 8 characters of the device key, in clear, to find the machine (migration 031). Unique where set
+  key_hash         VARCHAR(64),        -- keyed hash (HMAC-SHA256) of the whole key. The key itself is never stored (migration 031)
+  api_key          VARCHAR(255) UNIQUE, -- old clear column, empty once a key is hashed. Dropped in a later migration
+  last_boot        BIGINT,             -- the (boot, seq) pair of the last post accepted (migration 031)
+  last_seq         BIGINT,
+  replay_protected BOOLEAN NOT NULL DEFAULT FALSE, -- true once the machine has sent the pair
+  replay_refused   INTEGER NOT NULL DEFAULT 0,     -- posts refused for an old pair since the last accepted one
+  replay_refused_at TIMESTAMPTZ,
+  stuck_state      JSONB NOT NULL DEFAULT '{}',    -- per column state of the stuck sensor check
   status           VARCHAR(20) DEFAULT 'offline', -- online/offline/warning/fault
   firmware_version VARCHAR(50),
   last_seen        TIMESTAMP WITH TIME ZONE,
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   owner_id         UUID REFERENCES users(id) ON DELETE SET NULL, -- nullable; NULL = shared/unassigned (migration 003)
-  tags             TEXT[] NOT NULL DEFAULT '{}'                  -- device tags for grouping and batch OTA (migration 008)
+  tags             TEXT[] NOT NULL DEFAULT '{}',                 -- device tags for grouping and batch OTA (migration 008)
+  expected_interval_s INTEGER NOT NULL DEFAULT 5,                -- seconds between posts (migration 012)
+  link_state       VARCHAR(10) NOT NULL DEFAULT 'offline',       -- online/late/offline, from the age of the last post (migration 012)
+  not_fitted       TEXT[] NOT NULL DEFAULT '{}',                 -- sensor keys not expected on this machine (migration 015)
+  unscored_since   TIMESTAMPTZ,                                  -- since when no reading was scored (migration 015)
+  unscored_missing TEXT[] NOT NULL DEFAULT '{}',                 -- the model inputs the readings lacked (migration 015)
+  unscored_alerted BOOLEAN NOT NULL DEFAULT FALSE,               -- the no-scored-reading alert is open (migration 015)
+  clipping_last_true TIMESTAMPTZ,                                -- when the vibration node last reported clipping (migration 021)
+  clipping_alerted BOOLEAN NOT NULL DEFAULT FALSE                -- the clipping warning is open (migration 021)
 );
 ```
 
@@ -73,9 +89,26 @@ CREATE TABLE telemetry (
   water_detected  BOOLEAN DEFAULT FALSE,         -- FC-28
   fft_peak_hz     FLOAT,                        -- STM32 FFT output
   vib_magnitude   FLOAT,                        -- STM32 FFT output
-  anomaly_score   FLOAT,                        -- ML output, 0-1
+  vib_rms_x       FLOAT,                        -- Black Pill RMS of the alternating part, g (migration 015)
+  vib_rms_y       FLOAT,
+  vib_rms_z       FLOAT,
+  vib_peak        FLOAT,                        -- Black Pill largest sample of the alternating part, g
+  stm32_vib_x     FLOAT,                        -- Black Pill axis means, g
+  stm32_vib_y     FLOAT,
+  stm32_vib_z     FLOAT,
+  nano_temp       FLOAT,                        -- Arduino Nano values forwarded by the hub (migration 015)
+  nano_hum        FLOAT,
+  nano_pres       FLOAT,
+  nano_light      FLOAT,
+  nano_moist      FLOAT,
+  nano_water      BOOLEAN,
+  vib_clipping    BOOLEAN,                      -- a sample reached the vibration sensor's limit (migration 021)
+  anomaly_score   FLOAT,                        -- ML output, 0-1. NULL when the row lacked a feature and was not scored
   is_anomaly      BOOLEAN DEFAULT FALSE,
-  recorded_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  recorded_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  seq             BIGINT,                       -- the node's post counter (migration 012)
+  device_ts       TIMESTAMP WITH TIME ZONE,     -- the node's own clock, when set (migration 012)
+  quality         JSONB                         -- {"faults":{},"rejected":{},"dropped_health":[]} or NULL (migration 012)
 );
 
 CREATE INDEX idx_telemetry_device_recorded ON telemetry (device_id, recorded_at DESC);
@@ -108,7 +141,54 @@ CREATE TABLE alerts (
   severity     VARCHAR(20),
   resolved     BOOLEAN DEFAULT FALSE,
   triggered_at TIMESTAMP DEFAULT NOW(),
-  resolved_at  TIMESTAMP
+  resolved_at  TIMESTAMP,
+  category     VARCHAR(20) NOT NULL DEFAULT 'machine',  -- machine or monitoring (migration 012)
+  sensor_key   VARCHAR(50),                             -- the sensor a monitoring alert is about (migration 012)
+  kind         VARCHAR(30)                              -- offline/reset_loop/unscored/sensor/clipping, NULL for rule alerts. One open alert per device, kind and sensor (migration 020)
+);
+```
+
+### alert_rules and rule_states
+
+`alert_rules` gains `for_seconds INTEGER` and `clear_margin DOUBLE PRECISION`, both NULL for the default (migration 029). `rule_states` holds one row for each rule while it is watched:
+
+```sql
+CREATE TABLE rule_states (
+  rule_id      UUID PRIMARY KEY REFERENCES alert_rules(id) ON DELETE CASCADE,
+  device_id    UUID NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  breach_since TIMESTAMPTZ,   -- when the condition began to hold
+  clear_since  TIMESTAMPTZ,   -- when the value came back inside the limit
+  last_eval_at TIMESTAMPTZ    -- when a reading last carried the metric
+);
+```
+
+`alerts` gains `occurrences INTEGER NOT NULL DEFAULT 1`, `last_value`, `peak_value`, `last_seen_at` and `notified_at` and two partial unique indexes: `uq_alerts_open_system` (one open alert of a kind and a sensor, per device, for every kind but `rule`) and `uq_alerts_open_rule` (one open `rule` alert per device and rule).
+
+### device_health
+
+One row per device with the latest vitals a node reported (migration 012).
+
+```sql
+CREATE TABLE device_health (
+  device_id        UUID PRIMARY KEY REFERENCES devices(id) ON DELETE CASCADE,
+  boot_count       INTEGER,
+  uptime_s         INTEGER,
+  reset_reason     VARCHAR(40),
+  rssi             INTEGER,
+  heap_free        INTEGER,
+  firmware_version VARCHAR(50),
+  last_seq         BIGINT,
+  reported_at      TIMESTAMPTZ,
+  faults           JSONB NOT NULL DEFAULT '{}',   -- sensor key -> state in the latest post
+  lost_posts       BIGINT NOT NULL DEFAULT 0,     -- posts lost to gaps in seq
+  last_gap_at      TIMESTAMPTZ,
+  dropped_fields   BIGINT NOT NULL DEFAULT 0,     -- health fields dropped as unusable
+  links            JSONB NOT NULL DEFAULT '{}',   -- latest serial link counters (migration 015)
+  sensor_track     JSONB NOT NULL DEFAULT '{}',   -- per sensor fault timing the fault alerts run from (migration 015)
+  diag             JSONB NOT NULL DEFAULT '{}',   -- the hub's latest bench counters (migration 028)
+  board_mismatch   BOOLEAN NOT NULL DEFAULT FALSE,-- the firmware says its image does not match the board (migration 028)
+  not_fitted_by_firmware JSONB NOT NULL DEFAULT '[]', -- sensor keys the firmware was built without (migration 028)
+  boot_events      JSONB NOT NULL DEFAULT '[]'    -- ISO times of boots in the last hour
 );
 ```
 
@@ -150,7 +230,7 @@ CREATE TABLE users (
   phone_number           VARCHAR(30),                        -- optional, used for SMS alerts
   totp_secret            VARCHAR(64),                        -- TOTP shared secret (set when 2FA enabled)
   totp_enabled           BOOLEAN NOT NULL DEFAULT FALSE,     -- whether 2FA is active for this user
-  permissions            JSONB,                               -- per-user permission overrides, NULL = role defaults only (migration 009)
+  permissions            JSONB,                               -- retired: nothing reads or sets it (migration 009)
   token_version          INTEGER NOT NULL DEFAULT 0,          -- raised to end every session for the user (migration 010)
   totp_last_step         BIGINT                               -- last accepted TOTP time step, so no code is accepted twice (migration 010)
 );

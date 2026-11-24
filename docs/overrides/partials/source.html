@@ -1,0 +1,9 @@
+{#- the theme's own version of this link asks the GitHub API for stars and the latest release, which is a request to another origin. This one is only a link. -#}
+{% import "partials/language.html" as lang with context %}
+<a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}" class="md-source">
+  <div class="md-source__icon md-icon">
+    {% set icon = config.theme.icon.repo or "fontawesome/brands/git-alt" %}
+    {% include ".icons/" ~ icon ~ ".svg" %}
+  </div>
+  <div class="md-source__repository">{{ config.repo_name }}</div>
+</a>

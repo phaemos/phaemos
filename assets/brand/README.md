@@ -7,6 +7,8 @@ revealed, which is what the name means. The tagline is **Reveal before failure**
 | --- | --- |
 | [`phaemos-logo-light.png`](phaemos-logo-light.png) | Emblem, name and tagline on light backgrounds, transparent |
 | [`phaemos-logo-dark.png`](phaemos-logo-dark.png) | Emblem, name and tagline on dark backgrounds, transparent |
+| [`phaemos-wordmark-light.svg`](phaemos-wordmark-light.svg) | The name alone as vector lettering, dark navy with the blue triangle, for light backgrounds |
+| [`phaemos-wordmark-dark.svg`](phaemos-wordmark-dark.svg) | The same lettering in off white for dark backgrounds |
 | [`phaemos-emblem-light.png`](phaemos-emblem-light.png) | Emblem only on light backgrounds, transparent |
 | [`phaemos-emblem-dark.png`](phaemos-emblem-dark.png) | Emblem only on dark backgrounds, transparent |
 | [`phaemos-emblem-mono.png`](phaemos-emblem-mono.png) | Single-colour emblem with the name, used as the organisation avatar |

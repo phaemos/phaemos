@@ -31,10 +31,12 @@ make dev
 Without Make, `docker compose up --build` starts the whole stack. The root `docker-compose.yml` includes
 `infra/docker-compose.yml`, so it works from the repository root.
 
+The dashboard image is built from the repository root and the development compose file passes `LEGAL_PLACEHOLDERS=allow` to it, so a legal page that still holds a placeholder does not stop `docker compose up --build`. A production image is built without that value and stops while a placeholder is open: `docker build -f frontend/Dockerfile -t phaemos-frontend .`. Set `LEGAL_PLACEHOLDERS=fail` in your shell to make the compose build strict as well.
+
 ## Sign in for the first time
 
-The dashboard has no sign-up page. Register an account through the API instead. Passwords need at least eight
-characters with an uppercase letter and a digit:
+The dashboard has no sign-up page. In development registration is open, so register an account through the API.
+Passwords need at least eight characters with an uppercase letter and a digit:
 
 ```bash
 curl -s -X POST http://localhost:8000/api/v1/auth/register \
@@ -42,13 +44,23 @@ curl -s -X POST http://localhost:8000/api/v1/auth/register \
   -d '{"name": "Your Name", "email": "you@example.com", "password": "Change-Me-123"}'
 ```
 
-Every new account is a viewer. The API has no route that changes a role, so promote your first account once in
-the database:
+Every new account is a viewer. A viewer cannot change anything. Promote your first account once in the
+database:
 
 ```bash
 docker compose exec -T db psql -U postgres -d phaemos \
   -c "UPDATE users SET role = 'admin' WHERE email = 'you@example.com'"
 ```
+
+Or skip both steps and create an admin directly. The command asks for an email and a password (typed without echo)
+and refuses an email that already has an account:
+
+```bash
+docker compose exec backend python -m app.scripts.create_admin
+```
+
+Registration is open only when `ENVIRONMENT=development`. Set `REGISTRATION_OPEN=false` in `backend/.env` to try the
+closed behaviour locally, where `POST /api/v1/auth/register` answers `403`.
 
 Sign in at `http://localhost:3000/login`. The Admin page now lists users, alert rules, maintenance windows,
 webhooks and the audit log.
@@ -66,8 +78,8 @@ cd backend
 python -m venv venv
 source venv/bin/activate      # macOS and Linux
 venv\Scripts\activate         # Windows
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+pip install -r requirements-dev.txt
+uvicorn app.main:app --reload --no-access-log --ws-max-size 8192 --ws-per-message-deflate false
 ```
 
 The backend still needs PostgreSQL and Redis. Point `DATABASE_URL` and `REDIS_URL` in `.env` at your own
