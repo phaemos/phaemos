@@ -1,0 +1,27 @@
+# Settings for the checks only. The script needs no package beyond the standard library at run time.
+[project]
+name = "serverkit"
+version = "1.0.0"
+description = "Builds a Discord community server from a declarative layout file."
+requires-python = ">=3.12"
+dependencies = []
+license = { text = "AGPL-3.0-or-later" }
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["worker", "relay/__pycache__"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "C4", "PIE", "RET"]
+ignore = ["RET504"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "B011", "SIM117"]
+# the relay tests import pytest fixtures by name, which ruff reads as a redefinition
+"tests/test_relay_*.py" = ["F811", "F401", "I001", "PIE810", "SIM102", "SIM108", "C416", "C419"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

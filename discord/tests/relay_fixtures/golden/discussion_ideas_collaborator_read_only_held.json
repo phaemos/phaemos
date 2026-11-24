@@ -1,0 +1,8 @@
+{
+  "exit": 0,
+  "posts": [],
+  "api_calls": [
+    "/repos/example-org/example/collaborators/octo-maintainer/permission"
+  ],
+  "note": "nothing to post: held until a maintainer acts: the author is not a maintainer."
+}

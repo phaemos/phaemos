@@ -1,0 +1,22 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New issue #960: Pico 2W drops its link. Labels: bug, firmware. <https://github.com/example-org/example/issues/960>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ],
+  "api_calls": [
+    "/repos/example-org/example/collaborators/maintainer-one/permission",
+    "/repos/example-org/example/issues/960/events",
+    "/repos/example-org/example/actions/workflows/discord-relay.yml/runs"
+  ]
+}

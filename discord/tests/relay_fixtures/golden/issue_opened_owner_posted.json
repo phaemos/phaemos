@@ -1,0 +1,17 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New issue #951: Pico 2W drops its Wi-Fi link after six hours. Labels: bug, firmware. <https://github.com/example-org/example/issues/951>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}

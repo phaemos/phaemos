@@ -1,0 +1,43 @@
+{
+  "event_name": "issues",
+  "payload": {
+    "action": "opened",
+    "issue": {
+      "number": 950,
+      "title": "Pico 2W drops its Wi-Fi link after six hours",
+      "state": "open",
+      "user": {
+        "login": "passer-by",
+        "type": "User",
+        "id": 40
+      },
+      "author_association": "NONE",
+      "labels": [
+        {
+          "id": 1,
+          "name": "bug"
+        },
+        {
+          "id": 2,
+          "name": "firmware"
+        }
+      ],
+      "body": "Steps to reproduce are below.",
+      "html_url": "https://github.com/example-org/example/issues/412",
+      "created_at": "2026-11-29T08:00:00Z"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "passer-by",
+      "type": "User",
+      "id": 40
+    }
+  }
+}

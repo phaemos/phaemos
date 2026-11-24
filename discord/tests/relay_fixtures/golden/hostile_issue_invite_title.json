@@ -1,0 +1,17 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New issue #906: Join us at \\[link removed\\] or \\[link removed\\] and \\[link removed\\]. <https://github.com/example-org/example/issues/906>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}

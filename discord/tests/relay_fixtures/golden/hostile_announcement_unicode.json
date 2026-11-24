@@ -1,0 +1,29 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_ANNOUNCEMENTS",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example announcements",
+        "content": "Announcement: Unicode title <https://github.com/example-org/example/discussions/922>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 0,
+        "embeds": [
+          {
+            "title": "Unicode title",
+            "url": "https://github.com/example-org/example/discussions/922",
+            "description": "Body with  override and  zero width and  bell and caf\u00e9 kept. done.\n\n[Read the full post](https://github.com/example-org/example/discussions/922)",
+            "footer": {
+              "text": "Announcement on GitHub"
+            },
+            "color": 2450411,
+            "timestamp": "2026-12-02T09:30:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}

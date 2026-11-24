@@ -1,0 +1,14 @@
+Where to go
+- A question about installing or running PHAEMOS: {channel:help}
+- A question about building a node: {channel:hardware}
+- Something you built or a site you monitor: {channel:showcase}
+- Working on the code, the boards or the documentation: {channel:contributing}
+- Project news: {channel:announcements}
+- New versions: {channel:releases}
+- Everything else: {channel:general}
+- Try the slash commands: {channel:bot-commands}
+- Something private such as a conduct or privacy matter: type {command:ticket}. Staff will add you to a private thread in {channel:private-help}
+- Documentation, the FAQ and the roadmap: {channel:docs}
+- An idea: {channel:ideas}. A research note: {channel:research}. The GitHub discussion is the record and the forum is for talking it through
+- A bug you can reproduce: open an issue on GitHub. Type {command:issue new} for the link.
+- A security problem: never here. Type {command:security} to see how to report it privately.

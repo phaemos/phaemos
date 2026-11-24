@@ -1,0 +1,230 @@
+{
+  "docs.accessibility": {
+    "content": "Accessibility\nWhat the dashboard does for people who use a keyboard, a screen reader or large text.\nTell us if something does not work for you.\nAccessibility statement: <https://github.com/phaemos/phaemos/blob/main/ACCESSIBILITY.md>",
+    "ephemeral": false
+  },
+  "docs.api": {
+    "content": "API\nEvery endpoint of the PHAEMOS API with its request and answer.\nThe same reference is served as an interactive page when the backend runs locally.\nAPI reference: <https://github.com/phaemos/phaemos/blob/main/docs/api-reference.md>",
+    "ephemeral": false
+  },
+  "docs.architecture": {
+    "content": "Architecture\nHow the nodes, the gateway, the backend and the dashboard fit together.\nRead this before you change a part that touches another one.\nArchitecture: <https://github.com/phaemos/phaemos/blob/main/docs/architecture.md>",
+    "ephemeral": false
+  },
+  "docs.deployment": {
+    "content": "Deployment\nHow to run PHAEMOS on a server: the host, the database and the domain names.\nThe checklist at the end is worth a read before you go live.\nDeployment guide: <https://github.com/phaemos/phaemos/blob/main/docs/deployment.md>",
+    "ephemeral": false
+  },
+  "docs.development": {
+    "content": "Development\nHow to run the whole stack on your computer and how to run the tests.\nIt covers the simulator as well.\nDevelopment guide: <https://github.com/phaemos/phaemos/blob/main/docs/development.md>",
+    "ephemeral": false
+  },
+  "docs.getting-started": {
+    "content": "Getting started\nThe overview of PHAEMOS and the quickstart for running it on your own machine.\nStart here if this is your first visit.\nQuickstart: <https://github.com/phaemos/phaemos/blob/main/README.md>",
+    "ephemeral": false
+  },
+  "docs.releases": {
+    "content": "Releases\nHow we number, test and publish a release.\nEvery published version is listed with its notes.\nRelease process: <https://github.com/phaemos/phaemos/blob/main/docs/releases.md>\nAll releases: <https://github.com/phaemos/phaemos/releases>",
+    "ephemeral": false
+  },
+  "docs.security": {
+    "content": "Security\nHow we handle security and how to report a problem privately.\nPlease never report one in this server.\nSecurity policy: <https://github.com/phaemos/phaemos/blob/main/SECURITY.md>",
+    "ephemeral": false
+  },
+  "docs.sensors": {
+    "content": "Sensors\nEach supported sensor with its wiring and the data it reports.\nIt also lists the I2C addresses and how to resolve a clash.\nSensor reference: <https://github.com/phaemos/phaemos/blob/main/docs/sensor_reference.md>",
+    "ephemeral": false
+  },
+  "docs.unknown": {
+    "content": "We do not have that topic. Type /help.",
+    "ephemeral": true
+  },
+  "faq.blank-dashboard": {
+    "content": "The dashboard shows a blank screen\nCheck that frontend/.env.local holds NEXT_PUBLIC_API_URL pointing at your backend, for example http://localhost:8000.\nRestart the dashboard after you change it.\nSupport page: <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>",
+    "ephemeral": false
+  },
+  "faq.contact-form": {
+    "content": "The contact form does not send emails\nThe API needs RESEND_API_KEY and FROM_EMAIL set and the sending domain verified.\nOutside development it answers 503 until both are right.\nSupport page: <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>",
+    "ephemeral": false
+  },
+  "faq.database-empty": {
+    "content": "The database is empty after a restart\nThe -v flag on docker compose down deletes the database volume. Plain docker compose down and docker compose stop keep your data.\nAfter a wipe, run make migrate to rebuild the tables.\nSupport page: <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>",
+    "ephemeral": false
+  },
+  "faq.login-locked": {
+    "content": "Login is blocked after failed attempts\nSeveral wrong passwords or wrong authentication codes in a row slow sign-in for that account and for your network.\nThe sign-in answer says how many seconds to wait. Wait that long and try again with the right details.\nSupport page: <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>",
+    "ephemeral": false
+  },
+  "faq.rate-limit": {
+    "content": "Login says too many requests\nThe login endpoint allows 5 requests a minute for each address. Wait a minute and try again.\nBehind a shared network address the limit is shared with everyone on it.\nSupport page: <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>",
+    "ephemeral": false
+  },
+  "faq.unknown": {
+    "content": "We do not have that topic. Type /help.",
+    "ephemeral": true
+  },
+  "hardware.arduino-nano": {
+    "content": "Arduino Nano\nThe secondary node, built around the Arduino Nano board.\nCheck the voltage of every sensor against the board before you connect it.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/nano_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "ephemeral": false
+  },
+  "hardware.esp32-gateway": {
+    "content": "ESP32 gateway\nThe primary node. It reads the main sensors and sends the readings to the backend.\nWire it from the pinout table and check the parts list before you order.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/esp32_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "ephemeral": false
+  },
+  "hardware.parts": {
+    "content": "Parts\nWhat each build needs and what the project already owns.\nAsk in the hardware forum before you substitute a part.\nParts needed: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>\nHardware overview: <https://github.com/phaemos/phaemos/blob/main/hardware/README.md>",
+    "ephemeral": false
+  },
+  "hardware.pcb": {
+    "content": "PCB\nBoard notes for each node.\nIf your build involves mains voltage, say so in your post and we may ask you to stop and check first.\nPCB notes: <https://github.com/phaemos/phaemos/tree/main/hardware/pcb>",
+    "ephemeral": false
+  },
+  "hardware.pico-2w": {
+    "content": "Pico 2W\nThe ambient node, built around the Raspberry Pi Pico 2W board.\nCheck the voltage of every sensor against the board before you connect it.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/pico_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "ephemeral": false
+  },
+  "hardware.black-pill": {
+    "content": "STM32 Black Pill\nThe vibration node, built around the STM32 Black Pill board.\nCheck the pinout before you connect a sensor.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/stm32_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "ephemeral": false
+  },
+  "hardware.unknown": {
+    "content": "We do not have that topic. Type /help.",
+    "ephemeral": true
+  },
+  "hardware.wiring": {
+    "content": "Wiring\nThe pinout table for every board in one place.\nPhotos of your own wiring are welcome in the hardware forum, with a description of each picture.\nWiring tables: <https://github.com/phaemos/phaemos/tree/main/hardware/wiring>",
+    "ephemeral": false
+  },
+  "help.member": {
+    "content": "Our commands:\n/help - List the commands.\n/docs - Find the documentation for a topic.\n/faq - Read the answer to a common problem.\n/release - Show the latest release with its notes.\n/status - Check whether the hosted service is working.\n/issue - Look up an issue by its number or find the form for a new one.\n/ticket - Ask the staff privately. A member of staff opens a private thread for you.\n/security - How to report a security problem privately.\n/hardware - Find the wiring, schematic and parts for a board.\n/contribute - Where to start if you want to help.\n/roles - Pick your interest roles.\n/report - Tell the moderators about a problem. Every moderator sees it with your name.\nReport to moderators - Press and hold a message or right-click it, choose Apps, then Report to moderators. Every moderator sees it with your name.\nYou can try them in #bot-commands.",
+    "ephemeral": true
+  },
+  "help.staff": {
+    "content": "Our commands:\n/help - List the commands.\n/docs - Find the documentation for a topic.\n/faq - Read the answer to a common problem.\n/release - Show the latest release with its notes.\n/status - Check whether the hosted service is working.\n/issue - Look up an issue by its number or find the form for a new one.\n/ticket - Ask the staff privately. A member of staff opens a private thread for you.\n/security - How to report a security problem privately.\n/hardware - Find the wiring, schematic and parts for a board.\n/contribute - Where to start if you want to help.\n/roles - Pick your interest roles.\n/report - Tell the moderators about a problem. Every moderator sees it with your name.\nReport to moderators - Press and hold a message or right-click it, choose Apps, then Report to moderators. Every moderator sees it with your name.\n/mod - Moderator tools: guides and standard replies.\nYou can try them in #bot-commands.",
+    "ephemeral": true
+  },
+  "issue.closed": {
+    "content": "Issue 8 (closed): Pico 2W drops its link\nLabels: bug, firmware\n<https://github.com/phaemos/phaemos/issues/8>",
+    "ephemeral": false
+  },
+  "issue.down": {
+    "content": "We could not reach GitHub just now. Issue 412 is at <https://github.com/phaemos/phaemos/issues/412>",
+    "ephemeral": false
+  },
+  "issue.hostile": {
+    "content": "Issue 5 (open): \\[click\\]\\(http://evil.example\\) @everyone \\<@12345\\> \\*\\*loud\\*\\* \\`code\\` second line\nLabels: \\_x\\_\n<https://github.com/phaemos/phaemos/issues/5>",
+    "ephemeral": false
+  },
+  "issue.merged": {
+    "content": "Pull request 7 (merged): Pico 2W drops its link\n<https://github.com/phaemos/phaemos/issues/7>",
+    "ephemeral": false
+  },
+  "issue.missing": {
+    "content": "We could not find number 999.",
+    "ephemeral": true
+  },
+  "issue.open": {
+    "content": "Issue 412 (open): Pico 2W drops its link\nLabels: bug, firmware\n<https://github.com/phaemos/phaemos/issues/412>",
+    "ephemeral": false
+  },
+  "mod.guide.raid": {
+    "content": "A raid\n1. Time out the accounts that are posting. Do not argue with them.\n2. Tell the owner in moderator-only. If the owner is away, a Maintainer starts banning.\n3. The owner pauses invites and direct messages.\n4. Delete what was posted. Leave the entries in mod-log.\n5. When it is quiet, the owner raises the verification level for a day and writes two lines in moderator-only on what happened.",
+    "ephemeral": true
+  },
+  "mod.guide.report": {
+    "content": "A member report\n1. Read the link first. The link is the evidence. The words under Why are the reporter's own and are not verified.\n2. Open a thread on the entry in mod-log.\n3. Say in the thread what you did.\n4. React with a tick when it is done.\n5. A report about a member of staff arrives by email, so tell the owner.",
+    "ephemeral": true
+  },
+  "mod.guide.security": {
+    "content": "A security post\n1. Delete the message if it gives detail.\n2. Post /mod reply with the security template.\n3. Never ask for detail in public or in a direct message.\n4. Tell a Maintainer in moderator-only.",
+    "ephemeral": true
+  },
+  "mod.guide.timeout": {
+    "content": "A timeout\n1. Remind first. A timeout is for repeat or serious breaks of the rules.\n2. Use the shortest timeout that stops the harm.\n3. Write what you did and why in moderator-only.\n4. A Moderator cannot act on a Maintainer. Pass it on.",
+    "ephemeral": true
+  },
+  "mod.reply.be-kind": {
+    "content": "From the moderators: Please keep the tone kind and patient. Our Code of Conduct applies everywhere in this server.",
+    "ephemeral": false
+  },
+  "mod.reply.english": {
+    "content": "From the moderators: Please write in English in the public channels so that everyone can follow, moderators included.",
+    "ephemeral": false
+  },
+  "mod.reply.needs-details": {
+    "content": "From the moderators: We need more detail to help. Please add what you were trying to do, the version you run, how you run it and the exact error as text in a code block.",
+    "ephemeral": false
+  },
+  "mod.reply.no-direct-messages": {
+    "content": "From the moderators: Please ask in public and not by direct message. The answer then helps the next person. We never ask for a password, a key or money in a direct message.",
+    "ephemeral": false
+  },
+  "mod.reply.one-topic": {
+    "content": "From the moderators: Please keep one question in each post. Open a new post for the next question so that each answer is easy to find.",
+    "ephemeral": false
+  },
+  "mod.reply.search-first": {
+    "content": "From the moderators: Please search this forum and the documentation first. The /docs and /faq commands can help. If you cannot find an answer, post again and say what you tried.",
+    "ephemeral": false
+  },
+  "mod.reply.security": {
+    "content": "From the moderators: Please do not share the details of a security problem here or in a direct message. Report it privately instead: type /security to see how. We never take reports by direct message.",
+    "ephemeral": false
+  },
+  "release.down": {
+    "content": "We could not reach GitHub just now. The releases are at <https://github.com/phaemos/phaemos/releases>",
+    "ephemeral": false
+  },
+  "release.none": {
+    "content": "There is no release yet. We will post each new one in releases.",
+    "ephemeral": false
+  },
+  "release.ok": {
+    "content": "Latest release: v2.6.0 (published 30 November 2026)\n> Added\n> \\- Maintenance windows can repeat every week.\n> Fixed\n> \\- Edge gateway keeps readings on reconnect.\n> \\[Image: chart\\]\n> link text\nFull notes: <https://github.com/phaemos/phaemos/releases/tag/v2.6.0>",
+    "ephemeral": false
+  },
+  "report.failed": {
+    "content": "We could not record your report. Please write to contact@phaemos.com or see <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>",
+    "ephemeral": true
+  },
+  "report.form.thanks": {
+    "content": "Thank you. Every moderator can see your report and your name. To report a member of staff, write to contact@phaemos.com or see <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>.",
+    "ephemeral": true
+  },
+  "report.thanks": {
+    "content": "Thank you. Every moderator can see your report and your name. To report a member of staff, write to contact@phaemos.com or see <https://github.com/phaemos/phaemos/blob/main/SUPPORT.md>.",
+    "ephemeral": true
+  },
+  "report.wait": {
+    "content": "Please wait a minute before sending another report.",
+    "ephemeral": true
+  },
+  "static.bug": {
+    "content": "Open a new issue on GitHub and pick the form that fits: a bug, a feature, a hardware problem or a docs problem.\n1. Search the open issues in case we already know about it.\n2. Say what you did, what you expected and what happened instead.\n3. Add the version you run and the exact error as text.\n4. Leave out passwords and keys.\nA security problem never goes in an issue. Type /security instead.\nIssue forms: <https://github.com/phaemos/phaemos/issues/new/choose>",
+    "ephemeral": true
+  },
+  "static.contribute": {
+    "content": "Welcome. Here is where to start:\n1. Read the contributing guide.\n2. Pick an issue marked good first issue.\n3. Run the stack on your computer with the development guide.\nAsk in the contributing channel if you are unsure which issue to take.\nContributing guide: <https://github.com/phaemos/phaemos/blob/main/CONTRIBUTING.md>\nFirst issues: <https://github.com/phaemos/phaemos/labels/good%20first%20issue>\nRun it locally: <https://github.com/phaemos/phaemos/blob/main/docs/development.md>",
+    "ephemeral": true
+  },
+  "static.roles": {
+    "content": "Pick your interest roles in Channels and Roles: <id:customize>",
+    "ephemeral": true
+  },
+  "static.security": {
+    "content": "Please report a security problem privately. Never in this server and never by direct message.\nWe remove posts that describe a vulnerability and we never ask for detail in public.\nPrivate report form: <https://github.com/phaemos/phaemos/security/advisories/new>\nEmail: security@phaemos.com",
+    "ephemeral": true
+  },
+  "status.degraded": {
+    "content": "Some parts are not working: database, model. Checked at 14:05 UTC. The status page is at <https://status.phaemos.com>",
+    "ephemeral": false
+  },
+  "status.down": {
+    "content": "We could not get an answer from the status service just now. The service may not be live yet or may itself be the problem. The status page is at <https://status.phaemos.com>",
+    "ephemeral": false
+  },
+  "status.ok": {
+    "content": "All systems are working. Checked at 14:05 UTC.",
+    "ephemeral": false
+  }
+}

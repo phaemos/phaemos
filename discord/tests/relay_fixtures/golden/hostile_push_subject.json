@@ -1,0 +1,17 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "Merged: feat: @\u200beveryone \\[free nitro\\](\\[link removed\\] \u2039@\u200b1234\u203a \\`oops (#720) <https://github.com/example-org/example/pull/720>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}

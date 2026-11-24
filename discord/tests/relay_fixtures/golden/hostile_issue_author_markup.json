@@ -1,0 +1,17 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New issue #904: A plain title. Labels: bug. <https://github.com/example-org/example/issues/904>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}

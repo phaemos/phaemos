@@ -1,0 +1,26 @@
+# settings for the community commands worker.
+#
+# nothing in this file is an identifier or a secret. the account is read from the
+# CLOUDFLARE_ACCOUNT_ID environment variable and the secrets are set with "wrangler secret put".
+# the date below is a placeholder on purpose: wrangler refuses to deploy until it is replaced
+# with the day of the deploy, so a copy of this file cannot go live by accident.
+
+name = "phaemos-community-commands"
+main = "src/index.ts"
+compatibility_date = "REPLACE-WITH-THE-DAY-OF-THE-DEPLOY"
+workers_dev = true
+preview_urls = false
+
+[vars]
+PROJECT = "phaemos"
+
+[observability]
+enabled = true
+
+[observability.logs]
+invocation_logs = false
+
+# set each of these with "npx wrangler secret put NAME". STAFF_ROLE_IDS is also needed for the staff
+# commands to work in the log channel. GITHUB_TOKEN is optional, read-only and for public repositories only.
+[secrets]
+required = ["DISCORD_PUBLIC_KEY", "REPORTS_WEBHOOK_URL", "TICKETS_WEBHOOK_URL"]
