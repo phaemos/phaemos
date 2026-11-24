@@ -1,8 +1,8 @@
 import uuid
 # float stores decimal sensor readings; Boolean stores true/false flags (e.g. is_anomaly)
 # string added in v2.0 to store the node_type identifier (esp32, stm32, nano, pico_w)
-from sqlalchemy import Column, Float, Boolean, DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import BigInteger, Column, Float, Boolean, DateTime, ForeignKey, Index, String, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.db import Base
 
@@ -35,7 +35,7 @@ class Telemetry(Base):
     gyro_z        = Column(Float)
 
     # INA219 - current and voltage monitor (I2C 0x40)
-    # Track bus_voltage + current_ma + power_mw together; dropping any one of them
+    # track bus_voltage + current_ma + power_mw together; dropping any one of them
     # makes the electrical health check incomplete
     bus_voltage   = Column(Float)
     current_ma    = Column(Float)
@@ -77,11 +77,50 @@ class Telemetry(Base):
     fft_peak_hz   = Column(Float)
     vib_magnitude = Column(Float)
 
+    # the Arduino Nano's values, which the hub forwards as nano_* (migration 015). The Nano's own sensor is a BME280
+    nano_temp     = Column(Float)
+    nano_hum      = Column(Float)
+    nano_pres     = Column(Float)
+    nano_light    = Column(Float)
+    nano_moist    = Column(Float)
+    # no column default: a value that was stopped or never sent stays null and does not read as dry
+    nano_water    = Column(Boolean)
+
+    # the Black Pill's vibration values (migration 015). The RMS and peak are of the alternating part, in g.
+    # stm32_vib_* are its three axis means, which the hub used to discard
+    vib_rms_x     = Column(Float)
+    vib_rms_y     = Column(Float)
+    vib_rms_z     = Column(Float)
+    vib_peak      = Column(Float)
+    stm32_vib_x   = Column(Float)
+    stm32_vib_y   = Column(Float)
+    stm32_vib_z   = Column(Float)
+    # true when a sample in the window reached the vibration sensor's limit (migration 021). A reading and not a
+    # fault: it never stops the vibration values. No column default, so a node that never sends it stores null
+    vib_clipping  = Column(Boolean)
+
     # ML output - computed by ml_service after ingest
     # anomaly_score is a continuous value (e.g. 0.0-1.0) from an ML model indicating how unusual this reading is
     anomaly_score = Column(Float)
     # is_anomaly is a derived boolean flag: True when anomaly_score crosses the configured threshold
     is_anomaly    = Column(Boolean, default=False)
 
+    # node health sent with the reading (migration 012)
+    # the node's post counter, which rises by one per post
+    seq           = Column(BigInteger)
+    # the time from the node's own clock, kept beside recorded_at and never used in its place
+    device_ts     = Column(DateTime(timezone=True))
+    # {"faults": {sensor: state}, "rejected": {field: value}, "dropped_health": [field]} for a reading whose node
+    # named a faulted sensor or sent a health field that was dropped.
+    # the faulted fields are null in their own columns, so charts and the model never see them
+    quality       = Column(JSONB(none_as_null=True))
+
     # server_default=func.now() stamps the row with the DB server's current time at insert
     recorded_at   = Column(DateTime(timezone=True), server_default=func.now())
+
+    # the history, export and bucketed reads all filter on one device and a time range,
+    # which two single-column indexes serve poorly. Migration 011 creates the same index
+    # on existing databases, so keep the name identical.
+    __table_args__ = (
+        Index("idx_telemetry_device_time", device_id, recorded_at.desc()),
+    )

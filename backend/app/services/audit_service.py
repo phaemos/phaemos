@@ -1,6 +1,6 @@
 # put audit logging in its own service because it is a cross-cutting concern - any route
 # can call log_action() without knowing anything about how audit records are stored.
-# keeping it separate also means we can silence or redirect audit logging (e.g. swap to
+# keeping it separate also means audit logging can be silenced or redirected (e.g. swapped to
 # an external SIEM) by editing only this file, without touching any route logic.
 
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ def log_action(
     """Record a single audit event in the audit_log table.
 
     Args:
-        db:          SQLAlchemy session - I pass this in rather than creating a new one
+        db:          SQLAlchemy session, passed in rather than created here
                      so the audit insert shares the same transaction as the main operation,
                      avoiding partial writes if the caller rolls back.
         user_id:     ID (or email) of the authenticated user performing the action.
@@ -32,6 +32,11 @@ def log_action(
     # if the audit_log table is missing or the DB is briefly unavailable, the primary
     # operation should still succeed - a lost audit row is far less damaging than a
     # failed user-facing write.
+    # a request made with an access token names the token on every row it writes
+    from app.services import token_access
+    box = token_access.current_token.get()
+    if box and box.get("id"):
+        detail = f"{detail} [via token {box['id']}]".strip()
     try:
         from sqlalchemy import text  # Import here to avoid a circular dependency at module level
         db.execute(
@@ -60,6 +65,7 @@ def log_action(
         # on this session.
         db.rollback()
         # log to stderr anyway so operators can detect if audit logging is broken
-        # without it causing visible errors to end users.
+        # without it causing visible errors to end users. Only the kind of error is
+        # printed: the message of a database error can carry the values of the row.
         import sys
-        print(f"[audit_service] WARNING: failed to write audit log: {exc}", file=sys.stderr)
+        print(f"[audit_service] WARNING: failed to write audit log: {type(exc).__name__}", file=sys.stderr)

@@ -167,7 +167,8 @@ def test_technician_cannot_get_others_device(
         f"/api/v1/devices/{other_technician_device.id}",
         headers=_token_for(technician, "technician"),
     )
-    assert resp.status_code == 403
+    # another technician's machine looks like one that does not exist
+    assert resp.status_code == 404
 
 
 def test_technician_can_patch_own_device(client, technician, owned_device):
@@ -188,4 +189,4 @@ def test_technician_cannot_patch_others_device(
         json={"location": "Hacked"},
         headers=_token_for(technician, "technician"),
     )
-    assert resp.status_code == 403
+    assert resp.status_code == 404

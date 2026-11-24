@@ -1,8 +1,9 @@
 import uuid
-from sqlalchemy import BigInteger, Boolean, Column, JSON, String, DateTime, Integer, func
+from sqlalchemy import BigInteger, Boolean, Column, Index, JSON, String, DateTime, Integer, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
+from app.services.two_step_secrets import EncryptedSecret
 
 
 class User(Base):
@@ -32,11 +33,13 @@ class User(Base):
     oauth_provider = Column(String(50), nullable=True)   # "google" | "github" | "microsoft" | None
     oauth_id       = Column(String(200), nullable=True)  # provider's user sub/id
 
-    # profile - phone number for SMS alert delivery (Step 20g)
+    # profile - phone number for SMS alert delivery
     phone_number = Column(String(30), nullable=True)
 
-    # TOTP 2FA - secret stored encrypted-at-rest by the DB; flag tracks enrolment state
-    totp_secret  = Column(String(64), nullable=True)
+    # TOTP 2FA - the secret is stored encrypted (`enc:v1:...`) under a key derived from SECRET_KEY for this purpose, so a
+    # database read or a backup alone does not give a second factor. A row from before migration 032 is plain text until
+    # the next start encrypts it. The flag tracks enrolment state
+    totp_secret  = Column(EncryptedSecret(), nullable=True)
     totp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
     # the last accepted TOTP time step, so a one-time code is never accepted twice.
     totp_last_step = Column(BigInteger, nullable=True)
@@ -45,7 +48,40 @@ class User(Base):
     # sessions, for example after a password or two-factor change.
     token_version = Column(Integer, nullable=False, default=0, server_default="0")
 
-    # granular RBAC overrides - JSON dict of per-user capability flags and device scope.
-    # NULL means "use role defaults only". Non-null entries take precedence over the role
-    # so admins can grant a technician limited extra capabilities without a full role change.
+    # retired: this column was meant for per-user capability overrides but nothing ever read it;
+    # no route sets it and no reply returns it. It stays so existing rows and migration 009 still fit.
     permissions = Column(JSON, nullable=True)
+
+    # a deactivated account cannot sign in, refresh, reset its password or accept an invitation. An admin sets it and
+    # doing so ends every session
+    is_active = Column(Boolean, nullable=False, default=True, server_default="true")
+    # a service account is owned by an integration and not by a person: it has a role and API tokens and no way to sign in. It
+    # has no password, provider link, two-step, session, invitation or reset link and every route that would give it one
+    # refuses it (see docs/security.md). An admin makes it with fresh proof and makes its tokens the same way
+    is_service = Column(Boolean, nullable=False, default=False, server_default="false")
+    deactivated_at = Column(DateTime(timezone=True), nullable=True)
+
+    # when the current sign-in address became the account's. NULL means it was never unconfirmed: the address an
+    # invitation went to or one a provider verified. A self-registered or changed address has the time it was set
+    # and is trusted with a notice only after an hour (see the email change route)
+    email_since = Column(DateTime(timezone=True), nullable=True)
+
+    # alert texts go only to a number confirmed by a code sent to that number. A changed number starts unconfirmed. The code
+    # is kept as a keyed hash with its number, its expiry and how many wrong tries it has had
+    phone_confirmed_at = Column(DateTime(timezone=True), nullable=True)
+    phone_code_hash = Column(String(64), nullable=True)
+    phone_code_number = Column(String(30), nullable=True)
+    phone_code_expires_at = Column(DateTime(timezone=True), nullable=True)
+    phone_code_attempts = Column(Integer, nullable=False, default=0, server_default="0")
+
+    @property
+    def phone_confirmed(self) -> bool:
+        return bool(self.phone_number) and self.phone_confirmed_at is not None
+
+    @property
+    def has_password(self) -> bool:
+        # accounts that sign in through a provider have none, which changes how they confirm deleting the account
+        return bool(self.password_hash)
+
+    # one account for one mailbox: addresses are stored in lower case and this stops two that differ only in case
+    __table_args__ = (Index("idx_users_email_lower", func.lower(email), unique=True),)

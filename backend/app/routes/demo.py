@@ -1,6 +1,6 @@
 import math
 import random
-import uuid as uuid_module
+import secrets
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.limiter import limiter
+from app.schemas.misc_responses import DemoStarted, DemoStopped
 
 from app.db import get_db, engine
 from app.models.device import Device
@@ -60,12 +61,14 @@ def _ingest_demo_reading() -> None:
         db.add(row)
         device.last_seen = datetime.now(timezone.utc)
         device.status    = "online"
+        # the demo posts every 5 seconds, so it is online as far as the liveness sweep is concerned
+        device.link_state = "online"
         db.commit()
     finally:
         db.close()
 
 
-@router.post("/demo/start")
+@router.post("/demo/start", response_model=DemoStarted)
 @limiter.limit("5/minute")
 def start_demo(
     request: Request,
@@ -75,17 +78,21 @@ def start_demo(
     global _demo_device_id, _tick
 
     # reuse an existing Demo Node rather than creating duplicates on repeated calls.
-    device = db.query(Device).filter(Device.name == "Demo Node").first()
+    # only an unowned one, so a technician cannot rename their own machine to this and have it fed fake readings
+    device = db.query(Device).filter(Device.name == "Demo Node", Device.owner_id.is_(None)).first()
+    # a key is stored only as a hash, so it can be shown once: when the machine is made. A later call has none to give
+    created_key = None
     if not device:
         device = Device(
             name="Demo Node",
             type="esp32",
             location="Virtual",
-            api_key=str(uuid_module.uuid4()),
+            api_key=secrets.token_urlsafe(32),
         )
         db.add(device)
         db.commit()
         db.refresh(device)
+        created_key = device.api_key
 
     _demo_device_id = str(device.id)
     _tick = 0
@@ -99,10 +106,10 @@ def start_demo(
         _scheduler.remove_job("demo_ingest")
     _scheduler.add_job(_ingest_demo_reading, "interval", seconds=5, id="demo_ingest")
 
-    return {"device_id": str(device.id), "api_key": device.api_key, "status": "started"}
+    return {"device_id": str(device.id), "api_key": created_key, "status": "started"}
 
 
-@router.post("/demo/stop")
+@router.post("/demo/stop", response_model=DemoStopped)
 def stop_demo(_admin: User = Depends(require_admin)):
     global _demo_device_id
     if _scheduler.running and _scheduler.get_job("demo_ingest"):

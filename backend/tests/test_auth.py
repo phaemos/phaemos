@@ -67,12 +67,12 @@ def test_refresh_token_flow(client):
     })
     assert login_res.status_code == 200
     # the refresh token is delivered as an httpOnly cookie.
-    assert "refresh_token" in login_res.cookies
+    assert login_res.cookies.get("refresh_token", path="/api/v1/auth/refresh")
 
     # use the cookie to obtain a new access token.
     refresh_res = client.post(
         "/api/v1/auth/refresh",
-        cookies={"refresh_token": login_res.cookies["refresh_token"]},
+        cookies={"refresh_token": login_res.cookies.get("refresh_token", path="/api/v1/auth/refresh")},
     )
     assert refresh_res.status_code == 200
     body = refresh_res.json()

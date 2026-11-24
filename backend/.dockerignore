@@ -18,3 +18,8 @@ Thumbs.db
 .env
 *.log
 logs/
+
+# secrets never belong in the image: the production build runs in a folder that holds .env
+.env
+.env.*
+!.env.example
