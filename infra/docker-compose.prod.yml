@@ -1,0 +1,316 @@
+# production stack for one small droplet (1 vCPU, 1 GB of RAM, 25 GB disk): database,
+# cache and API only. The dashboard is on Vercel, so there is no frontend container.
+# infra/docker-compose.yml stays the development stack and must not be used here.
+#
+# every setting comes from backend/.env, apart from the few that must match this file.
+# Compose reads that file twice: env_file hands it to the API and --env-file lets the
+# ${VAR:?message} checks below see it, so a value that is missing stops the start instead
+# of falling back to something weak:
+#
+#   docker compose --env-file backend/.env -f infra/docker-compose.prod.yml up -d
+#
+# infra/scripts/deploy.sh runs exactly that. Do not run `docker compose config` on the
+# droplet: it prints the resolved secrets.
+#
+# two database logins exist. POSTGRES_USER owns the tables and is used only by the one-shot
+# schema job below, by the migrations and by the backups. POSTGRES_APP_USER is what the API
+# signs in as: it can read and write the application's tables and nothing else. The role is
+# made by infra/scripts/db-role.sh, which deploy.sh runs before anything else touches the
+# schema.
+#
+# every service drops all Linux capabilities, cannot gain any (no-new-privileges), has a
+# read-only root file system with small tmpfs mounts for what must be writable and has a
+# process, memory and CPU ceiling. Nothing needed a capability back: the database and Redis
+# run as their own unprivileged users from the start, so the entrypoints that would
+# otherwise change owner and drop privileges never run as root.
+#
+# the images are pinned by digest as well as tag. The tag says what we meant and the digest
+# says what we got, so a changed or poisoned tag cannot reach the droplet. To refresh them
+# see "Refresh the pinned images" in docs/deployment.md.
+#
+# memory plan for 1 GB (about 960 MiB usable). The steady state adds up to 704 MiB:
+#   db 256 + redis 64 + backend 384 = 704 MiB
+# that leaves about 256 MiB for the kernel, dockerd, containerd, Nginx, sshd and
+# fail2ban, with the 2 GB swap file from harden.sh as the safety net.
+# during a deploy the one-shot schema job (256 MiB) also runs while the old API is still
+# serving, so for a minute or two the ceilings total 960 MiB, which is the whole machine;
+# the limits are ceilings and the job uses far less than its ceiling while it only creates
+# tables, so the machine does not run out, but the margin is gone and the swap file carries
+# it. On a droplet that is also busy or after the stack grows, take the 2 GB size.
+#
+# CPU plan: the limits are ceilings and not reservations, so they may add up to more than
+# the one core. They stop one container taking the whole core from the others.
+
+name: phaemos-prod
+
+# a 10 MB file and 3 rotated copies per container cap the logs at 30 MB each, so
+# chatty containers cannot fill the 25 GB disk.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+# the options every container shares. The PostgreSQL logging flags below keep the values of a
+# failed statement out of the log: a failed insert would otherwise print the row, with the
+# email address or the device key in it, into a container log that is kept on disk
+x-hardening: &hardening
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  read_only: true
+
+# the API and the one-shot schema job are the same image, built once and named so both
+# services use it
+x-backend-image: &backend-image
+  image: phaemos-prod-backend:local
+  build: ../backend
+
+services:
+  db:
+    # postgres:15 at the digest below. Refresh with the steps in docs/deployment.md
+    image: postgres:15@sha256:10f9e886f772e9d6484350b043bcf990ead67ae5d9988ddce265d72a299055d5
+    <<: *hardening
+    # the image's own entrypoint starts as root and hands the data folder to the postgres
+    # user. Starting as that user already skips the step, so no capability is needed. An
+    # existing volume is already owned by uid 999.
+    user: '999:999'
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.75
+    pids_limit: 128
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in backend/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in backend/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in backend/.env}
+      # read by db-role.sh through psql's \getenv, so the password is never on a command line
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER:?set POSTGRES_APP_USER in backend/.env}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?set POSTGRES_APP_PASSWORD in backend/.env}
+    # small settings so Postgres stays well inside its 256 MiB limit. The API's pool
+    # opens at most 15 connections, so 30 leaves room for psql and the backups.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - effective_cache_size=128MB
+      - -c
+      - work_mem=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - max_connections=30
+      - -c
+      - password_encryption=scram-sha-256
+      # the statement text and the DETAIL line of an error carry the values: an email in a
+      # duplicate key error, a whole row in a null violation. terse leaves out DETAIL, HINT
+      # and CONTEXT and the statement level of panic leaves out the statement. Nothing that
+      # logs ordinary statements, durations or connections is on.
+      - -c
+      - log_min_error_statement=panic
+      - -c
+      - log_error_verbosity=terse
+      - -c
+      - log_statement=none
+      - -c
+      - log_min_duration_statement=-1
+      - -c
+      - log_connections=off
+      - -c
+      - log_disconnections=off
+    # no published port: only containers on the compose network reach the database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # the socket folder and the scratch space are memory only and vanish with the container
+    tmpfs:
+      - /run/postgresql:uid=999,gid=999,mode=0755,size=1m
+      - /tmp:uid=999,gid=999,mode=1777,size=64m
+    healthcheck:
+      # -h makes it test the TCP port, which the first-run setup server does not open, so
+      # the check cannot pass while the database is still being initialised
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - data
+
+  redis:
+    # redis:7-alpine at the digest below. Refresh with the steps in docs/deployment.md
+    image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+    <<: *hardening
+    # the redis user and group of the image. The entrypoint then skips its root-only step
+    user: '999:1000'
+    restart: unless-stopped
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 32
+    logging: *logging
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in backend/.env}
+      # redis-cli reads its password from here, so the health check needs no argument
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in backend/.env}
+    # the append-only file keeps the hourly repeat windows and the daily alert caps across
+    # a restart. Without it every deploy would reset them and a stuck rule could send a
+    # second text or email within the hour. The data is a few kilobytes, so the 48 MB
+    # ceiling is never close. Every key we store has an expiry, so any eviction policy that
+    # looks at expiries would drop exactly the keys we want kept. noeviction refuses a
+    # write at the ceiling instead and the API then falls back to process memory.
+    # the password goes into a config file on the tmpfs by a shell built-in, so it is on no
+    # command line and in no process list. The file is private to the redis user and gone
+    # when the container stops.
+    # access control: the default user is off, so there is no login without a name and the
+    # API's user may do ordinary key work and nothing administrative. It cannot run CONFIG
+    # (so it cannot remove the password or change the persistence settings), ACL, DEBUG,
+    # FLUSHALL, KEYS, scripting or anything else in the admin and dangerous classes;
+    # reaching Redis from the API therefore gives the data it holds and no more.
+    entrypoint: ['sh', '-c']
+    command:
+      - |
+        umask 077
+        printf 'user default off\nuser phaemos on >%s ~* &* +@all -@admin -@dangerous -@scripting\n' "$$REDIS_PASSWORD" > /tmp/auth.conf
+        exec redis-server /tmp/auth.conf --appendonly yes --maxmemory 48mb --maxmemory-policy noeviction
+    volumes:
+      - redis_data:/data
+    tmpfs:
+      - /tmp:uid=999,gid=1000,mode=0700,size=1m
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli --user phaemos ping | grep -q PONG']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - data
+
+  # one-shot job: creates any table the models define that is missing, signed in as the
+  # database owner. The API's own login has no right to create tables, so this is the only
+  # place they come from. deploy.sh runs it before the migrations and the API depends on it,
+  # so a plain `up` also runs it. It is safe to run again: it never alters a table.
+  schema:
+    <<: [*backend-image, *hardening]
+    restart: 'no'
+    mem_limit: 256m
+    cpus: 0.75
+    pids_limit: 128
+    logging: *logging
+    env_file:
+      - ../backend/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://phaemos:${REDIS_PASSWORD}@redis:6379/0
+      ENVIRONMENT: production
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in backend/.env}
+      FIRMWARE_STORAGE_PATH: /var/lib/phaemos/firmware
+      MODEL_PATH: /var/lib/phaemos/model/model.pkl
+      TRUSTED_PROXIES: 172.29.0.1/32
+      PYTHONDONTWRITEBYTECODE: '1'
+    # importing the app registers every model on the metadata. The explicit create_all
+    # keeps this job correct even if the app stops creating tables when it starts.
+    command:
+      - python
+      - -c
+      - |
+        from app.db import Base, engine
+        import app.main
+        Base.metadata.create_all(bind=engine)
+        print('tables ok')
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,mode=0700,size=16m
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - data
+
+  backend:
+    <<: [*backend-image, *hardening]
+    restart: unless-stopped
+    mem_limit: 384m
+    cpus: 0.75
+    # uvicorn, its thread pool, the scheduler and the maths libraries' own threads all count
+    pids_limit: 256
+    logging: *logging
+    env_file:
+      - ../backend/.env
+    # these override backend/.env on purpose. They are tied to this file: the database and
+    # cache names are the services above, the database login is the application's own
+    # limited role and the firmware and model paths are the volumes mounted below.
+    # POSTGRES_PASSWORD is blanked because env_file would otherwise hand the owner's
+    # password to the API: the API must never hold it. The API reads only DATABASE_URL.
+    # ENVIRONMENT is fixed here, so a copied development value in the file or a stray shell
+    # variable cannot turn this stack into a development one. SECRET_KEY is required so a
+    # missing value stops the start.
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_APP_USER:?set POSTGRES_APP_USER in backend/.env}:${POSTGRES_APP_PASSWORD:?set POSTGRES_APP_PASSWORD in backend/.env}@db:5432/${POSTGRES_DB}
+      POSTGRES_PASSWORD: ''
+      REDIS_URL: redis://phaemos:${REDIS_PASSWORD:?set REDIS_PASSWORD in backend/.env}@redis:6379/0
+      ENVIRONMENT: production
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in backend/.env}
+      FIRMWARE_STORAGE_PATH: /var/lib/phaemos/firmware
+      MODEL_PATH: /var/lib/phaemos/model/model.pkl
+      # the image is read-only, so Python must not try to write compiled files beside the code
+      PYTHONDONTWRITEBYTECODE: '1'
+      # Nginx runs on the host and reaches the published port through the network gateway,
+      # so the API sees that one address as its peer. It is trusted for X-Real-IP and
+      # nothing else is.
+      TRUSTED_PROXIES: 172.29.0.1/32
+    # published on the loopback address only. Docker's published ports bypass ufw, so a
+    # wider binding would put the API on the internet without TLS.
+    ports:
+      - '127.0.0.1:8000:8000'
+    # uploaded firmware and the trained model survive a rebuild. Without the model volume
+    # every deploy that recreates the container would return anomaly scoring to zero;
+    # no source mount: the image holds the code.
+    volumes:
+      - firmware_data:/var/lib/phaemos/firmware
+      - model_data:/var/lib/phaemos/model
+    # scratch space for temporary files and the libraries' caches. Memory only.
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,mode=0700,size=64m
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      schema:
+        condition: service_completed_successfully
+    # the slim image has no curl, so the check uses Python. The first start creates the
+    # tables and loads the ML libraries, hence the long start period.
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=4)"]
+      interval: 15s
+      timeout: 6s
+      retries: 5
+      start_period: 60s
+    networks:
+      - data
+      - edge
+
+# two networks. `data` is internal: it has no route to anywhere else, so the database, Redis and
+# the schema job cannot reach the internet and nothing on the internet can reach them and a
+# process that gets code execution in the database container cannot call out. Only the API is
+# on `edge` as well, because it must publish its port and call out (email, SMS and sign-in
+# providers). The edge subnet and its gateway are pinned so TRUSTED_PROXIES above can name the
+# one address Nginx arrives from: Nginx runs on the host and reaches the published port
+# through this gateway. Both subnets sit outside the 10.x range DigitalOcean uses for private
+# networking.
+networks:
+  data:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.29.1.0/24
+  edge:
+    ipam:
+      config:
+        - subnet: 172.29.0.0/24
+          gateway: 172.29.0.1
+
+volumes:
+  postgres_data:
+  redis_data:
+  firmware_data:
+  model_data:

@@ -1,6 +1,6 @@
 # SQL
 
-I keep all SQL scripts here. Alembic handles schema migrations automatically - this folder is for manual queries, seed data and emergency fixes only.
+The SQL scripts live here. The API creates missing tables itself and the numbered files in `backend/migrations/` add the columns and indexes it does not (Alembic is installed but not used). This folder is for manual queries, seed data and emergency fixes only.
 
 ---
 
@@ -8,7 +8,8 @@ I keep all SQL scripts here. Alembic handles schema migrations automatically - t
 
 ```
 sql/
-├── migrations/     Emergency manual SQL fixes (Alembic handles normal migrations)
+├── roles/          The API's database role (app-role.sql) and its check, run by scripts/db-role.sh
+├── migrations/     Emergency manual SQL fixes (normal migrations are in backend/migrations)
 ├── queries/        Useful analytical and operational queries
 └── seed/           Demo and development seed data
 ```
@@ -23,8 +24,9 @@ Connect to the database and run a query file:
 # Local Docker stack
 psql postgresql://postgres:password@localhost:5432/phaemos -f sql/queries/device-summary.sql
 
-# Production (Render)
-psql $DATABASE_URL -f sql/queries/device-summary.sql
+# Production droplet, through the database container
+docker compose --env-file backend/.env -f infra/docker-compose.prod.yml exec -T db \
+  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < infra/sql/queries/device-summary.sql
 ```
 
 ---
