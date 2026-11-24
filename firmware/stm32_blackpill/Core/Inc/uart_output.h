@@ -1,34 +1,55 @@
 /**
- * uart_output.h - UART formatting layer for the vibration node
+ * uart_output.h - UART transmit and receive layer for the vibration node
  *
- * keep UART formatting in its own translation unit so that if the output
- * protocol changes (e.g. switching to JSON or MQTT framing) only this file
- * and its .c companion need to be touched, leaving all sensor and DSP code
- * untouched.
+ * the line text itself is built in line.c, which has no HAL dependency.  this
+ * file only moves bytes: an interrupt driven send and an interrupt driven
+ * receive that hands every byte to a ring buffer.
  */
 
 #ifndef UART_OUTPUT_H
 #define UART_OUTPUT_H
 
+#include <stddef.h>
+#include <stdbool.h>
 #include "stm32f4xx_hal.h"
+#include "ping.h"
+#include "tx_queue.h"
 
 /**
- * UART_SendVibrationData - Format and transmit one vibration telemetry line.
- * @huart:        pointer to the HAL UART handle (USART1 on PA9/PA10)
- * @ax:           mean accelerometer X over the last 1-second window (g)
- * @ay:           mean accelerometer Y over the last 1-second window (g)
- * @az:           mean accelerometer Z over the last 1-second window (g)
- * @magnitude:    RMS vector magnitude of the acceleration (g)
- * @fft_peak_hz:  dominant vibration frequency from the DFT (Hz)
+ * transmit is interrupt driven and never blocks the main loop.  a 160 byte
+ * line takes about 14 ms at 115200 baud, longer than one 10 ms sample tick, so
+ * a blocking send would cost a tick whatever the order of the calls.
  *
- * output format (CRLF terminated):
- *   "VIB:%.2f,%.2f,%.2f,MAG:%.2f,FFT_PEAK:%.1fHz\r\n"
- *
- * example:
- *   "VIB:0.02,-0.01,1.01,MAG:1.01,FFT_PEAK:12.5Hz\r\n"
+ * every message is copied into the transmit queue (tx_queue.h) and goes out in
+ * the order it arrived, one at a time.  a message that arrives while another
+ * is on the wire waits behind it and is never written over it.  UART_TxService,
+ * called from every pass of the main loop, starts the next one when the
+ * previous transfer has finished.  a line or pong that finds no room is
+ * dropped and counted (g_tx_skipped, g_pong_dropped).
  */
-void UART_SendVibrationData(UART_HandleTypeDef *huart,
-                            float ax, float ay, float az,
-                            float magnitude, float fft_peak_hz);
+bool UART_QueueLine(const char *buf, size_t len);
+bool UART_QueuePong(const char *buf, size_t len);
+bool UART_LineSpace(void);
+void UART_TxService(UART_HandleTypeDef *huart);
+
+/**
+ * UART_RxStart - begin interrupt driven receive into the given ring.
+ * call once after the UART is initialised.
+ */
+void UART_RxStart(UART_HandleTypeDef *huart, ByteRing *ring);
+
+/* receive errors seen since reset (framing, noise, parity and overrun), for
+ * a debugger watch window */
+extern volatile uint32_t g_rx_errors;
+
+/* pongs dropped because the transmit queue held its limit of pongs */
+extern volatile uint32_t g_pong_dropped;
+
+/* times HAL_UART_Receive_IT refused to start again.  receive is restarted only
+ * in the two callbacks, so a non-zero value means it has stopped */
+extern volatile uint32_t g_rx_rearm_failed;
+
+/* bytes dropped because the receive ring was full */
+extern volatile uint32_t g_rx_dropped;
 
 #endif /* UART_OUTPUT_H */

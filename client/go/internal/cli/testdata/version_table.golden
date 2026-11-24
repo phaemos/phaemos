@@ -1,0 +1,3 @@
+phaemosctl	9.9.9-test
+server	http://api.test (reachable)
+server version	1.0.0

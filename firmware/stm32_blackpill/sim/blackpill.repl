@@ -1,0 +1,76 @@
+// STM32F411CEU6 Black Pill, built from the STM32F4 peripheral models that ship with Renode.
+// there is no F411 platform file, so this lists only what the firmware touches.  the memory sizes are the
+// F411 sizes (512 KB flash, 128 KB SRAM).  the peripheral models are the F4 ones (the F411 shares the
+// register layout of the F407 for each of them).  the clock models are simplified: see README.md.
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x80000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x20000
+
+flash_controller: MTD.STM32F4_FlashController @ {
+        sysbus 0x40023C00;
+        sysbus new Bus.BusMultiRegistration { address: 0x1FFFC000; size: 0x100; region: "optionBytes" }
+    }
+    flash: flash
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 96000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4"
+    nvic: nvic
+
+pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ -> nvic@41
+
+rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
+    rtcPeripheral: rtc
+
+// 25 MHz crystal, PLL to 96 MHz: TIM2 sits on APB1 (48 MHz) with the doubled timer clock, so 96 MHz
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
+    -> nvic@28
+    frequency: 96000000
+    initialLimit: 0xFFFFFFFF
+
+iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
+    frequency: 32000
+    windowOption: false
+    defaultPrescaler: 0x4
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>
+    modeResetValue: 0xA8000000
+    outputSpeedResetValue: 0x0C000000
+    pullUpPullDownResetValue: 0x64000000
+    numberOfAFs: 16
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x40020400, +0x400>
+    modeResetValue: 0x00000280
+    outputSpeedResetValue: 0x000000C0
+    pullUpPullDownResetValue: 0x00000100
+    numberOfAFs: 16
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40020800, +0x400>
+    numberOfAFs: 16
+
+usart1: UART.STM32_UART @ sysbus <0x40011000, +0x100>
+    -> nvic@37
+
+i2c1: I2C.STM32F1_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@31
+    ErrorInterrupt -> nvic@32
+
+mpu: Sensors.MpuSim @ i2c1 0x68
+    controller: i2c1
+
+mpuctl: Sensors.MpuCtl @ sysbus <0x50000000, +0x4>
+    target: mpu
+
+// the HAL switches the HSE, PLL and a few other bits through the bit-band alias of the peripheral space
+bitbandPeripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+    peripheralBase: 0x40000000

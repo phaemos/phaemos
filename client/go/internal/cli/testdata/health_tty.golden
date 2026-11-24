@@ -1,0 +1,9 @@
+machines      5
+online        4
+offline       1
+link online   3
+link late     1
+link offline  1
+open alerts   3
+open tickets  1
+health score  72 / 100

@@ -12,13 +12,18 @@
 #include "mpu6050_driver.h"
 
 /* define the I2C timeout in ms as a named constant rather than a magic
- * number so it is easy to tune if the bus speed changes. */
-#define I2C_TIMEOUT_MS  100U
+ * number so it is easy to tune if the bus speed changes.  a normal transfer
+ * takes about 1 ms at 100 kHz.  the HAL applies the timeout to each wait
+ * inside a transfer separately, so a hung bus can cost several times this
+ * value per call.  20 ms keeps that worst case well inside the watchdog
+ * period (see main.c). */
+#define I2C_TIMEOUT_MS  20U
 
 /* scale factors from the MPU6050 datasheet Section 4.17 / 4.19.
- * use +/-2g accel range (ACCEL_CONFIG = 0x00) -> 16384 LSB/g.
+ * use +/-2g accel range (ACCEL_CONFIG = 0x00) -> 16384 LSB/g.  the same
+ * figure lives in imu_config.h so the clipping limit is derived from it.
  * use +/-250 deg/s gyro range (GYRO_CONFIG = 0x00) -> 131 LSB/(deg/s). */
-#define ACCEL_SCALE     16384.0f
+#define ACCEL_SCALE     ((float)IMU_ACCEL_LSB_PER_G)
 #define GYRO_SCALE      131.0f
 
 /**
@@ -72,14 +77,20 @@ HAL_StatusTypeDef MPU6050_Init(I2C_HandleTypeDef *hi2c)
 }
 
 /**
- * MPU6050_ReadAccel - Read only the three accelerometer axes (6 bytes).
+ * MPU6050_ReadAccelRaw - Read only the three accelerometer axes (6 bytes) as
+ * raw signed counts.  MPU6050_ReadAccel below converts them to g.
  *
  * read only accel here rather than all 14 bytes to keep the I2C transaction
- * short.  At 400 kHz I2C, 6 data bytes + overhead takes ~0.2 ms compared to
- * ~0.4 ms for 14 bytes.  In the TIM2 ISR at 100 Hz every microsecond saved
+ * short.  At 100 kHz I2C, 6 data bytes + overhead takes ~0.8 ms compared to
+ * ~1.4 ms for 14 bytes.  At 100 Hz every microsecond saved
  * reduces jitter in the sample timing.
  */
-HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data)
+HAL_StatusTypeDef MPU6050_ReadAccelRaw(I2C_HandleTypeDef *hi2c, int16_t raw_out[3])
+{
+    return MPU6050_ReadAccelRawTimeout(hi2c, raw_out, I2C_TIMEOUT_MS);
+}
+
+HAL_StatusTypeDef MPU6050_ReadAccelRawTimeout(I2C_HandleTypeDef *hi2c, int16_t raw_out[3], uint32_t timeout_ms)
 {
     HAL_StatusTypeDef status;
     uint8_t raw[6];
@@ -88,16 +99,43 @@ HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data)
      * header for the rationale on repeated-start requirement. */
     status = HAL_I2C_Mem_Read(hi2c, MPU6050_I2C_ADDR,
                                MPU6050_ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT,
-                               raw, 6, I2C_TIMEOUT_MS);
+                               raw, 6, timeout_ms);
     if (status != HAL_OK) return status;
 
     /* the MPU6050 outputs data big-endian: high byte first, then low byte.
-     * cast to int16_t before dividing to correctly handle negative values. */
-    data->accel_x = (float)((int16_t)(raw[0] << 8 | raw[1])) / ACCEL_SCALE;
-    data->accel_y = (float)((int16_t)(raw[2] << 8 | raw[3])) / ACCEL_SCALE;
-    data->accel_z = (float)((int16_t)(raw[4] << 8 | raw[5])) / ACCEL_SCALE;
+     * cast to int16_t to correctly handle negative values. */
+    raw_out[0] = (int16_t)(raw[0] << 8 | raw[1]);
+    raw_out[1] = (int16_t)(raw[2] << 8 | raw[3]);
+    raw_out[2] = (int16_t)(raw[4] << 8 | raw[5]);
 
     return HAL_OK;
+}
+
+HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data)
+{
+    int16_t raw[3];
+    HAL_StatusTypeDef status = MPU6050_ReadAccelRaw(hi2c, raw);
+    if (status != HAL_OK) return status;
+
+    data->accel_x = (float)raw[0] / ACCEL_SCALE;
+    data->accel_y = (float)raw[1] / ACCEL_SCALE;
+    data->accel_z = (float)raw[2] / ACCEL_SCALE;
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef MPU6050_ReadWhoAmI(I2C_HandleTypeDef *hi2c, uint8_t *id)
+{
+    return HAL_I2C_Mem_Read(hi2c, MPU6050_I2C_ADDR,
+                            IMU_REG_WHO_AM_I, I2C_MEMADD_SIZE_8BIT,
+                            id, 1, I2C_TIMEOUT_MS);
+}
+
+HAL_StatusTypeDef MPU6050_ReadPwrMgmt1(I2C_HandleTypeDef *hi2c, uint8_t *value)
+{
+    return HAL_I2C_Mem_Read(hi2c, MPU6050_I2C_ADDR,
+                            MPU6050_PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT,
+                            value, 1, I2C_TIMEOUT_MS);
 }
 
 /**

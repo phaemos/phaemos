@@ -5,10 +5,10 @@ import network
 import time
 
 
-def connect_wifi(ssid, password, timeout_s=30):
+def connect_wifi(ssid, password, timeout_s=30, feed=None):
     """Connect to a Wi-Fi network and return the WLAN interface.
 
-    I raise on timeout rather than returning False so the caller does not
+    this raises on timeout rather than returning False so the caller does not
     silently skip posting - a missing network connection means all telemetry
     would be lost, so it is better to surface the failure loudly and let
     main.py decide whether to retry or halt.
@@ -17,6 +17,7 @@ def connect_wifi(ssid, password, timeout_s=30):
         ssid:      Wi-Fi network name (string)
         password:  Wi-Fi password (string)
         timeout_s: Maximum seconds to wait for connection (default 30)
+        feed:      Optional function called on every poll so a watchdog stays fed
 
     Returns:
         The active network.WLAN object on success.
@@ -46,6 +47,9 @@ def connect_wifi(ssid, password, timeout_s=30):
     # REPL for debugging during bring-up.
     elapsed = 0.0
     while not wlan.isconnected():
+        # a join can outlast the watchdog period, so it is fed on every poll
+        if feed is not None:
+            feed()
         time.sleep(0.5)
         elapsed += 0.5
         if elapsed >= timeout_s:

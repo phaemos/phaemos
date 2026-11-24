@@ -2,6 +2,7 @@
 // the core macros defined in Arduino.h at parse time.
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_task_wdt.h>
 
 #include "../config.h"
 #include "wifi_manager.h"
@@ -21,6 +22,12 @@ void connectWiFi(const char* ssid, const char* pass) {
     Serial.print(F("WiFi connecting to "));
     Serial.println(ssid);
 
+    // let the core rejoin on its own after a drop so loop() never has to block on it.
+    // the core would otherwise keep its own copy of the password in flash. we keep one copy, in
+    // our own stored credentials, so this is set before anything else touches the radio.
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
     WiFi.begin(ssid, pass);
 
     uint32_t start = millis();
@@ -31,6 +38,9 @@ void connectWiFi(const char* ssid, const char* pass) {
             Serial.println(F("WIFI FAILED"));
             return;
         }
+        // the connect can wait longer than the watchdog allows. feeding it here is harmless
+        // when the loop is not subscribed yet.
+        esp_task_wdt_reset();
         delay(500);
         Serial.print(F("."));
     }

@@ -1,0 +1,12 @@
+server          http://api.test
+status          operational
+api             ok
+database        ok
+redis           ok
+model           ok
+updated_at      2026-11-22 12:59:00 BST
+signed in as    admin
+signed in with  token
+token           ci script (rd01)
+scope           read
+expires         2027-02-20 13:00:00 BST (in 90 days)

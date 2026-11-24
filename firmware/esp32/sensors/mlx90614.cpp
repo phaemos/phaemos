@@ -1,19 +1,23 @@
-// include config.h first so MLX90614_ADDR is available for the constructor.
-#include "../config.h"
 #include "mlx90614.h"
 #include <Wire.h>
 #include <Adafruit_MLX90614.h>
 
-// use the default constructor here because Adafruit_MLX90614 always uses
-// the fixed 0x5A address internally - the config macro is kept for documentation.
+// the library defines its own MLX90614_ADDR for a register (0x2E), which clashes
+// with the I2C address in config.h. drop the library's macro before config.h
+// brings in the project one.
+#undef MLX90614_ADDR
+#include "../config.h"
+
+// begin() takes the address from config.h so the bus map stays in one place.
 static Adafruit_MLX90614 mlx;
 
-void initMLX90614() {
-    if (!mlx.begin()) {
+bool initMLX90614() {
+    if (!mlx.begin(MLX90614_ADDR)) {
         Serial.println("[MLX90614] ERROR: sensor not found");
-        return;
+        return false;
     }
     Serial.println("[MLX90614] init OK");
+    return true;
 }
 
 float readMLX90614() {

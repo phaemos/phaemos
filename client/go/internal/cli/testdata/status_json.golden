@@ -1,0 +1,1 @@
+{"status":{"api":"ok","database":"ok","model":"ok","redis":"ok","status":"operational","updated_at":"2026-11-22T11:59:00+00:00","version":"1.0.0"},"whoami":{"id":"u-1","role":"admin","signed_in_with":"token","token":{"expires_at":"2027-02-20T12:00:00Z","id":"rd01","name":"ci script","scope":"read"}}}

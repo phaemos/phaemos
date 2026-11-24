@@ -1,52 +1,124 @@
 /**
- * uart_output.c - UART telemetry formatter for the vibration node
+ * uart_output.c - UART transmit and receive for the vibration node
  *
- * isolate all string formatting in this file so the output protocol can
- * be changed (e.g. to JSON or MQTT framing) without touching sensor or DSP
- * code.  The ESP32 upstream parser looks for the "VIB:" prefix to identify
- * packets from this node.
+ * transmit is interrupt driven from a queue, one message at a time.  a
+ * blocking send of a 160 byte line would hold the main loop for about 14 ms,
+ * longer than the 10 ms sample tick and cost a sample.  DMA would add
+ * channel set-up for no gain at this rate.  the HAL reads the bytes from the
+ * queue's slot while the transfer runs, so a slot is released only when the
+ * HAL reports the transfer finished.
+ *
+ * receive is one byte at a time by interrupt.  the interrupt does the least
+ * it can: it pushes the byte into a ring and re-arms.  the parser runs in
+ * the main loop.
  */
 
 #include "uart_output.h"
-#include <stdio.h>   /* snprintf */
-#include <string.h>  /* strlen */
 
-/* size the buffer to 128 bytes which is well above the worst-case formatted
- * length (around 60 characters) to give comfortable headroom.  128 is chosen
- * because it is a power of two and matches the typical UART DMA buffer
- * alignment recommendation in STM32 AN4671. */
-#define TX_BUF_SIZE  128U
+static uint8_t           s_rx_byte;
+static ByteRing         *s_ring;
+static TxQueue           s_tx;
 
-/**
- * UART_SendVibrationData - Format and transmit one telemetry line.
- *
- * use snprintf rather than sprintf to prevent buffer overrun if floats
- * format wider than expected (e.g. NaN or Inf representations can be longer
- * than normal float strings on some libc implementations).
- *
- * use HAL_UART_Transmit in blocking mode rather than DMA because this
- * function is called once per second from the main loop - not from an ISR -
- * so blocking for the ~5 ms it takes to transmit 60 bytes at 9600 baud is
- * acceptable and avoids the complexity of managing a DMA completion callback
- * just for a 1 Hz heartbeat.
- */
-void UART_SendVibrationData(UART_HandleTypeDef *huart,
-                            float ax, float ay, float az,
-                            float magnitude, float fft_peak_hz)
+volatile uint32_t g_rx_errors       = 0U;
+volatile uint32_t g_rx_dropped      = 0U;
+volatile uint32_t g_pong_dropped    = 0U;
+volatile uint32_t g_rx_rearm_failed = 0U;
+
+bool UART_QueueLine(const char *buf, size_t len)
 {
-    char buf[TX_BUF_SIZE];
+    return TxQueue_PushLine(&s_tx, (const uint8_t *)buf, len);
+}
 
-    /* snprintf writes at most TX_BUF_SIZE-1 characters and always
-     * null-terminates, so buf[TX_BUF_SIZE-1] == '\0' is guaranteed. */
-    int len = snprintf(buf, TX_BUF_SIZE,
-                       "VIB:%.2f,%.2f,%.2f,MAG:%.2f,FFT_PEAK:%.1fHz\r\n",
-                       ax, ay, az, magnitude, fft_peak_hz);
+bool UART_QueuePong(const char *buf, size_t len)
+{
+    bool ok = TxQueue_PushPong(&s_tx, (const uint8_t *)buf, len);
+    g_pong_dropped = s_tx.pongs_dropped;
+    return ok;
+}
 
-    /* guard against snprintf returning a negative value (encoding error)
-     * or a value larger than the buffer (truncated output) before transmitting
-     * to avoid sending garbled or incomplete lines to the upstream parser. */
-    if (len > 0 && len < (int)TX_BUF_SIZE)
+bool UART_LineSpace(void)
+{
+    return TxQueue_LineSpace(&s_tx);
+}
+
+void UART_TxService(UART_HandleTypeDef *huart)
+{
+    /* the HAL is free again once the last byte has left */
+    if (huart->gState != HAL_UART_STATE_READY)
     {
-        HAL_UART_Transmit(huart, (uint8_t *)buf, (uint16_t)len, 100U);
+        return;
+    }
+    if (s_tx.in_flight)
+    {
+        TxQueue_Done(&s_tx);    /* the message that was going out has finished */
+    }
+
+    const uint8_t *data;
+    uint16_t       len;
+    if (TxQueue_Start(&s_tx, &data, &len))
+    {
+        if (HAL_UART_Transmit_IT(huart, (uint8_t *)data, len) != HAL_OK)
+        {
+            /* not started: put it back to be tried again on the next pass */
+            s_tx.in_flight = false;
+        }
+    }
+}
+
+void UART_RxStart(UART_HandleTypeDef *huart, ByteRing *ring)
+{
+    s_ring = ring;
+    if (HAL_UART_Receive_IT(huart, &s_rx_byte, 1U) != HAL_OK)
+    {
+        g_rx_rearm_failed++;
+    }
+}
+
+/* one byte has arrived */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != USART1) return;
+
+    /* a framing, noise or parity error is reported in ErrorCode before this
+     * callback runs and the byte that came with it is not trustworthy.  it
+     * is dropped rather than fed to the parser.  the error callback that
+     * follows does the counting. */
+    if ((huart->ErrorCode & (HAL_UART_ERROR_FE | HAL_UART_ERROR_NE | HAL_UART_ERROR_PE)) == 0U)
+    {
+        if ((s_ring != NULL) && !ByteRing_Push(s_ring, s_rx_byte))
+        {
+            g_rx_dropped++;
+        }
+    }
+
+    /* the HAL stops after every byte in this mode, so arm the next one */
+    if (HAL_UART_Receive_IT(huart, &s_rx_byte, 1U) != HAL_OK)
+    {
+        g_rx_rearm_failed++;
+    }
+}
+
+/* an overrun, framing, noise or parity error.  the HAL ends the receive on an
+ * overrun and leaves the state READY and it would stay stopped for ever, so
+ * start it again here.  after the lesser errors it is still running and the
+ * state is BUSY_RX, so nothing is done.
+ *
+ * this and the callback above are the only places that restart receive and
+ * both run in the interrupt.  the main loop does not restart it: a write to
+ * the control register from the main loop is not atomic against this
+ * interrupt and the transmit interrupt and could re-enable the transmit
+ * interrupt with nothing left to send.  every way the HAL can stop receiving
+ * (a completed byte or an overrun) ends in one of the two callbacks. */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != USART1) return;
+
+    g_rx_errors++;
+    if (huart->RxState == HAL_UART_STATE_READY)
+    {
+        if (HAL_UART_Receive_IT(huart, &s_rx_byte, 1U) != HAL_OK)
+        {
+            g_rx_rearm_failed++;
+        }
     }
 }

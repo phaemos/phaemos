@@ -2,6 +2,7 @@
 // tuning only requires editing config.h, not hunting through sensor files.
 #include "../config.h"
 #include "fc28.h"
+#include "analog_checks.h"
 #include <Arduino.h>
 
 void readFC28(float* moisture_level, bool* water_detected) {
@@ -13,5 +14,5 @@ void readFC28(float* moisture_level, bool* water_detected) {
     // test raw < WATER_THRESHOLD rather than > because the FC28 is a
     // resistive sensor - lower resistance (more water) means lower ADC value.
     // WATER_THRESHOLD is defined in config.h so it can be tuned per deployment.
-    *water_detected = (raw < WATER_THRESHOLD);
+    *water_detected = waterAlarm((float)raw);
 }

@@ -1,0 +1,16 @@
+name	pump-02
+id	22222222-2222-4222-8222-222222222222
+state	offline
+link	offline
+last seen	2026-11-22 10:00:00 BST (3h ago)
+expected interval	5 s
+type	stm32
+location	-
+owner	-
+tags	-
+firmware	-
+open alerts	1
+	warning  pump-02 has not reported for 2 minutes  a4000000-0000-4000-8000-000000000004
+model	learning
+model data	9.5 of 24.0 hours collected
+replay protection	off

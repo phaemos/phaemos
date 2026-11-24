@@ -18,5 +18,11 @@ void displaySplash(const char* title, const char* subtitle);
 // displayTelemetry - redraws the full 4-line data screen on every OLED_UPDATE_MS
 // tick. Passing all readings by value keeps this call site simple.
 // dist is in mm (from VL53L0X), gas and water are boolean alert flags.
+// status is the overall state in words (NORMAL, WARNING or CRITICAL) shown on
+// the bottom row so the state never depends on colour.
 void displayTelemetry(BME280Reading bme, MPU6050Reading mpu, INA219Reading ina,
-                      uint16_t dist, bool gas, bool water);
+                      uint16_t dist, bool gas, bool water, const char* status);
+
+// displayStatusOnly draws the status row alone, with dashes for every reading. the hub calls it
+// at the end of the output set-up, so the display is never blank while the sensors set up.
+void displayStatusOnly(const char* status);
