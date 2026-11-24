@@ -1,0 +1,44 @@
+// the PHAEMOS wordmark: the squared lettering of the brand artwork with the blue triangle in place of the A's crossbar;
+// the paths are redrawn on the pixel grid of assets/brand/phaemos-social-preview.png (one unit is one pixel of the 68 px
+// cap height there), so it is drawn lettering and never a font. The letters take the text colour of the parent, which keeps
+// both themes right without a second file. The same shapes live in public/brand/phaemos-wordmark-{light,dark}.svg for
+// places that need a file (social images, the docs header).
+export const WORDMARK_VIEWBOX = '0 0 613 68';
+export const WORDMARK_RATIO = 613 / 68;
+
+export const WORDMARK_LETTERS =
+  'M0 0H62A14 14 0 0 1 76 14V32A14 14 0 0 1 62 46H14.5V68H0V32.5H59A2.5 2.5 0 0 0 61.5 30V16A2.5 2.5 0 0 0 59 13.5H0Z' +
+  'M98 0H112.5V28H149.5V0H164V68H149.5V41.5H112.5V68H98Z' +
+  'M182 68L220 0H230L268 68H252L225 18L198 68Z' +
+  'M284 0H341V13.5H298.5V28H331V41H298.5V54.5H344V68H284Z' +
+  'M361 0H377L399 36L421 0H437V68H422.5V25L399 60.5L375.5 25V68H361Z' +
+  'M471 0H508A17 17 0 0 1 525 17V51A17 17 0 0 1 508 68H471A17 17 0 0 1 454 51V17A17 17 0 0 1 471 0Z' +
+  'M473.5 13.5A5 5 0 0 0 468.5 18.5V50A5 5 0 0 0 473.5 55H505.5A5 5 0 0 0 510.5 50V18.5A5 5 0 0 0 505.5 13.5Z' +
+  'M609 0V13.5H561A2.5 2.5 0 0 0 558.5 16V25.5A2.5 2.5 0 0 0 561 28H599A14 14 0 0 1 613 42V54A14 14 0 0 1 599 68H544V55H595.5' +
+  'A2.5 2.5 0 0 0 598 52.5V43.5A2.5 2.5 0 0 0 595.5 41H557A14 14 0 0 1 543 27V14A14 14 0 0 1 557 0Z';
+
+export const WORDMARK_TRIANGLE = 'M225 45L234.5 62H215.5Z';
+
+interface Props {
+  // the cap height in rem, so the mark grows with the reader's text size and with zoom
+  height?: number;
+  className?: string;
+}
+
+// the accessible name is the visible word. The triangle is brand-600 on light (4.9:1 on the page) and brand-500 on dark
+// (5.3:1), both above the 3:1 a graphic needs.
+export default function Wordmark({ height = 0.9375, className = '' }: Props) {
+  return (
+    <svg
+      viewBox={WORDMARK_VIEWBOX}
+      role="img"
+      aria-label="PHAEMOS"
+      focusable="false"
+      style={{ height: `${height}rem`, width: `${height * WORDMARK_RATIO}rem` }}
+      className={`shrink-0 ${className}`}
+    >
+      <path fill="currentColor" fillRule="evenodd" d={WORDMARK_LETTERS} />
+      <path className="fill-brand-600 dark:fill-brand-500" d={WORDMARK_TRIANGLE} />
+    </svg>
+  );
+}

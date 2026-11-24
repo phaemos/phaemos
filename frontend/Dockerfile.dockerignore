@@ -1,0 +1,11 @@
+# the build context is the repository root. Send only what the image needs: the frontend and the changelog.
+*
+!frontend
+!CHANGELOG.md
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/.env
+frontend/.env.local
+frontend/*.log
+frontend/tsconfig.tsbuildinfo

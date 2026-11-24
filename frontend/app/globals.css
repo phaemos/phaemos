@@ -1,32 +1,340 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
+/* focus colours are written as hex because plain CSS cannot read the Tailwind scale.
+   they are brand-700 on light and brand-400 on dark: 6.2:1 and 7.9:1 against the page backgrounds. */
+:root {
+  --focus-ring: #1d4ed8;
+  --control-border: #7b818c;
+  color-scheme: light;
+  /* chart colours: each clears 3:1 against the panel, text colours 7:1. Charts read these and hold no hex of their own. */
+  --chart-series: #1d4ed8;
+  --chart-axis: #4a505a;
+  --chart-grid: #c9ccd3;
+  --chart-limit: #b91c1c;
+}
+html.dark {
+  --focus-ring: #60a5fa;
+  --control-border: #7b818c;
+  color-scheme: dark;
+  --chart-series: #60a5fa;
+  --chart-axis: #a1a6b0;
+  --chart-grid: #353941;
+  --chart-limit: #f87171;
+}
+
+/* Tailwind's hover: variant means "can hover and has a fine pointer", so a tap on a phone never leaves a stuck hover
+   state. This is the one place that says so: every hover: class in the code picks it up. */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 @layer base {
   * {
     box-sizing: border-box;
   }
-  *:focus-visible {
-    outline: none;
-    ring: 2px solid #6366f1;
-    ring-offset: 2px;
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* the sticky site header is 56 px high. Without this a field that takes focus on the way back up a page sits under it (WCAG 2.4.11) */
+    scroll-padding-top: 5rem;
   }
+  body {
+    font-family: var(--typeface-sans), system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* headings break into even lines and paragraphs avoid a one-word last line */
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+  /* the public site reads with a looser line height */
+  .site-shell {
+    line-height: 1.6;
+  }
+  /* page and section headings on the public site take the brand's heading face. Smaller headings stay in the reading
+     face, which holds up better at 16 to 20 px. The dashboard opts in per heading with font-display. */
+  .site-shell h1,
+  .site-shell h2 {
+    font-family: var(--typeface-display), var(--typeface-sans), system-ui, sans-serif;
+  }
+  /* mono is for readings with units, versions, ids and code. Dates and times stay in the sans face with tabular figures. */
+  code,
+  kbd,
+  samp {
+    font-family: var(--typeface-mono), ui-monospace, monospace;
+  }
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* one focus rule for the whole product. It sits outside the layers so no utility such as
+   focus:outline-none can remove it. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  /* the ring appears at once: Tailwind's transition-colors also names outline-color, which would fade it in */
+  transition: none;
+}
+
+/* controls need a border of at least 3:1 against the page and a 44 px target */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select,
+textarea {
+  border-color: var(--control-border);
+  min-height: 44px;
+}
+button:not([data-hit]),
+[role="button"],
+summary {
+  min-height: 44px;
+  min-width: 44px;
+}
+/* a control that reaches 44 px through an invisible hit area (a small Button) sets data-hit and keeps its own height */
+/* an invalid field keeps its heavier critical border: this rule is outside the layers, so it has to say so itself */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: #b91c1c;
+}
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])[aria-invalid="true"],
+html.dark select[aria-invalid="true"],
+html.dark textarea[aria-invalid="true"] {
+  border-color: #f87171;
+}
+/* controls have 6 px corners and panels 8 px */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea,
+button {
+  border-radius: 6px;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #2563eb;
 }
 
 @layer utilities {
+  /* replaces the old shadowed card: a hairline panel with 8 px corners and no shadow in either theme */
   .card {
-    @apply rounded-xl border border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900 shadow-sm transition-shadow duration-200 hover:shadow-md;
+    @apply rounded-lg border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900;
+  }
+  /* a small label for a group of fields, a stat or a list: the sans face in sentence case at 13 px */
+  .label {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+  }
+  /* a reading with its unit, a version, an id: mono with tabular figures */
+  .num {
+    font-family: var(--typeface-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  /* a date, a time or a count in running text or a table cell: the sans face with tabular figures */
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* a hover or press changes a colour in 150 ms and nothing else moves. Menus, tabs and list rows do not animate. The
+   transitions name their properties and never include outline, so the focus ring is never faded in. */
+a,
+button,
+input,
+select,
+textarea,
+summary {
+  transition-property: color, background-color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
 }
 
-@keyframes statusPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%       { transform: scale(1.5); opacity: 0.6; }
+/* the phone drawer and dialogs are the only things that animate on appearing: 200 ms, transform and opacity only, a
+   strong ease-out. The reduced-motion rule at the end of this file turns them off. */
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.drawer-in { animation: drawer-in 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+.fade-in { animation: fade-in 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+dialog[open] { animation: dialog-in 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+dialog[open]::backdrop { animation: fade-in 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+
+/* table styles shared by every data table: wrap the table in DataTable. They sit in the components layer so a
+   utility on one cell (align-top, whitespace-nowrap, w-48) can still override them. Every row is 44 px high. */
+@layer components {
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+  }
+  .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    text-align: left;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    background: #f7f8f9;
+    color: #4a505a;
+    border-bottom: 1px solid #e2e4e8;
+  }
+  .data-table td,
+  .data-table tbody th {
+    padding: 6px 16px;
+    height: 44px;
+    border-bottom: 1px solid #e2e4e8;
+    vertical-align: middle;
+  }
+  /* a row header names the row, so it reads a little stronger than the cells beside it */
+  .data-table tbody th {
+    text-align: left;
+    font-weight: 500;
+    color: #131519;
+  }
+  .data-table tbody tr:last-child > * {
+    border-bottom-width: 0;
+  }
+  /* a link or button that is the only thing in a cell keeps its 44 px target without making the row taller than 44 px */
+  .data-table td > :is(a, button):only-child {
+    margin-block: -6px;
+  }
+  .data-table .num,
+  .data-table th.num {
+    text-align: right;
+  }
+  /* only a row that does something on press gets a hover tint: add the row-action class to its tr */
+  @media (hover: hover) and (pointer: fine) {
+    .data-table tbody tr.row-action:hover > * {
+      background: #f7f8f9;
+    }
+  }
+  html.dark .data-table thead th {
+    background: #131519;
+    color: #a1a6b0;
+    border-bottom-color: #22252b;
+  }
+  html.dark .data-table td,
+  html.dark .data-table tbody th {
+    border-bottom-color: #22252b;
+  }
+  html.dark .data-table tbody th {
+    color: #f7f8f9;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    html.dark .data-table tbody tr.row-action:hover > * {
+      background: #1a1c21;
+    }
+  }
 }
 
-.animate-fadeInUp  { animation: fadeInUp 200ms ease-out both; }
-.animate-statusPulse { animation: statusPulse 2s ease-in-out infinite; }
+/* one rule turns off every animation and transition for visitors who ask for less motion. ::backdrop is not matched by * */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* printing a legal page: the page itself and nothing around it. Black on white whatever the theme, no header, footer, cookie
+   banner, contents list or skip link, every table column on the paper and the address of each link after its text. */
+@media print {
+  html,
+  html.dark {
+    color-scheme: light;
+    background: #fff !important;
+  }
+  body,
+  body * {
+    color: #000 !important;
+    background: transparent !important;
+    border-color: #000 !important;
+  }
+  .site-shell > header,
+  .site-shell > footer,
+  [role="dialog"],
+  .site-shell > a[href="#main"],
+  .legal-page nav,
+  .legal-page button {
+    display: none !important;
+  }
+  .site-shell {
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .legal-page {
+    padding: 0 !important;
+  }
+  .legal-page [role="region"],
+  .legal-page .overflow-auto {
+    overflow: visible !important;
+    max-width: none !important;
+  }
+  .legal-page .data-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: auto;
+    font-size: 9pt !important;
+  }
+  .legal-page .data-table thead th {
+    position: static !important;
+  }
+  .legal-page .data-table th,
+  .legal-page .data-table td {
+    padding: 4pt 6pt !important;
+    border: 0.5pt solid #000 !important;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .legal-page tr {
+    break-inside: avoid;
+  }
+  .legal-page h2,
+  .legal-page h3 {
+    break-after: avoid;
+  }
+  .legal-page a {
+    text-decoration: underline !important;
+  }
+  .legal-page a[href^="http"]::after,
+  .legal-page a[href^="mailto:"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.9em;
+    overflow-wrap: anywhere;
+  }
+  .legal-page a[data-print-href]::after {
+    content: " (" attr(data-print-href) ")";
+    font-size: 0.9em;
+    overflow-wrap: anywhere;
+  }
+}

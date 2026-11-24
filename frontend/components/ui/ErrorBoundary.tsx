@@ -1,6 +1,8 @@
 'use client';
 
 import { Component, ReactNode } from 'react';
+import Button, { LinkButton } from './Button';
+import { siteHref } from '@/lib/links';
 
 interface Props {
   children: ReactNode;
@@ -27,25 +29,21 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   render() {
-    if (this.state.hasError) {
-      return (
-        <div className="card flex flex-col items-center justify-center py-16 px-4 text-center m-4">
-          <span className="text-5xl mb-4">⚠</span>
-          <h3 className="text-lg font-semibold text-surface-900 dark:text-surface-50 mb-1">
-            Something went wrong
-          </h3>
-          <p className="text-sm text-surface-400 dark:text-surface-500 mb-4">
-            An unexpected error occurred. Refreshing the page usually fixes it.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-brand-600 hover:bg-brand-700 active:scale-95 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-          >
-            Refresh page
-          </button>
-        </div>
-      );
-    }
+    if (this.state.hasError) return <ErrorPanel onReload={() => window.location.reload()} />;
     return this.props.children;
   }
+}
+
+// plain and left-aligned: what happened, what to do and where to say it. Shared with app/error.tsx.
+export function ErrorPanel({ onReload }: { onReload: () => void }) {
+  return (
+    <div role="alert" className="mx-auto max-w-xl px-4 py-12 sm:px-6">
+      <h1 className="text-xl font-semibold text-surface-900 dark:text-surface-50">This page hit an error</h1>
+      <p className="mt-2 text-surface-700 dark:text-surface-300">Reload to try again. If it happens twice, tell us what you were doing.</p>
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Button onClick={onReload}>Reload</Button>
+        <LinkButton href={siteHref('/support')} variant="ghost">Contact support</LinkButton>
+      </div>
+    </div>
+  );
 }

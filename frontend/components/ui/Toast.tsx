@@ -10,10 +10,10 @@ const _ICONS: Record<string, string> = {
 };
 
 const _STYLES: Record<string, string> = {
-  success: 'bg-success-50 dark:bg-success-600/20 border-success-500 text-success-600 dark:text-success-400',
-  warning: 'bg-warning-50 dark:bg-warning-600/20 border-warning-500 text-warning-600 dark:text-warning-400',
-  error:   'bg-critical-50 dark:bg-critical-600/20 border-critical-500 text-critical-600 dark:text-critical-400',
-  info:    'bg-primary-50 dark:bg-primary-600/20 border-primary-500 text-primary-600 dark:text-primary-400',
+  success: 'bg-success-50 dark:bg-surface-900 border-success-500 text-success-800 dark:text-success-400',
+  warning: 'bg-warning-50 dark:bg-surface-900 border-warning-500 text-warning-800 dark:text-warning-400',
+  error:   'bg-critical-50 dark:bg-surface-900 border-critical-500 text-critical-800 dark:text-critical-300',
+  info:    'bg-brand-50 dark:bg-surface-900 border-brand-500 text-brand-800 dark:text-brand-300',
 };
 
 export default function ToastContainer() {
@@ -26,8 +26,8 @@ export default function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-start gap-3 px-4 py-3 rounded-lg border shadow-lg text-sm
-            animate-[fadeInUp_200ms_ease-out]
+          className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-base
+
             ${_STYLES[toast.type] ?? _STYLES.info}`}
         >
           <span className="font-bold shrink-0 w-4 text-center">{_ICONS[toast.type]}</span>

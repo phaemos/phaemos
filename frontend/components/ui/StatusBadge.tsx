@@ -1,57 +1,47 @@
-'use client';
+// a small shape and a word on a plain background. The shape, word and tone come from lib/status.ts, so a machine
+// status, an alert severity and a ticket state all read the same way everywhere. Colour is never the only signal.
+import { statusInfo, type ShapeName, type StatusKey } from '@/lib/status';
+import { cn } from '@/lib/cn';
+import { TONE_TEXT } from './tone';
 
-// accept both device status strings and alert severity strings so this
-// component works in both device cards and alert rows without needing two
-// separate badge components.
+export type Status = StatusKey;
 
 interface Props {
-  status: 'online' | 'offline' | 'warning' | 'fault' | 'normal' | 'anomaly';
+  // any key from lib/status.ts. An unknown value reads "Unknown".
+  status: Status | (string & {});
+  // replace the word, for example "Degraded" for a fleet figure
+  label?: string;
+  className?: string;
 }
 
-const statusConfig: Record<
-  Props['status'],
-  { bg: string; dot: string; label: string }
-> = {
-  online: {
-    bg: 'bg-success-50 dark:bg-success-600/20 text-success-600 dark:text-success-500 border border-success-50 dark:border-success-600/30',
-    dot: 'bg-success-500 dark:bg-success-500',
-    label: 'Online',
-  },
-  normal: {
-    bg: 'bg-success-50 dark:bg-success-600/20 text-success-600 dark:text-success-500 border border-success-50 dark:border-success-600/30',
-    dot: 'bg-success-500 dark:bg-success-500',
-    label: 'Normal',
-  },
-  offline: {
-    bg: 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400 border border-surface-200 dark:border-surface-700',
-    dot: 'bg-surface-400',
-    label: 'Offline',
-  },
-  warning: {
-    bg: 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 border border-amber-400 dark:border-amber-700',
-    dot: 'bg-amber-500 dark:bg-amber-400',
-    label: 'Warning',
-  },
-  fault: {
-    bg: 'bg-critical-50 dark:bg-critical-600/20 text-critical-600 dark:text-critical-400 border border-critical-50 dark:border-critical-600/30',
-    dot: 'bg-critical-500 dark:bg-critical-400',
-    label: 'Fault',
-  },
-  anomaly: {
-    bg: 'bg-critical-50 dark:bg-critical-600/20 text-critical-600 dark:text-critical-400 border border-critical-50 dark:border-critical-600/30',
-    dot: 'bg-critical-500 dark:bg-critical-400',
-    label: 'Anomaly',
-  },
-};
+export function StatusShape({ shape, className = '' }: { shape: ShapeName; className?: string }) {
+  const common = { width: 10, height: 10, viewBox: '0 0 10 10', 'aria-hidden': true, focusable: false, className: `shrink-0 ${className}` } as const;
+  switch (shape) {
+    case 'circle':
+      return <svg {...common}><circle cx="5" cy="5" r="4" fill="currentColor" /></svg>;
+    case 'ring':
+      return <svg {...common}><circle cx="5" cy="5" r="3.25" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>;
+    case 'triangle':
+      return <svg {...common}><path d="M5 .75 9.5 9H.5Z" fill="currentColor" /></svg>;
+    case 'diamond':
+      return <svg {...common}><path d="M5 .5 9.5 5 5 9.5.5 5Z" fill="currentColor" /></svg>;
+    default:
+      return <svg {...common}><rect x="1.5" y="1.5" width="7" height="7" rx="1" fill="currentColor" /></svg>;
+  }
+}
 
-export default function StatusBadge({ status }: Props) {
-  const cfg = statusConfig[status] ?? statusConfig.offline;
+// the shape, the tone classes and the word for a status, for components that lay the parts out themselves
+export function statusShape(status: string): { shape: ShapeName; tone: string; label: string } {
+  const info = statusInfo(status);
+  return { shape: info.shape, tone: TONE_TEXT[info.tone], label: info.word };
+}
 
-  // a coloured dot beside the word: the word carries the meaning, so colour is never the only signal
+export default function StatusBadge({ status, label, className }: Props) {
+  const info = statusInfo(status);
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-surface-700 dark:text-surface-300">
-      <span className={`h-2 w-2 rounded-full ${cfg.dot}`} aria-hidden="true" />
-      {cfg.label}
+    <span className={cn('inline-flex items-center gap-1.5 text-meta font-medium', TONE_TEXT[info.tone], className)}>
+      <StatusShape shape={info.shape} />
+      <span className="text-surface-800 dark:text-surface-200">{label ?? info.word}</span>
     </span>
   );
 }

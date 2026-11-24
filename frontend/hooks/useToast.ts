@@ -54,8 +54,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (type: ToastType, message: string) => {
       const id = crypto.randomUUID();
       dispatch({ type: 'ADD', toast: { id, type, message } });
-      // Auto-dismiss after 4s so toasts never pile up unattended.
-      setTimeout(() => removeToast(id), 4000);
+      // a success or an info note times out. An error or a warning stays until the reader dismisses it, because a
+      // sentence that says what went wrong must not vanish before it is read.
+      if (type === 'success' || type === 'info') setTimeout(() => removeToast(id), 6000);
     },
     [removeToast],
   );

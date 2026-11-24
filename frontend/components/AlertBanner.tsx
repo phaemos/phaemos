@@ -3,86 +3,92 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import type { Alert } from '@/types';
+import Button from '@/components/ui/Button';
+import { useRole } from '@/hooks/useRole';
+import { canWrite as canWriteRole } from '@/lib/role';
+import { alertText } from '@/components/alerts/alertText';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { parseAlertMessage } from '@/lib/alertGroups';
+import { formatDateTime, formatDateTimeExact, formatRelative } from '@/lib/format';
+import TicketDialog from './tickets/TicketDialog';
 import TicketForm from './tickets/TicketForm';
+import Time from '@/components/ui/Time';
+
+interface ActionProps {
+  // the alert the ticket is raised from: for a group of alerts this is the newest one
+  alert: Alert;
+  // extra words for the ticket description, such as how many times the alert fired
+  detail?: string;
+  className?: string;
+  size?: 'default' | 'small';
+}
+
+// the one ticket action for an alert. An alert raised by the anomaly model already has a ticket,
+// so those link to the ticket list instead of opening the form.
+export function TicketAction({ alert, detail, className, size = 'default' }: ActionProps) {
+  const [open, setOpen] = useState(false);
+  const [created, setCreated] = useState(false);
+  const role = useRole();
+  // until the role is known no ticket control is offered, so a viewer never sees one flash
+  const canWrite = canWriteRole(role);
+
+  // an alert about the monitoring (a silent node) raises no ticket, so there is nothing to create or to open
+  if (alert.category === 'monitoring') return null;
+
+  if (alert.rule_id === null) {
+    return <Button href="/tickets" variant="secondary" size={size} className={className}>View ticket</Button>;
+  }
+
+  // a viewer cannot create a ticket: the API answers 403. The page says so once, so the button is simply not offered.
+  if (!canWrite) return null;
+
+  // once the ticket exists the button gives way to a note, so a second click cannot raise a duplicate
+  if (created) {
+    return (
+      <span role="status" className={`inline-flex min-h-[44px] items-center gap-2 text-base text-surface-800 dark:text-surface-200 ${className ?? ''}`}>
+        Ticket created.
+        <Link href="/tickets" className="font-medium text-brand-800 underline underline-offset-2 dark:text-brand-400">View tickets</Link>
+      </span>
+    );
+  }
+
+  const prefill = {
+    device_id: alert.device_id,
+    device_name: parseAlertMessage(alert.message)?.deviceName ?? undefined,
+    // the title field holds 200 characters
+    title: alertText(alert).slice(0, 200),
+    description: `Raised from a ${alert.severity} alert at ${formatDateTime(alert.triggered_at)}.${detail ? ` ${detail}` : ''}`,
+  };
+
+  return (
+    <>
+      <Button variant="secondary" size={size} className={className} onClick={() => setOpen(true)}>Create ticket</Button>
+      <TicketDialog open={open} title="Create ticket" onClose={() => setOpen(false)}>
+        <TicketForm
+          prefill={prefill}
+          onCancel={() => setOpen(false)}
+          onSuccess={() => {
+            setOpen(false);
+            setCreated(true);
+          }}
+        />
+      </TicketDialog>
+    </>
+  );
+}
 
 interface Props {
   alert: Alert;
 }
 
-// a dot and a word for each severity, so the colour is never the only signal
-const severityStyle: Record<string, { dot: string; text: string; label: string }> = {
-  info: { dot: 'bg-primary-500', text: 'text-primary-700 dark:text-primary-300', label: 'Info' },
-  warning: { dot: 'bg-warning-500', text: 'text-warning-700 dark:text-warning-400', label: 'Warning' },
-  critical: { dot: 'bg-critical-500', text: 'text-critical-700 dark:text-critical-400', label: 'Critical' },
-};
-
-function since(iso: string): string {
-  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hours = Math.round(mins / 60);
-  return hours < 24 ? `${hours} h ago` : `${Math.round(hours / 24)} d ago`;
-}
-
+// one alert on its own line: severity shape and word, the message, when it fired and the ticket action
 export default function AlertBanner({ alert }: Props) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const style = severityStyle[alert.severity ?? 'info'] ?? severityStyle.info;
-
-  const prefill = {
-    device_id: alert.device_id,
-    title: `Alert: ${alert.message ?? alert.severity}`,
-    description: `Severity: ${alert.severity}. Triggered at ${new Date(alert.triggered_at).toLocaleString('en-GB')}.`,
-  };
-
   return (
-    <>
-      <div className="flex items-center gap-4 px-4 py-3 text-sm">
-        <span className={`inline-flex w-20 shrink-0 items-center gap-1.5 text-xs font-semibold ${style.text}`}>
-          <span className={`h-2 w-2 rounded-full ${style.dot}`} aria-hidden="true" />
-          {style.label}
-        </span>
-        <span className="min-w-0 flex-1 text-surface-800 dark:text-surface-200">{alert.message}</span>
-        <time dateTime={alert.triggered_at} className="hidden shrink-0 text-xs text-surface-500 sm:block">{since(alert.triggered_at)}</time>
-        {alert.rule_id === null ? (
-          // the anomaly model opens its own ticket with every alert it raises
-          <Link href="/tickets" className="shrink-0 text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">
-            View ticket
-          </Link>
-        ) : (
-          <button type="button" onClick={() => setModalOpen(true)} className="shrink-0 text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">
-            Create ticket
-          </button>
-        )}
-      </div>
-
-      {modalOpen && (
-        // close on backdrop click so the operator can dismiss without submitting.
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setModalOpen(false)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="w-full max-w-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-end mb-2">
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                className="text-white/70 hover:text-white text-sm"
-              >
-                Close
-              </button>
-            </div>
-            <TicketForm
-              prefill={prefill}
-              onSuccess={() => setModalOpen(false)}
-            />
-          </div>
-        </div>
-      )}
-    </>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 text-base">
+      <span className="w-24 shrink-0"><StatusBadge status={alert.severity ?? 'info'} /></span>
+      <span className="min-w-0 flex-1 basis-60 text-surface-800 dark:text-surface-200">{alertText(alert)}</span>
+      <Time value={alert.triggered_at} format="relative" className="shrink-0 text-meta text-surface-600 dark:text-surface-400" />
+      <TicketAction alert={alert} />
+    </div>
   );
 }

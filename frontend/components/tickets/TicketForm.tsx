@@ -1,130 +1,122 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import type { Device } from '../../types/index';
-import api from '../../lib/api';
-import ErrorToast from '../ui/ErrorToast';
+import { useRef, useState } from 'react';
+import api from '@/lib/api';
+import { idempotent, newIdempotencyKey } from '@/lib/idempotency';
+import { requestIdOf } from '@/lib/apiCode';
+import { describeApiError } from '@/lib/apiError';
+import { useApiResource } from '@/hooks/useApiResource';
+import type { Device } from '@/types';
+import Button from '@/components/ui/Button';
+import ErrorNotice from '@/components/ui/ErrorNotice';
+import { Input, Select, Textarea } from '@/components/ui/Input';
+import { PRIORITY_ORDER, TICKET_PRIORITY } from '@/lib/status';
+
+export interface TicketPrefill {
+  device_id?: string;
+  // shown when the machine list has not loaded or does not hold this machine
+  device_name?: string;
+  description?: string;
+  title?: string;
+}
 
 interface TicketFormProps {
   onSuccess?: () => void;
-  prefill?: { device_id?: string; description?: string; title?: string };
+  onCancel?: () => void;
+  prefill?: TicketPrefill;
 }
 
-export default function TicketForm({ onSuccess, prefill }: TicketFormProps) {
+// the machines one request asks for, so a fleet past the API default of 20 still appears in the list
+const DEVICE_LIMIT = 200;
+
+export default function TicketForm({ onSuccess, onCancel, prefill }: TicketFormProps) {
   const [title, setTitle] = useState(prefill?.title ?? '');
   const [description, setDescription] = useState(prefill?.description ?? '');
-  const [priority, setPriority] = useState('');
+  const [priority, setPriority] = useState('medium');
   const [deviceId, setDeviceId] = useState(prefill?.device_id ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [titleError, setTitleError] = useState<string | undefined>();
 
-  // machines are picked by name; the form still sends the device id the API expects
-  useEffect(() => {
-    api.get<Device[]>('/devices').then((r) => setDevices(r.data)).catch(() => {});
-  }, []);
+  // machines are picked by name and the form still sends the machine id the API expects
+  const machines = useApiResource<Device[]>('/devices', { params: { limit: DEVICE_LIMIT }, what: 'The machine list' });
+  const listed = machines.data ?? [];
+  const prefilledMissing = Boolean(prefill?.device_id) && !listed.some((d) => d.id === prefill?.device_id);
+
+  // one Idempotency-Key for this submission, kept across retries so a create that timed out is never made twice
+  const submission = useRef<string | null>(null);
+  const [reference, setReference] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Title is required');
+      setTitleError('Enter a title.');
       return;
     }
+    setTitleError(undefined);
     setSubmitting(true);
     setError(null);
     try {
-      // send only fields the user filled in - the backend treats omitted optional
-      // fields as null so we do not need to strip them explicitly.
+      // send only fields the person filled in: the API treats an omitted optional field as empty
       await api.post('/tickets', {
-        title,
+        title: title.trim(),
         description: description || undefined,
         priority: priority || undefined,
         device_id: deviceId || undefined,
-      });
-      // reset form on success so the user can immediately create another ticket.
-      setTitle('');
-      setDescription('');
-      setPriority('');
-      setDeviceId('');
+      }, idempotent((submission.current ??= newIdempotencyKey())));
+      submission.current = null;
       onSuccess?.();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to create ticket';
-      setError(message);
+      setError(describeApiError(err, 'The ticket'));
+      setReference(requestIdOf(err) ?? null);
     } finally {
       setSubmitting(false);
     }
   }
 
-  const inputClass = 'w-full rounded-lg border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 px-3 py-2 text-sm text-surface-900 dark:text-surface-200 placeholder-surface-400 dark:placeholder-surface-600 focus:outline-none focus:ring-2 focus:ring-brand-500';
-  const labelClass = 'block text-xs font-medium text-surface-600 dark:text-surface-400 mb-1';
-
   return (
-    <>
-      {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
-      <form
-        onSubmit={handleSubmit}
-        className="grid gap-4 sm:grid-cols-2"
-      >
-        
-        <div className="sm:col-span-2">
-          <label htmlFor="ticket-title" className={labelClass}>Title</label>
-          <input
-            id="ticket-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Short description of the issue"
-            className={inputClass}
-            required
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label htmlFor="ticket-description" className={labelClass}>Description</label>
-          <textarea
-            id="ticket-description"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Detailed explanation of the fault or maintenance required"
-            className={`${inputClass} resize-none`}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="ticket-priority" className={labelClass}>Priority</label>
-          <select
-            id="ticket-priority"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Select priority</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="ticket-device-id" className={labelClass}>Machine</label>
-          <select id="ticket-device-id" value={deviceId} onChange={(e) => setDeviceId(e.target.value)} className={inputClass}>
-            <option value="">No specific machine</option>
-            {devices.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}{d.location ? ` (${d.location})` : ''}</option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="sm:col-span-2 justify-self-start rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      {error && <ErrorNotice message="The ticket was not created." detail={error} requestId={reference} />}
+      <Input
+        label="Title"
+        required
+        maxLength={200}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        error={titleError}
+        placeholder="Short description of the issue"
+        data-autofocus=""
+      />
+      <Textarea
+        label="Description"
+        maxLength={5000}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="What you saw and what needs doing"
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Select label="Priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
+          {[...PRIORITY_ORDER].reverse().map((p) => (
+            <option key={p} value={p}>{TICKET_PRIORITY[p].word}</option>
+          ))}
+        </Select>
+        <Select
+          label="Machine"
+          value={deviceId}
+          onChange={(e) => setDeviceId(e.target.value)}
+          hint={machines.error ? 'The machine list did not load. You can still create the ticket.' : undefined}
         >
-          {submitting ? 'Creating…' : 'Create ticket'}
-        </button>
-      </form>
-    </>
+          <option value="">No specific machine</option>
+          {prefilledMissing && prefill?.device_id && <option value={prefill.device_id}>{prefill.device_name ?? 'The machine on this alert'}</option>}
+          {listed.map((d) => (
+            <option key={d.id} value={d.id}>{d.name}{d.location ? ` (${d.location})` : ''}</option>
+          ))}
+        </Select>
+      </div>
+      <div className="flex flex-wrap justify-end gap-3 pt-1">
+        {onCancel && <Button variant="secondary" onClick={onCancel} disabled={submitting}>Cancel</Button>}
+        <Button type="submit" pending={submitting}>Create ticket</Button>
+      </div>
+    </form>
   );
 }
