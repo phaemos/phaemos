@@ -1,0 +1,29 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_ANNOUNCEMENTS",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example announcements",
+        "content": "Announcement: The first hardware kits are being tested <https://github.com/example-org/example/discussions/441>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 0,
+        "embeds": [
+          {
+            "title": "The first hardware kits are being tested",
+            "url": "https://github.com/example-org/example/discussions/441",
+            "description": "We have three ESP32 gateway boards on the bench this week.\n\n- **Vibration** - readings match the simulator within 2 percent\n- **Temperature** - one sensor reads high, under investigation\n\n> Note:\n> Kits are not for sale yet. See [#431](https://github.com/example-org/example/issues/431) for the plan.\n\n[Image: Three boards on a bench]\n\n[Read the full post](https://github.com/example-org/example/discussions/441)",
+            "footer": {
+              "text": "Announcement on GitHub"
+            },
+            "color": 2450411,
+            "timestamp": "2026-12-02T09:30:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}

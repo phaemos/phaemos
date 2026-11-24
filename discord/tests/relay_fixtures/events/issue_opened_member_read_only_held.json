@@ -1,0 +1,60 @@
+{
+  "event_name": "issues",
+  "payload": {
+    "action": "opened",
+    "issue": {
+      "number": 957,
+      "title": "Pico 2W drops its Wi-Fi link after six hours",
+      "state": "open",
+      "user": {
+        "login": "octo-maintainer",
+        "id": 21,
+        "type": "User",
+        "site_admin": false
+      },
+      "author_association": "MEMBER",
+      "labels": [
+        {
+          "id": 1,
+          "name": "bug"
+        },
+        {
+          "id": 2,
+          "name": "firmware"
+        }
+      ],
+      "body": "Steps to reproduce are below.",
+      "html_url": "https://github.com/example-org/example/issues/412",
+      "created_at": "2026-11-29T08:00:00Z"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "octo-maintainer",
+      "id": 21,
+      "type": "User",
+      "site_admin": false
+    }
+  },
+  "api": {
+    "/repos/example-org/example/collaborators/octo-maintainer/permission": {
+      "status": 200,
+      "body": {
+        "permission": "read"
+      }
+    },
+    "/repos/example-org/example/actions/workflows/discord-relay.yml/runs": {
+      "status": 200,
+      "body": {
+        "total_count": 0,
+        "workflow_runs": []
+      }
+    }
+  }
+}

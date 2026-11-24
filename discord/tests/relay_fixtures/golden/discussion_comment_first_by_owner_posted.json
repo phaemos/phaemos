@@ -1,0 +1,20 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New idea: A weekly digest <https://github.com/example-org/example/discussions/991>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ],
+  "api_calls": [
+    "/repos/example-org/example/actions/workflows/discord-relay.yml/runs"
+  ]
+}

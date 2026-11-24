@@ -1,0 +1,36 @@
+{
+  "event_name": "issues",
+  "payload": {
+    "action": "opened",
+    "issue": {
+      "number": 901,
+      "title": "@everyone @here <@1234> <@&5678> <#9012> look @someone </ban:1> <:wave:3> <t:1700000000:R>",
+      "state": "open",
+      "user": {
+        "login": "octo-maintainer",
+        "id": 21,
+        "type": "User",
+        "site_admin": false
+      },
+      "author_association": "OWNER",
+      "labels": [],
+      "body": "Steps to reproduce are below.",
+      "html_url": "https://github.com/example-org/example/issues/412",
+      "created_at": "2026-11-29T08:00:00Z"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "octo-maintainer",
+      "id": 21,
+      "type": "User",
+      "site_admin": false
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "Merged: feat(dashboard): add a maintenance window calendar (#500) <https://github.com/example-org/example/pull/500>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    },
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "Merged: docs: explain the wiring for the Pico 2W (#502) <https://github.com/example-org/example/pull/502>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    },
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "Merged: perf!: batch writes to the database (#505) <https://github.com/example-org/example/pull/505>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    },
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "Merged: revert: undo the retry change (#506) <https://github.com/example-org/example/pull/506>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}

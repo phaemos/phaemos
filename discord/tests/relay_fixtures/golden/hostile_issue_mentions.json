@@ -1,0 +1,17 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New issue #901: @\u200beveryone @\u200bhere \u2039@\u200b1234\u203a \u2039@\u200b&5678\u203a \u2039#9012\u203a look @\u200bsomeone \u2039/ban:1\u203a \u2039:wave:3\u203a \u2039t:1700000000:R\u203a. <https://github.com/example-org/example/issues/901>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+# a stand-in layout for the relay tests. it holds the same [relay] and [[webhooks]] keys
+# as a real project layout, with made-up names, so the tests do not depend on a project.
+
+[[webhooks]]
+name = "Example announcements"
+channel = "announcements"
+secret = "DISCORD_WEBHOOK_ANNOUNCEMENTS"
+store = "github"
+
+[[webhooks]]
+name = "Example releases"
+channel = "releases"
+secret = "DISCORD_WEBHOOK_RELEASES"
+store = "github"
+
+[[webhooks]]
+name = "Example on GitHub"
+channel = "github-feed"
+secret = "DISCORD_WEBHOOK_FEED"
+store = "github"
+
+[[webhooks]]
+name = "Reports"
+channel = "mod-log"
+secret = "REPORTS_WEBHOOK_URL"
+store = "cloudflare"
+
+[relay]
+repository = "example-org/example"
+project = "Example"
+colour = 2450411
+commit_types = ["feat", "fix", "perf", "docs", "revert"]
+skip_labels = ["automated"]
+labels = [
+  "bug", "enhancement", "documentation", "good first issue", "help wanted", "accessibility", "security",
+  "performance", "hardware", "firmware", "pcb", "enclosure", "backend", "frontend", "client", "infra", "edge",
+]
+
+[relay.discussions]
+announcements = { webhook = "Example announcements", form = "announcement" }
+"q-a" = { webhook = "Example on GitHub", lead = "New question" }
+ideas = { webhook = "Example on GitHub", lead = "New idea" }
+"show-and-tell" = { webhook = "Example on GitHub", lead = "New build shared" }
+research = { webhook = "Example on GitHub", lead = "New research note" }
+polls = { webhook = "Example on GitHub", lead = "New poll" }

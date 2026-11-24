@@ -1,0 +1,8 @@
+{
+  "exit": 1,
+  "posts": [],
+  "api_calls": [
+    "/repos/example-org/example/collaborators/maintainer-one/permission"
+  ],
+  "note": "::error title=Discord relay::the label on issue 976 could not be checked: GitHub could not be asked (status 502)"
+}

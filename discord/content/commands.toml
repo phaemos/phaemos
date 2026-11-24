@@ -1,0 +1,485 @@
+# What the slash commands are called and what they say, for the PHAEMOS server.
+#
+# One file feeds two readers. The set-up script registers the commands from the
+# [[commands]] tables. The worker answers from the rest. The worker's own build step
+# turns this file into worker/src/content.generated.json, so there is one source.
+#
+# Format (schema 1)
+#   [project]        names and addresses. Every address is a plain https link or a mailbox.
+#   [status]         the public status endpoint (url) and the status page (page). The script
+#                    registers /status only when the layout's [status] enabled switch is on, so
+#                    that switch is the only one. The worker answers /status when this table exists.
+#   [[commands]]     one command each, in the order /help lists them.
+#     name           lower case 1 to 32 characters. A message command may use capitals and spaces.
+#     type           "chat_input" (default) or "message"
+#     description    1 to 100 characters. Left out for a message command.
+#     help           the one line /help shows. Left out when the command is not listed.
+#     visibility     "private" (only the caller sees it) or "public"
+#     share          true adds an optional boolean option named share
+#     staff          true registers it with default_member_permissions "8192" and the worker
+#                    checks the same bit again
+#     [[commands.options]]       name, description, type ("string", "integer", "user", "boolean"),
+#                                required, choices_from (the name of a content list below),
+#                                min_value, max_value, max_length
+#     [[commands.subcommands]]   name, description and options, for /mod
+#       choices_from also accepts a list of plain values: choices = ["raid", "report"]
+#   [[docs]] [[faq]] [[hardware]]   key (the choice value), title (the choice name), lines (two
+#                    short lines) and links (label and url)
+#   [bug] [security] [contribute] [roles]   lines and links
+#   [[mod_guide]]    key, title and steps
+#   [[mod_reply]]    key and text, sent after the words "From the moderators:"
+
+schema = 1
+
+[project]
+name = "PHAEMOS"
+slug = "phaemos"
+repository = "phaemos/phaemos"
+site = "https://github.com/phaemos/phaemos"
+releases = "https://github.com/phaemos/phaemos/releases"
+issue_form = "https://github.com/phaemos/phaemos/issues/new/choose"
+security_form = "https://github.com/phaemos/phaemos/security/advisories/new"
+security_email = "security@phaemos.com"
+commands_channel = "bot-commands"
+contact_page = "https://github.com/phaemos/phaemos/blob/main/SUPPORT.md"
+contact_email = "contact@phaemos.com"
+contributing = "https://github.com/phaemos/phaemos/blob/main/CONTRIBUTING.md"
+first_issues = "https://github.com/phaemos/phaemos/labels/good%20first%20issue"
+run_locally = "https://github.com/phaemos/phaemos/blob/main/docs/development.md"
+
+[status]
+url = "https://api.phaemos.com/status"
+page = "https://status.phaemos.com"
+
+# commands
+
+[[commands]]
+name = "help"
+description = "List what the commands can do"
+help = "List the commands."
+visibility = "private"
+share = false
+
+[[commands]]
+name = "docs"
+description = "Find the documentation for a topic"
+help = "Find the documentation for a topic."
+visibility = "public"
+share = true
+  [[commands.options]]
+  name = "topic"
+  description = "What you want to read about"
+  type = "string"
+  required = true
+  choices_from = "docs"
+
+[[commands]]
+name = "faq"
+description = "Read the answer to a common problem"
+help = "Read the answer to a common problem."
+visibility = "public"
+share = true
+  [[commands.options]]
+  name = "topic"
+  description = "The problem"
+  type = "string"
+  required = true
+  choices_from = "faq"
+
+[[commands]]
+name = "release"
+description = "Show the latest release"
+help = "Show the latest release with its notes."
+visibility = "public"
+share = true
+
+[[commands]]
+name = "status"
+description = "Check whether the hosted service is working"
+help = "Check whether the hosted service is working."
+visibility = "public"
+share = true
+
+[[commands]]
+name = "issue"
+description = "Look up an issue or start a new one on GitHub"
+help = "Look up an issue by its number or find the form for a new one."
+visibility = "public"
+share = false
+  [[commands.subcommands]]
+  name = "show"
+  description = "Look up an issue or pull request by its number"
+    [[commands.subcommands.options]]
+    name = "number"
+    description = "The number on GitHub, such as 412"
+    type = "integer"
+    required = true
+    min_value = 1
+    max_value = 99999999
+    [[commands.subcommands.options]]
+    name = "share"
+    description = "Show the answer to everyone in the channel"
+    type = "boolean"
+    required = false
+  [[commands.subcommands]]
+  name = "new"
+  description = "Where to report a bug, a feature, a hardware problem or a docs problem"
+    [[commands.subcommands.options]]
+    name = "share"
+    description = "Show the answer to everyone in the channel"
+    type = "boolean"
+    required = false
+
+[[commands]]
+name = "ticket"
+description = "Ask the staff privately about something that should not be public"
+help = "Ask the staff privately. A member of staff opens a private thread for you."
+visibility = "private"
+share = false
+  [[commands.options]]
+  name = "kind"
+  description = "What it is about"
+  type = "string"
+  required = true
+  choices_from = "ticket_kinds"
+
+[[commands]]
+name = "security"
+description = "How to report a security problem privately"
+help = "How to report a security problem privately."
+visibility = "private"
+share = true
+
+[[commands]]
+name = "hardware"
+description = "Find the wiring, schematic and parts for a board"
+help = "Find the wiring, schematic and parts for a board."
+visibility = "public"
+share = true
+  [[commands.options]]
+  name = "part"
+  description = "The board or topic"
+  type = "string"
+  required = true
+  choices_from = "hardware"
+
+[[commands]]
+name = "contribute"
+description = "Where to start if you want to help"
+help = "Where to start if you want to help."
+visibility = "private"
+share = true
+
+[[commands]]
+name = "roles"
+description = "Pick your interest roles"
+help = "Pick your interest roles."
+visibility = "private"
+share = false
+
+[[commands]]
+name = "report"
+description = "Tell the moderators about a problem"
+help = "Tell the moderators about a problem. Every moderator sees it with your name."
+visibility = "private"
+share = false
+  [[commands.options]]
+  name = "details"
+  description = "Every moderator sees this and your name. To report staff, email us instead."
+  type = "string"
+  required = true
+  max_length = 1000
+  [[commands.options]]
+  name = "member"
+  description = "The member this is about, if any"
+  type = "user"
+  required = false
+
+[[commands]]
+name = "Report to moderators"
+type = "message"
+help = "Press and hold a message or right-click it, choose Apps, then Report to moderators. Every moderator sees it with your name."
+visibility = "private"
+share = false
+
+[[commands]]
+name = "mod"
+description = "Moderator tools"
+help = "Moderator tools: guides and standard replies."
+visibility = "private"
+share = false
+staff = true
+  [[commands.subcommands]]
+  name = "guide"
+  description = "Show the steps for a situation"
+    [[commands.subcommands.options]]
+    name = "topic"
+    description = "The situation"
+    type = "string"
+    required = true
+    choices_from = "mod_guide"
+  [[commands.subcommands]]
+  name = "reply"
+  description = "Post a standard message to the channel"
+    [[commands.subcommands.options]]
+    name = "template"
+    description = "The message"
+    type = "string"
+    required = true
+    choices_from = "mod_reply"
+
+# ticket kinds. The title is also the name of the tag in the staff tickets forum
+
+[[ticket_kinds]]
+key = "account"
+title = "Account"
+
+[[ticket_kinds]]
+key = "privacy"
+title = "Privacy"
+
+[[ticket_kinds]]
+key = "conduct"
+title = "Conduct"
+
+[[ticket_kinds]]
+key = "other"
+title = "Other"
+
+[ticket]
+lines = [
+  "Thank you. We have your ticket and only the staff can read it.",
+  "A member of staff will add you to a private thread in the private-help channel, usually within two days. Nobody is on call.",
+  "Never send a password or a key. We will never ask for one.",
+]
+
+# static answers
+
+[[docs]]
+key = "getting-started"
+title = "Getting started"
+lines = ["The overview of PHAEMOS and the quickstart for running it on your own machine.", "Start here if this is your first visit."]
+links = [{ label = "Quickstart", url = "https://github.com/phaemos/phaemos/blob/main/README.md" }]
+
+[[docs]]
+key = "deployment"
+title = "Deployment"
+lines = ["How to run PHAEMOS on a server: the host, the database and the domain names.", "The checklist at the end is worth a read before you go live."]
+links = [{ label = "Deployment guide", url = "https://github.com/phaemos/phaemos/blob/main/docs/deployment.md" }]
+
+[[docs]]
+key = "api"
+title = "API"
+lines = ["Every endpoint of the PHAEMOS API with its request and answer.", "The same reference is served as an interactive page when the backend runs locally."]
+links = [{ label = "API reference", url = "https://github.com/phaemos/phaemos/blob/main/docs/api-reference.md" }]
+
+[[docs]]
+key = "architecture"
+title = "Architecture"
+lines = ["How the nodes, the gateway, the backend and the dashboard fit together.", "Read this before you change a part that touches another one."]
+links = [{ label = "Architecture", url = "https://github.com/phaemos/phaemos/blob/main/docs/architecture.md" }]
+
+[[docs]]
+key = "sensors"
+title = "Sensors"
+lines = ["Each supported sensor with its wiring and the data it reports.", "It also lists the I2C addresses and how to resolve a clash."]
+links = [{ label = "Sensor reference", url = "https://github.com/phaemos/phaemos/blob/main/docs/sensor_reference.md" }]
+
+[[docs]]
+key = "development"
+title = "Development"
+lines = ["How to run the whole stack on your computer and how to run the tests.", "It covers the simulator as well."]
+links = [{ label = "Development guide", url = "https://github.com/phaemos/phaemos/blob/main/docs/development.md" }]
+
+[[docs]]
+key = "security"
+title = "Security"
+lines = ["How we handle security and how to report a problem privately.", "Please never report one in this server."]
+links = [{ label = "Security policy", url = "https://github.com/phaemos/phaemos/blob/main/SECURITY.md" }]
+
+[[docs]]
+key = "releases"
+title = "Releases"
+lines = ["How we number, test and publish a release.", "Every published version is listed with its notes."]
+links = [{ label = "Release process", url = "https://github.com/phaemos/phaemos/blob/main/docs/releases.md" }, { label = "All releases", url = "https://github.com/phaemos/phaemos/releases" }]
+
+[[docs]]
+key = "accessibility"
+title = "Accessibility"
+lines = ["What the dashboard does for people who use a keyboard, a screen reader or large text.", "Tell us if something does not work for you."]
+links = [{ label = "Accessibility statement", url = "https://github.com/phaemos/phaemos/blob/main/ACCESSIBILITY.md" }]
+
+[[faq]]
+key = "database-empty"
+title = "The database is empty after a restart"
+lines = ["The -v flag on docker compose down deletes the database volume. Plain docker compose down and docker compose stop keep your data.", "After a wipe, run make migrate to rebuild the tables."]
+links = [{ label = "Support page", url = "https://github.com/phaemos/phaemos/blob/main/SUPPORT.md" }]
+
+[[faq]]
+key = "login-locked"
+title = "Login is blocked after failed attempts"
+lines = ["Several wrong passwords or wrong authentication codes in a row slow sign-in for that account and for your network.", "The sign-in answer says how many seconds to wait. Wait that long and try again with the right details."]
+links = [{ label = "Support page", url = "https://github.com/phaemos/phaemos/blob/main/SUPPORT.md" }]
+
+[[faq]]
+key = "blank-dashboard"
+title = "The dashboard shows a blank screen"
+lines = ["Check that frontend/.env.local holds NEXT_PUBLIC_API_URL pointing at your backend, for example http://localhost:8000.", "Restart the dashboard after you change it."]
+links = [{ label = "Support page", url = "https://github.com/phaemos/phaemos/blob/main/SUPPORT.md" }]
+
+[[faq]]
+key = "contact-form"
+title = "The contact form does not send emails"
+lines = ["The API needs RESEND_API_KEY and FROM_EMAIL set and the sending domain verified.", "Outside development it answers 503 until both are right."]
+links = [{ label = "Support page", url = "https://github.com/phaemos/phaemos/blob/main/SUPPORT.md" }]
+
+[[faq]]
+key = "rate-limit"
+title = "Login says too many requests"
+lines = ["The login endpoint allows 5 requests a minute for each address. Wait a minute and try again.", "Behind a shared network address the limit is shared with everyone on it."]
+links = [{ label = "Support page", url = "https://github.com/phaemos/phaemos/blob/main/SUPPORT.md" }]
+
+[[hardware]]
+key = "esp32-gateway"
+title = "ESP32 gateway"
+lines = ["The primary node. It reads the main sensors and sends the readings to the backend.", "Wire it from the pinout table and check the parts list before you order."]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/esp32_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+
+[[hardware]]
+key = "black-pill"
+title = "STM32 Black Pill"
+lines = ["The vibration node, built around the STM32 Black Pill board.", "Check the pinout before you connect a sensor."]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/stm32_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+
+[[hardware]]
+key = "arduino-nano"
+title = "Arduino Nano"
+lines = ["The secondary node, built around the Arduino Nano board.", "Check the voltage of every sensor against the board before you connect it."]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/nano_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+
+[[hardware]]
+key = "pico-2w"
+title = "Pico 2W"
+lines = ["The ambient node, built around the Raspberry Pi Pico 2W board.", "Check the voltage of every sensor against the board before you connect it."]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/pico_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+
+[[hardware]]
+key = "wiring"
+title = "Wiring"
+lines = ["The pinout table for every board in one place.", "Photos of your own wiring are welcome in the hardware forum, with a description of each picture."]
+links = [{ label = "Wiring tables", url = "https://github.com/phaemos/phaemos/tree/main/hardware/wiring" }]
+
+[[hardware]]
+key = "parts"
+title = "Parts"
+lines = ["What each build needs and what the project already owns.", "Ask in the hardware forum before you substitute a part."]
+links = [{ label = "Parts needed", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }, { label = "Hardware overview", url = "https://github.com/phaemos/phaemos/blob/main/hardware/README.md" }]
+
+[[hardware]]
+key = "pcb"
+title = "PCB"
+lines = ["Board notes for each node.", "If your build involves mains voltage, say so in your post and we may ask you to stop and check first."]
+links = [{ label = "PCB notes", url = "https://github.com/phaemos/phaemos/tree/main/hardware/pcb" }]
+
+[bug]
+lines = [
+  "Open a new issue on GitHub and pick the form that fits: a bug, a feature, a hardware problem or a docs problem.",
+  "1. Search the open issues in case we already know about it.",
+  "2. Say what you did, what you expected and what happened instead.",
+  "3. Add the version you run and the exact error as text.",
+  "4. Leave out passwords and keys.",
+  "A security problem never goes in an issue. Type /security instead.",
+]
+links = [{ label = "Issue forms", url = "https://github.com/phaemos/phaemos/issues/new/choose" }]
+
+[security]
+lines = [
+  "Please report a security problem privately. Never in this server and never by direct message.",
+  "We remove posts that describe a vulnerability and we never ask for detail in public.",
+]
+links = [{ label = "Private report form", url = "https://github.com/phaemos/phaemos/security/advisories/new" }]
+email = "security@phaemos.com"
+
+[contribute]
+lines = [
+  "Welcome. Here is where to start:",
+  "1. Read the contributing guide.",
+  "2. Pick an issue marked good first issue.",
+  "3. Run the stack on your computer with the development guide.",
+  "Ask in the contributing channel if you are unsure which issue to take.",
+]
+links = [{ label = "Contributing guide", url = "https://github.com/phaemos/phaemos/blob/main/CONTRIBUTING.md" }, { label = "First issues", url = "https://github.com/phaemos/phaemos/labels/good%20first%20issue" }, { label = "Run it locally", url = "https://github.com/phaemos/phaemos/blob/main/docs/development.md" }]
+
+[roles]
+lines = ["Pick your interest roles in Channels and Roles: <id:customize>"]
+links = []
+
+[[mod_guide]]
+key = "raid"
+title = "A raid"
+steps = [
+  "Time out the accounts that are posting. Do not argue with them.",
+  "Tell the owner in moderator-only. If the owner is away, a Maintainer starts banning.",
+  "The owner pauses invites and direct messages.",
+  "Delete what was posted. Leave the entries in mod-log.",
+  "When it is quiet, the owner raises the verification level for a day and writes two lines in moderator-only on what happened.",
+]
+
+[[mod_guide]]
+key = "report"
+title = "A member report"
+steps = [
+  "Read the link first. The link is the evidence. The words under Why are the reporter's own and are not verified.",
+  "Open a thread on the entry in mod-log.",
+  "Say in the thread what you did.",
+  "React with a tick when it is done.",
+  "A report about a member of staff arrives by email, so tell the owner.",
+]
+
+[[mod_guide]]
+key = "security"
+title = "A security post"
+steps = [
+  "Delete the message if it gives detail.",
+  "Post /mod reply with the security template.",
+  "Never ask for detail in public or in a direct message.",
+  "Tell a Maintainer in moderator-only.",
+]
+
+[[mod_guide]]
+key = "timeout"
+title = "A timeout"
+steps = [
+  "Remind first. A timeout is for repeat or serious breaks of the rules.",
+  "Use the shortest timeout that stops the harm.",
+  "Write what you did and why in moderator-only.",
+  "A Moderator cannot act on a Maintainer. Pass it on.",
+]
+
+[[mod_reply]]
+key = "security"
+text = "Please do not share the details of a security problem here or in a direct message. Report it privately instead: type /security to see how. We never take reports by direct message."
+
+[[mod_reply]]
+key = "search-first"
+text = "Please search this forum and the documentation first. The /docs and /faq commands can help. If you cannot find an answer, post again and say what you tried."
+
+[[mod_reply]]
+key = "needs-details"
+text = "We need more detail to help. Please add what you were trying to do, the version you run, how you run it and the exact error as text in a code block."
+
+[[mod_reply]]
+key = "one-topic"
+text = "Please keep one question in each post. Open a new post for the next question so that each answer is easy to find."
+
+[[mod_reply]]
+key = "be-kind"
+text = "Please keep the tone kind and patient. Our Code of Conduct applies everywhere in this server."
+
+[[mod_reply]]
+key = "english"
+text = "Please write in English in the public channels so that everyone can follow, moderators included."
+
+[[mod_reply]]
+key = "no-direct-messages"
+text = "Please ask in public and not by direct message. The answer then helps the next person. We never ask for a password, a key or money in a direct message."

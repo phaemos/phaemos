@@ -1,0 +1,9 @@
+# placeholders for a local run with "wrangler dev". Copy to .dev.vars, which is never committed, and fill it in.
+# Every real value is set with "npx wrangler secret put NAME" and never written in a file.
+DISCORD_PUBLIC_KEY=
+REPORTS_WEBHOOK_URL=
+TICKETS_WEBHOOK_URL=
+TICKET_TAG_IDS=
+STAFF_ROLE_IDS=
+GITHUB_TOKEN=
+PROJECT=
