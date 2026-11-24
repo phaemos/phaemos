@@ -1,8 +1,15 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { track } from '@/lib/analytics';
+import { markContactSent } from '@/lib/contactSent';
 import { Turnstile } from '@marsidev/react-turnstile';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
+import Button from '@/components/ui/Button';
+import ErrorNotice from '@/components/ui/ErrorNotice';
+import { Input, Textarea } from '@/components/ui/Input';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -16,6 +23,7 @@ export default function ContactForm() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const turnstileRef = useRef<TurnstileInstance>(null);
+  const router = useRouter();
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
   const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -23,8 +31,11 @@ export default function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!token) {
-      setErrorMsg('Please complete the security check before sending.');
+    // without a site key the widget is not shown, so there is no token to ask for;
+    // the server decides whether that is allowed: development skips the check
+    // and production refuses with a 503.
+    if (siteKey && !token) {
+      setErrorMsg('Complete the check above, then send.');
       return;
     }
 
@@ -39,6 +50,9 @@ export default function ContactForm() {
       });
 
       if (res.status === 204) {
+        // the thank-you page is shown only after the API has accepted a message, which this mark tells it
+        markContactSent();
+        track('contact_message_sent');
         setStatus('success');
         setName('');
         setEmail('');
@@ -46,17 +60,30 @@ export default function ContactForm() {
         setMessage('');
         setToken('');
         turnstileRef.current?.reset();
+        router.push('/contact/sent');
       } else if (res.status === 422) {
         const data = await res.json().catch(() => ({}));
-        const detail = data?.detail ?? 'Security check failed. Please try again.';
+        // a validation error returns a list of objects, which cannot be rendered
+        const detail = typeof data?.detail === 'string'
+          ? data.detail
+          : 'Some details were not accepted. Check the form and try again.';
         setErrorMsg(detail);
         setStatus('error');
         turnstileRef.current?.reset();
+      } else if (res.status === 503) {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(
+          typeof data?.detail === 'string'
+            ? data.detail
+            : 'The contact form is not available right now. Email contact@phaemos.com directly.',
+        );
+        setStatus('error');
+        turnstileRef.current?.reset();
       } else if (res.status === 429) {
-        setErrorMsg('Too many messages sent. Please wait an hour before trying again.');
+        setErrorMsg('Too many messages sent. Wait an hour before trying again.');
         setStatus('error');
       } else {
-        setErrorMsg('Something went wrong. Please try again or email contact@phaemos.com directly.');
+        setErrorMsg('The message did not send. Try again or email contact@phaemos.com.');
         setStatus('error');
         turnstileRef.current?.reset();
       }
@@ -68,84 +95,28 @@ export default function ContactForm() {
 
   if (status === 'success') {
     return (
-      <div className="rounded-xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30 p-6 text-center space-y-2">
-        <p className="text-lg font-semibold text-green-700 dark:text-green-400">Message sent</p>
-        <p className="text-sm text-green-600 dark:text-green-500">
-          We aim to reply within 5 working days. Keep an eye on the email you provided.
-        </p>
-        <button
-          onClick={() => setStatus('idle')}
-          className="mt-2 text-sm text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline"
-        >
+      <div role="status" className="max-w-xl space-y-3">
+        <h2 className="text-2xl font-semibold text-surface-900 dark:text-surface-50">Message sent</h2>
+        <p className="text-surface-700 dark:text-surface-300">We will reply to the address you gave.</p>
+        <Button variant="secondary" onClick={() => setStatus('idle')}>
           Send another message
-        </button>
+        </Button>
       </div>
     );
   }
 
+  const submitting = status === 'submitting';
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <div className="space-y-1.5">
-          <label htmlFor="contact-name" className="block text-sm font-medium text-surface-700 dark:text-surface-300">
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="contact-name"
-            type="text"
-            required
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Your name"
-            className="w-full rounded-lg border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-900 px-3 py-2 text-sm text-surface-900 dark:text-surface-50 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="contact-email" className="block text-sm font-medium text-surface-700 dark:text-surface-300">
-            Email <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="contact-email"
-            type="email"
-            required
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full rounded-lg border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-900 px-3 py-2 text-sm text-surface-900 dark:text-surface-50 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="max-w-xl space-y-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <Input id="contact-name" label="Name" type="text" required autoComplete="name" value={name} onChange={e => setName(e.target.value)} />
+        <Input id="contact-email" label="Email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" hint="Only to reply to you." />
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="contact-subject" className="block text-sm font-medium text-surface-700 dark:text-surface-300">
-          Subject <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="contact-subject"
-          type="text"
-          required
-          value={subject}
-          onChange={e => setSubject(e.target.value)}
-          placeholder="What is this about?"
-          className="w-full rounded-lg border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-900 px-3 py-2 text-sm text-surface-900 dark:text-surface-50 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
+      <Input id="contact-subject" label="Subject" type="text" required value={subject} onChange={e => setSubject(e.target.value)} />
 
-      <div className="space-y-1.5">
-        <label htmlFor="contact-message" className="block text-sm font-medium text-surface-700 dark:text-surface-300">
-          Message <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          id="contact-message"
-          required
-          rows={5}
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          placeholder="Describe your enquiry in as much detail as you can..."
-          className="w-full rounded-lg border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-900 px-3 py-2 text-sm text-surface-900 dark:text-surface-50 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"
-        />
-      </div>
+      <Textarea id="contact-message" label="Message" required rows={6} value={message} onChange={e => setMessage(e.target.value)} className="resize-y" />
 
       {siteKey && (
         <Turnstile
@@ -158,17 +129,15 @@ export default function ContactForm() {
         />
       )}
 
-      {errorMsg && (
-        <p className="text-sm text-red-600 dark:text-red-400" role="alert">{errorMsg}</p>
-      )}
+      {errorMsg && <ErrorNotice message={errorMsg} />}
 
-      <button
-        type="submit"
-        disabled={status === 'submitting' || (!!siteKey && !token)}
-        className="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
-      >
-        {status === 'submitting' ? 'Sending...' : 'Send message'}
-      </button>
+      <p className="text-base text-surface-700 dark:text-surface-300">
+        Your message is sent to our mailbox as an email and the API does not store it, as the <Link href="/privacy" className="text-brand-700 underline underline-offset-2 hover:no-underline dark:text-brand-400">privacy notice</Link> explains.
+      </p>
+
+      <Button type="submit" pending={submitting} disabled={!!siteKey && !token}>
+        Send message
+      </Button>
     </form>
   );
 }

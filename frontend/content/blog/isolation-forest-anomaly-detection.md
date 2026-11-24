@@ -1,67 +1,46 @@
 ---
-title: "How Isolation Forest Powers PHAEMOS Anomaly Detection"
+title: "How PHAEMOS scores a reading"
 date: "2026-05-15"
 slug: "isolation-forest-anomaly-detection"
-excerpt: "Isolation Forest spots equipment anomalies without needing labelled failure data - here is how it works in PHAEMOS and when to retrain the model."
+excerpt: "How the backend turns a reading into a score from 0 to 1, when a score becomes an alert and how an admin retrains the model."
 ---
 
-# How Isolation Forest Powers PHAEMOS Anomaly Detection
+Rewritten in November 2026 to match the product as it is now.
 
-Setting thresholds for equipment health is harder than it looks. A temperature of 45 C might be perfectly normal for a motor running at full load in summer, but alarming for the same motor idling in a cool room. A single fixed threshold produces either constant noise or missed faults depending on operating conditions.
+Every reading that reaches the API gets an anomaly score from 0 to 1. A higher score means the reading is further from what the model learned as normal. This post describes how that score is made and what it leads to. The model has only been trained on simulated readings so far. We have no accuracy figures for real machines.
 
-PHAEMOS uses an Isolation Forest instead.
+## Why an Isolation Forest
 
-## What Isolation Forest does
+We had no labelled fault data, so a supervised classifier could not be trained. An Isolation Forest is unsupervised. It learns from normal readings and needs no labelled faults. We use the scikit-learn implementation with 100 trees. We do not tell it how many readings to expect to be unusual. The cut-off is measured on readings held back from training.
 
-Isolation Forest is an anomaly detection algorithm based on a simple insight: anomalies are rare and different, so they are easier to isolate than normal points.
+## From raw score to 0 to 1
 
-The algorithm builds an ensemble of random decision trees. For each tree, it picks a random feature and a random split value, recursively partitioning the data until each point is isolated. Points that get isolated in fewer splits are anomalies - they are different enough from the bulk of the data that they stand out immediately.
+The raw Isolation Forest score is not on a scale a person can read. We map it in two steps. After training we record how a typical training reading scored. A typical reading maps to 0 and the model's own decision boundary maps to 0.7. The result is clipped to the range 0 to 1 and rounded to four decimal places.
 
-The output is an anomaly score between -1 and 1. In PHAEMOS:
+A score of 0.7 or more counts as an anomaly. A fixed shift of the raw score used to give 0.9 or more for every reading, which is why we calibrate against the training data instead.
 
-- Score >= 0: normal operating range
-- Score between -0.1 and 0: slightly unusual - monitor but do not alert
-- Score < -0.1: anomaly - alert fires, technician is notified
+## What the model reads
 
-The threshold of -0.1 is configurable via alert rules. Teams running older or dirtier equipment might raise it to -0.15 to reduce noise; teams monitoring precision machinery might lower it to -0.05.
+The general model reads six values: temperature, humidity, vibration on three axes and light level. We used to fill a missing value with zero, which made a failed sensor look like a reading. We no longer do. A reading with a missing input is not scored by the node's own model. It falls back to the general model when that has every input it needs and is left unscored when neither does. A sensor that has failed raises its own monitoring alert, so the failure is reported on its own and is not hidden inside a score.
 
-## What features go into the model
+A machine or a node type also gets a model of its own once it has enough clean history, which is at least 500 readings to fit and a day held back for testing. That model uses the sensor columns which at least 90 per cent of that node's readings carry. There are 23 columns it can choose from. A node type with no model of its own is scored by the general model. Before any model is trained every score is 0.
 
-> **Update, October 2026:** the model now scores six features: `temperature`, `humidity`, `vibration_x`, `vibration_y`, `vibration_z` and `light_level`. The list below reflects the original plan.
+## From score to alert
 
-The model scores each telemetry reading using these features:
+One anomalous reading does not raise an alert. We look at a window of readings instead. It is the longer of two minutes and 24 posting intervals and at least four in every five scored readings in it must be at or over the boundary.
 
-- `temperature` - ambient and surface temperature from the NTC thermistors
-- `vibration_x`, `vibration_y`, `vibration_z` - three-axis accelerometer readings
-- `fft_peak_hz` - the dominant frequency component extracted by the STM32 FFT
-- `current` - motor current draw from the ACS712 current sensor
-- `voltage` - supply voltage from the INA219
-- `pressure` - atmospheric pressure from the BMP280
+When that happens the backend raises an anomaly alert and opens a ticket named after the machine. The alert is critical when the median score of the window reaches 0.85 and a warning below that. The ticket has high priority. A critical alert gives it critical priority. If the machine already has an open ticket from an earlier anomaly the new alert is added to it.
 
-The combination matters. A vibration spike is normal during a tool change. The same spike accompanied by a current surge and elevated bearing temperature is a warning sign. The model learns these correlations from historical data so it is not fooled by single-metric events.
+The alert clears by itself after a calm spell of at least half an hour whose median score is under 0.5. While a maintenance window is active for the machine no anomaly alert is raised.
 
-## When to train the model
+## Retraining
 
-The model ships as a pre-trained `model.pkl` in the repository, fitted on synthetic data with known-good operating profiles. This is good enough to detect gross anomalies out of the box.
+The models retrain every night at 03:30 UTC. An admin can also start a retrain with a POST to `/api/v1/ml/retrain`. The API answers 202 and fits the models in the background on the last 14 days of every machine. A new model replaces the one in service only if it passes the checks on false alerts and on the newest readings. It loads without a restart. A second manual retrain has to wait an hour. That wait is kept in memory, so it resets when the API restarts. The result is written to the audit log.
 
-For real deployments, retrain the model on your actual hardware after a burn-in period of at least two weeks of normal operation. Use the admin panel or the API:
+If the process stops during a retrain the old model file stays in place and scoring carries on with it.
 
-```bash
-curl -X POST http://localhost:8000/api/v1/ml/retrain \
-  -H "Authorization: Bearer <admin-token>"
-```
+The same training code is available offline in `backend/ml/train.py`, which reads a CSV export of the readings table.
 
-The endpoint fits a new Isolation Forest on the last 10,000 telemetry rows (roughly 14 hours at 5-second intervals), saves `model.pkl` and hot-reloads it without a restart. There is a 1-hour cooldown between retrains to prevent thrashing.
+## What it cannot do yet
 
-Retrain whenever:
-- You add a new device type with different operating characteristics
-- Operating conditions change significantly (new load profile, different ambient environment)
-- You are seeing systematic false positives that are too expensive to filter with alert rules
-
-## Limitations
-
-Isolation Forest assumes that anomalies are rare. If more than 10% of your training data contains fault conditions, the model learns faults as normal. Always retrain on data from a known-good period.
-
-The model does not know about time. It scores each reading independently without sequence context. A slow drift that stays within normal range at every point but trends in a dangerous direction will not be caught. PHAEMOS alert rules (threshold-based) are the right tool for drift detection; Isolation Forest handles sudden deviations.
-
-Questions: [dev@phaemos.com](mailto:dev@phaemos.com)
+The model has not seen a real machine, so we cannot say how often it flags a healthy one or misses a fault. We plan to train it on real readings once the nodes are wired to machines. Until then the thresholds of 0.7 and 0.85 come from the calibration above and not from field experience.
