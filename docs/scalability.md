@@ -1,10 +1,12 @@
 # Scalability
 
-Phaemos is deployed as a single Docker Compose stack on one VPS. This document describes when and how to scale each layer as device count or user load grows.
+Phaemos is designed to run as a single Docker Compose stack on one VPS. It is not deployed yet. This document describes when and how to scale each layer as device count or user load grows.
 
 ---
 
-## Current baseline
+## Planned baseline
+
+The limits below are planned estimates. We have not measured them.
 
 | Layer | Current setup | Practical limit |
 | --- | --- | --- |

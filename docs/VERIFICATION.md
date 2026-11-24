@@ -239,7 +239,7 @@ Walked in a headless Chromium against `make dev` and `make migrate`.
 - [x] Verification tracker (this file)
 - [x] Instatus monitoring setup guide (docs/instatus.md)
 - [x] Scalability guide (docs/scalability.md)
-- [x] MkDocs Material site (mkdocs.yml, deployed at docs.phaemos.com)
+- [x] MkDocs Material site (mkdocs.yml). Not deployed yet
 
 ---
 
@@ -252,7 +252,7 @@ Walked in a headless Chromium against `make dev` and `make migrate`.
 - [x] SECURITY.md (responsible disclosure via GitHub Security Advisories)
 - [x] SUPPORT.md (Discussions first, status.phaemos.com, contact form)
 - [x] CODEOWNERS
-- [x] FUNDING.yml (GitHub Sponsors, Buy Me a Coffee, Patreon)
+- [ ] FUNDING.yml: removed until the organisation has its own sponsor page
 
 ---
 

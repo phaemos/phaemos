@@ -1,0 +1,575 @@
+/* PHAEMOS documentation theme.
+   The same family as the dashboard: its royal blue accent, its neutral surfaces and its three typefaces (Exo 2 for page
+   headings, Manrope for reading and interface, IBM Plex Mono for code and data only). The colour values below come from frontend/tailwind.config.ts and
+   frontend/app/globals.css. Each pair was measured: the table is in the check script's report (docs/README.md says how to run it).
+
+   Unit note: the theme sets the root size to 125 per cent, so 1rem is 20 px at the browser's default. Sizes here are in
+   rem so a reader's own text size scales every one of them. 0.9rem is 18 px, 0.8rem is 16 px and 0.65rem is the 13 px floor. */
+
+/* ---------- typefaces: self-hosted, licence in assets/fonts/NOTICE.txt ---------- */
+@font-face { font-family: "Exo 2"; font-weight: 600; font-style: normal; font-display: swap; src: url("../assets/fonts/Exo2-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-weight: 200 800; font-style: normal; font-display: swap; src: url("../assets/fonts/Manrope-Variable.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-style: normal; font-display: swap; src: url("../assets/fonts/IBMPlexMono-Regular.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-style: normal; font-display: swap; src: url("../assets/fonts/IBMPlexMono-Medium.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 600; font-style: normal; font-display: swap; src: url("../assets/fonts/IBMPlexMono-SemiBold.woff2") format("woff2"); }
+
+/* ---------- colour: light ---------- */
+body[data-md-color-scheme="default"] {
+  color-scheme: light;
+  --ph-bg: #ffffff;
+  --ph-panel: #f7f8f9;      /* surface-50: code, table heads, admonitions */
+  --ph-text: #131519;       /* surface-900 */
+  --ph-muted: #4a505a;      /* surface-600 */
+  --ph-edge: #7b818c;       /* surface-500: any border that carries meaning (3:1 or more) */
+  --ph-hair: #e2e4e8;       /* surface-200: a rule that only separates and says nothing */
+  --ph-accent: #1e40af;     /* brand-800: links, the current item and actions */
+  --ph-accent-ink: #ffffff;
+  --ph-tint: #eff6ff;
+  --ph-note: #4a505a;
+  --ph-warn: #92400e;
+  --ph-bad: #b91c1c;
+  /* syntax colours, each 7:1 or more on the code background */
+  --ph-hl-kw: #1e40af; --ph-hl-str: #14532d; --ph-hl-num: #7c2d12; --ph-hl-fn: #6b21a8; --ph-hl-var: #164e63; --ph-hl-special: #991b1b;
+  --ph-hl-cmt: #4a505a; --ph-hl-op: #353941;
+  --ph-shade: rgba(19, 21, 25, 0.22);
+}
+/* ---------- colour: dark ---------- */
+body[data-md-color-scheme="slate"] {
+  color-scheme: dark;
+  --ph-bg: #0b0c0e;         /* surface-950 */
+  --ph-panel: #131519;      /* surface-900 */
+  --ph-text: #f7f8f9;       /* surface-50 */
+  --ph-muted: #a1a6b0;      /* surface-400 */
+  --ph-edge: #7b818c;
+  --ph-hair: #22252b;       /* surface-800 */
+  --ph-accent: #60a5fa;     /* brand-400 */
+  --ph-accent-ink: #0b0c0e;
+  --ph-tint: #172554;
+  --ph-note: #a1a6b0;
+  --ph-warn: #fbbf24;
+  --ph-bad: #f87171;
+  --ph-hl-kw: #93c5fd; --ph-hl-str: #86efac; --ph-hl-num: #fdba74; --ph-hl-fn: #d8b4fe; --ph-hl-var: #67e8f9; --ph-hl-special: #fca5a5;
+  --ph-hl-cmt: #a1a6b0; --ph-hl-op: #d4d7dd;
+  --ph-shade: rgba(247, 248, 249, 0.2);
+}
+
+/* the theme's own variables, pointed at the tokens above */
+body[data-md-color-scheme="default"],
+body[data-md-color-scheme="slate"] {
+  --ph-hit: 44px;
+  --md-text-font: "Manrope";
+  --md-code-font: "IBM Plex Mono";
+  --md-default-bg-color: var(--ph-bg);
+  --md-default-bg-color--light: var(--ph-bg);
+  --md-default-bg-color--lighter: var(--ph-bg);
+  --md-default-bg-color--lightest: var(--ph-bg);
+  --md-default-fg-color: var(--ph-text);
+  --md-default-fg-color--light: var(--ph-muted);
+  --md-default-fg-color--lighter: var(--ph-muted);
+  --md-default-fg-color--lightest: var(--ph-hair);
+  --md-primary-fg-color: var(--ph-bg);
+  --md-primary-fg-color--light: var(--ph-bg);
+  --md-primary-fg-color--dark: var(--ph-bg);
+  --md-primary-bg-color: var(--ph-text);
+  --md-primary-bg-color--light: var(--ph-muted);
+  --md-accent-fg-color: var(--ph-accent);
+  --md-accent-fg-color--transparent: var(--ph-tint);
+  --md-accent-bg-color: var(--ph-accent-ink);
+  --md-accent-bg-color--light: var(--ph-accent-ink);
+  --md-typeset-color: var(--ph-text);
+  --md-typeset-a-color: var(--ph-accent);
+  --md-typeset-mark-color: var(--ph-tint);
+  --md-typeset-del-color: var(--ph-tint);
+  --md-typeset-ins-color: var(--ph-tint);
+  --md-typeset-kbd-color: var(--ph-panel);
+  --md-typeset-kbd-accent-color: var(--ph-panel);
+  --md-typeset-kbd-border-color: var(--ph-edge);
+  --md-typeset-table-color: var(--ph-hair);
+  --md-typeset-table-color--light: var(--ph-panel);
+  --md-code-bg-color: var(--ph-panel);
+  --md-code-bg-color--light: var(--ph-panel);
+  --md-code-bg-color--lighter: var(--ph-panel);
+  --md-code-fg-color: var(--ph-text);
+  --md-code-hl-color: var(--ph-tint);
+  --md-code-hl-color--light: var(--ph-tint);
+  --md-code-hl-number-color: var(--ph-hl-num);
+  --md-code-hl-special-color: var(--ph-hl-special);
+  --md-code-hl-function-color: var(--ph-hl-fn);
+  --md-code-hl-constant-color: var(--ph-hl-num);
+  --md-code-hl-keyword-color: var(--ph-hl-kw);
+  --md-code-hl-string-color: var(--ph-hl-str);
+  --md-code-hl-name-color: var(--ph-text);
+  --md-code-hl-operator-color: var(--ph-hl-op);
+  --md-code-hl-punctuation-color: var(--ph-hl-op);
+  --md-code-hl-comment-color: var(--ph-hl-cmt);
+  --md-code-hl-generic-color: var(--ph-muted);
+  --md-code-hl-variable-color: var(--ph-hl-var);
+  --md-footer-bg-color: var(--ph-panel);
+  --md-footer-bg-color--dark: var(--ph-panel);
+  --md-footer-fg-color: var(--ph-text);
+  --md-footer-fg-color--light: var(--ph-muted);
+  --md-footer-fg-color--lighter: var(--ph-muted);
+  --md-shadow-z1: none;
+  --md-shadow-z2: none;
+  --md-shadow-z3: none;
+  background-color: var(--ph-bg);
+  color: var(--ph-text);
+}
+
+/* ---------- base ---------- */
+html {
+  scroll-behavior: auto !important;
+  /* the header and the tab bar are sticky: a heading reached from the contents must not land under them */
+  scroll-padding-top: 5.6rem;
+}
+body { font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif; }
+/* page and section headings take the brand's heading face, as on the website; smaller headings stay in the reading face */
+.md-typeset h1, .md-typeset h2 { font-family: "Exo 2", "Manrope", system-ui, sans-serif; font-weight: 600; }
+code, kbd, pre, samp { font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.md-typeset { font-size: 0.9rem; line-height: 1.65; color: var(--ph-text); }
+.md-typeset strong { font-weight: 600; }
+
+/* one focus ring for the whole site: 3 px, the accent, never removed */
+:focus-visible,
+.md-typeset :focus-visible,
+.md-search__input:focus-visible {
+  outline: 3px solid var(--ph-accent) !important;
+  outline-offset: 2px !important;
+  border-radius: 2px;
+}
+.md-skip:focus { outline: 3px solid var(--ph-accent) !important; opacity: 1; transform: none; transition: none; }
+[tabindex="-1"]:focus { outline: none !important; }
+/* a ring inside the box, for controls whose parent clips anything outside it */
+:is(.md-nav__link, .md-tabs__link, .md-search__input, .md-search__scrollwrap, .md-source, .md-nav__button, .md-header__button, .md-footer__link, .md-top, .md-social__link,
+  .ph-table-scroll, .md-search-result__link):focus-visible { outline-offset: -3px !important; }
+
+/* ---------- reading column ---------- */
+.md-grid { max-width: 90rem; }
+.md-content__inner { margin-bottom: 2rem; padding-top: 1rem; }
+/* prose holds a measure of about 70 characters (50ch of this face). Tables, code, admonitions and diagrams use the full width of the column. */
+.md-typeset :is(p, ul, ol, dl, blockquote, h1, h2, h3, h4, h5, h6) { max-width: 50ch; }
+.md-typeset :is(ul, ol) :is(p, ul, ol) { max-width: none; }
+.md-typeset h1, .md-typeset h2, .md-typeset h3, .md-typeset h4, .md-typeset h5, .md-typeset h6 {
+  color: var(--ph-text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.md-typeset h1 { font-size: 2.1em; line-height: 1.2; margin: 0 0 1rem; }
+.md-typeset h2 { font-size: 1.5em; line-height: 1.3; margin: 2.2em 0 0.6em; padding-top: 0.9em; border-top: 1px solid var(--ph-hair); }
+.md-typeset h3 { font-size: 1.2em; line-height: 1.35; margin: 1.8em 0 0.5em; }
+.md-typeset h4 { font-size: 1.05em; line-height: 1.4; margin: 1.5em 0 0.4em; }
+.md-typeset h5, .md-typeset h6 { font-size: 1em; text-transform: none; color: var(--ph-text); }
+.md-typeset p, .md-typeset li, .md-typeset dd { text-wrap: pretty; }
+.md-typeset li { margin-bottom: 0.3em; }
+.md-typeset hr { border-bottom: 1px solid var(--ph-hair); }
+/* a rule in the text right before a heading would double the heading's own rule */
+.md-typeset hr:has(+ h2) { display: none; }
+.md-typeset blockquote { border-left: 4px solid var(--ph-edge); color: var(--ph-text); padding-left: 1rem; }
+
+/* links in running text are underlined, so colour is never the only cue */
+.md-typeset a:not(.headerlink):not(.md-button) {
+  color: var(--ph-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.md-typeset a:not(.headerlink):hover { text-decoration-thickness: 3px; }
+
+/* the heading link shows when the heading is hovered or the link has focus. It keeps a 44 px target that does not add to the line height */
+.md-typeset .headerlink {
+  opacity: 0;
+  color: var(--ph-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ph-hit);
+  min-height: var(--ph-hit);
+  margin: -1rem -0.5rem -1rem 0;
+  vertical-align: middle;
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 0.8em;
+}
+.md-typeset :is(h1, h2, h3, h4, h5, h6):hover > .headerlink,
+.md-typeset .headerlink:focus,
+.md-typeset .headerlink:focus-visible,
+.md-typeset :target > .headerlink { opacity: 1; }
+.md-typeset .headerlink:hover { color: var(--ph-accent); }
+
+/* inline code: mono is for code and data only */
+.md-typeset code {
+  font-size: 0.85em;
+  background: var(--ph-panel);
+  color: var(--ph-text);
+  border: 1px solid var(--ph-hair);
+  border-radius: 4px;
+  padding: 0.08em 0.35em;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+.md-typeset a code { color: inherit; }
+.md-typeset kbd {
+  font-size: 0.85em;
+  border: 1px solid var(--ph-edge);
+  border-radius: 4px;
+  box-shadow: none;
+  background: var(--ph-panel);
+  color: var(--ph-text);
+}
+.md-typeset mark { color: var(--ph-text); }
+
+/* ---------- header ---------- */
+.md-header {
+  background: var(--ph-bg);
+  color: var(--ph-text);
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--ph-hair);
+}
+.md-header__title { font-size: 0.9rem; font-weight: 600; letter-spacing: 0.01em; }
+.md-header__topic { font-size: 0.9rem; }
+.md-header__topic + .md-header__topic { font-weight: 500; }
+/* the site name in the header is the drawn wordmark, the same vectors as the website, written into each page by hooks.py as an
+   inline image named "PHAEMOS". The letters take the header's text colour, so forced colours and the scripts-off dark theme
+   keep them readable and the triangle is the brand blue: #2563eb on light (4.9:1) and #3b82f6 on dark (5.3:1). */
+.md-header__topic:first-child { align-items: center; height: 100%; }
+.ph-wordmark { display: block; height: 0.75rem; width: calc(0.75rem * 613 / 68); color: var(--ph-text); }
+.ph-wordmark__mark { fill: #2563eb; }
+body[data-md-color-scheme="slate"] .ph-wordmark__mark { fill: #3b82f6; }
+@media (forced-colors: active) { .ph-wordmark__mark { fill: CanvasText; } }
+.md-header .md-header__button { color: var(--ph-text); opacity: 1; margin: 0.1rem; padding: 0; min-width: var(--ph-hit); min-height: var(--ph-hit);
+  display: inline-flex; align-items: center; justify-content: center; }
+.md-header .md-header__button.md-logo { padding: 0 0.4rem; margin: 0.1rem; }
+.md-header .md-header__button:hover { color: var(--ph-accent); }
+.md-header .md-header__button svg { width: 1.2rem; height: 1.2rem; }
+.md-header__source { width: auto; min-width: 12rem; max-width: none; }
+.md-source { min-height: var(--ph-hit); display: flex; align-items: center; font-size: 0.7rem; color: var(--ph-text); }
+.md-source__repository { font-size: 0.75rem; max-width: none; overflow: visible; }
+.md-source__icon svg { height: 1.2rem; width: 1.2rem; }
+.md-source:hover { color: var(--ph-accent); }
+.md-logo img, .md-logo svg { height: 1.4rem; width: auto; }
+.md-header__button.md-logo img.ph-logo--dark { display: none; }
+body[data-md-color-scheme="slate"] .md-header__button.md-logo img.ph-logo--light { display: none; }
+body[data-md-color-scheme="slate"] .md-header__button.md-logo img.ph-logo--dark { display: block; }
+.md-header [hidden], .md-header__option [hidden] { display: none !important; }
+/* the theme shows the menu button only below its wide layout and the search button only below its search box: its rules lost to the 44 px rule above */
+@media screen and (min-width: 76.25em) { .md-header .md-header__button[for="__drawer"] { display: none; } }
+@media screen and (min-width: 60em) { .md-header .md-header__button[for="__search"] { display: none; } }
+/* the theme switch is a hidden radio and a label: the ring goes on the label the reader can see */
+.md-header__option:has(.md-option:focus-visible) label:not([hidden]) { outline: 3px solid var(--ph-accent); outline-offset: -3px; }
+
+/* the skip link */
+.md-skip {
+  font-size: 0.8rem; padding: 0 1rem; min-height: var(--ph-hit); display: inline-flex; align-items: center;
+  background: var(--ph-accent); color: var(--ph-accent-ink);
+}
+
+/* ---------- search ---------- */
+.md-search__form { height: var(--ph-hit); background: var(--ph-panel); border: 1px solid var(--ph-edge); border-radius: 6px; box-shadow: none; }
+.md-search__form:hover { background: var(--ph-panel); }
+.md-search__input { height: var(--ph-hit); font-size: 0.8rem; line-height: calc(var(--ph-hit) - 2px); padding-top: 0; padding-bottom: 0; color: var(--ph-text); }
+.md-search__input::placeholder, .md-search__input + .md-search__icon { color: var(--ph-muted); opacity: 1; }
+.md-search__icon { color: var(--ph-text); }
+.md-search__icon[for="__search"] { top: calc((var(--ph-hit) - 1.2rem) / 2); }
+.md-search__options { top: calc((var(--ph-hit) - 1.2rem) / 2); }
+.md-search__options > * { min-width: 1.2rem; }
+.md-search__output { background: var(--ph-bg); }
+/* the results box can be focused so it can be scrolled by keyboard: with nothing in it, it is left out of the tab order */
+.md-search__scrollwrap:not(:has(.md-search-result__item)) { visibility: hidden; }
+.md-search__scrollwrap { background: var(--ph-bg); }
+.md-search-result__meta { background: var(--ph-panel); color: var(--ph-muted); font-size: 0.7rem; }
+.md-search-result__link { min-height: var(--ph-hit); }
+.md-search-result__title { font-size: 0.8rem; }
+.md-search-result__teaser { color: var(--ph-muted); font-size: 0.75rem !important; }
+.md-search-result { font-size: 0.8rem; }
+.md-search-result :is(h1, h2, h3, p, div, summary, mark, article) { font-size: inherit !important; }
+.md-search-result code { font-size: 0.85em; }
+.md-search-result summary:focus-visible, .md-search-result summary:focus { outline: 3px solid var(--ph-accent) !important; outline-offset: -3px !important; }
+.md-search-result__item { border-bottom: 1px solid var(--ph-hair); }
+.md-search-result__link { color: var(--ph-text); }
+/* the result under the keyboard or the pointer: a tint, a bar and a stronger title, so colour is never the only sign */
+.md-search-result__link:hover, .md-search-result__link:focus, .md-search-result__link[data-md-state="active"] {
+  background: var(--ph-panel); box-shadow: inset 4px 0 0 var(--ph-accent);
+}
+.md-search-result__link:focus { outline: 3px solid var(--ph-accent) !important; outline-offset: -3px !important; }
+.md-search-result mark { background: var(--ph-tint); color: var(--ph-text); text-decoration: underline; }
+@media screen and (max-width: 59.9844em) {
+  .md-search__form { border-radius: 0; border-width: 0 0 1px; }
+}
+
+/* ---------- navigation tabs, sidebar and contents ---------- */
+.md-tabs { background: var(--ph-bg); color: var(--ph-text); border-bottom: 1px solid var(--ph-hair); }
+.md-tabs__list { contain: none; }
+.md-tabs__item { height: 2.4rem; padding: 0; }
+.md-tabs__link {
+  display: flex; align-items: center; min-height: var(--ph-hit); height: 100%; margin: 0; padding: 0 0.7rem;
+  font-size: 0.75rem; font-weight: 500; opacity: 1; color: var(--ph-muted);
+}
+.md-tabs__link:hover { color: var(--ph-accent); }
+/* the current tab has a bar under it as well as a stronger colour */
+.md-tabs__item--active .md-tabs__link { color: var(--ph-text); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ph-accent); }
+
+.md-sidebar__scrollwrap { scrollbar-color: var(--ph-edge) transparent; }
+@media screen and (min-width: 76.25em) { .md-sidebar { width: 13.5rem; } }
+.md-nav { font-size: 0.75rem; line-height: 1.35; }
+.md-nav__title { color: var(--ph-text); font-weight: 600; font-size: 0.75rem; }
+.md-nav__link {
+  display: flex; align-items: center; min-height: var(--ph-hit); margin: 0; padding: 0.2rem 0.5rem 0.2rem 0.6rem;
+  color: var(--ph-muted); opacity: 1;
+}
+.md-nav__link:hover, .md-nav__link:focus { color: var(--ph-accent); }
+.md-nav__item .md-nav__link--active,
+.md-nav__item--active > .md-nav__link {
+  color: var(--ph-accent); font-weight: 600;
+}
+/* the current page has a bar beside it as well as a colour */
+.md-nav__link--active { box-shadow: inset 4px 0 0 var(--ph-accent); }
+.md-nav__item--section > .md-nav__link { color: var(--ph-text); font-weight: 600; box-shadow: none; }
+.md-nav--secondary .md-nav__title { font-size: 0.75rem; box-shadow: none; background: none; }
+.md-nav--primary .md-nav__title { background: var(--ph-bg); box-shadow: none; }
+.md-nav__icon { min-height: 0; }
+.md-nav__list { padding: 0; }
+.md-sidebar--secondary .md-nav__link { padding-left: 0.6rem; }
+
+/* narrow screens: the navigation is a drawer, opened by the menu button */
+@media screen and (max-width: 76.1875em) {
+  /* a closed drawer is out of the tab order as well as out of sight, so focus never lands on something nobody can see */
+  [data-md-toggle="drawer"]:not(:checked) ~ .md-container .md-sidebar--primary { visibility: hidden; transition: visibility 0s linear 0.3s; }
+  [data-md-toggle="drawer"]:checked ~ .md-container .md-sidebar--primary { visibility: visible; transition-delay: 0s; }
+  /* a sub-menu that is folded away is also out of the tab order, so focus never lands on something that cannot be seen */
+  .md-nav__toggle:not(:checked):not(.md-toggle--indeterminate) ~ .md-nav { visibility: hidden; }
+  .md-nav--primary .md-nav__title { color: var(--ph-text); background: var(--ph-panel); border-bottom: 1px solid var(--ph-hair); }
+  .md-nav--primary .md-nav__title[for="__drawer"] { color: var(--ph-text); background: var(--ph-panel); }
+  .md-nav--primary, .md-nav--primary .md-nav { background: var(--ph-bg); }
+  .md-nav--primary .md-nav__item { border-top: 1px solid var(--ph-hair); padding: 0; }
+  .md-nav--primary .md-nav__link { padding: 0.2rem 0.8rem; }
+  .md-nav__source { background: var(--ph-panel); color: var(--ph-text); }
+}
+.md-overlay { background-color: rgba(0, 0, 0, 0.6); }
+
+/* ---------- footer, previous and next ---------- */
+.md-footer { background: var(--ph-panel); color: var(--ph-text); border-top: 1px solid var(--ph-hair); }
+.md-footer__link { min-height: var(--ph-hit); }
+.md-footer__direction { font-size: 0.75rem; color: var(--ph-muted); opacity: 1; }
+.md-footer__title { font-size: 0.85rem; color: var(--ph-text); }
+.md-footer__button { margin: 0.2rem; }
+.md-footer-meta { background: var(--ph-panel); border-top: 1px solid var(--ph-hair); }
+.md-copyright { font-size: 0.75rem; color: var(--ph-muted); }
+.md-social__link { display: inline-flex; align-items: center; justify-content: center; width: var(--ph-hit); height: var(--ph-hit); color: var(--ph-text); }
+.md-social__link svg { max-height: 1.2rem; }
+.md-social__link:hover { color: var(--ph-accent); }
+
+/* back to top: a 44 px target with a border that reaches 3:1 */
+.md-top {
+  min-height: var(--ph-hit); display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.75rem; padding: 0 1rem;
+  background: var(--ph-bg); color: var(--ph-text); border: 1px solid var(--ph-edge); border-radius: 6px;
+}
+.md-top:hover, .md-top:focus { background: var(--ph-accent); color: var(--ph-accent-ink); }
+.md-top svg { vertical-align: middle; }
+
+/* ---------- tables: they scroll inside their own box (docs/overrides/hooks.py adds the box) ---------- */
+.ph-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+  border: 1px solid var(--ph-edge);
+  border-radius: 6px;
+  background: var(--ph-bg);
+  scrollbar-color: var(--ph-edge) var(--ph-panel);
+  /* a soft edge on the side that has more to scroll to, so a reader on a phone can see the table goes on */
+  background:
+    linear-gradient(to right, var(--ph-bg) 30%, transparent) left center / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--ph-bg) 30%, transparent) right center / 2rem 100% no-repeat local,
+    linear-gradient(to right, var(--ph-shade), transparent) left center / 0.8rem 100% no-repeat scroll,
+    linear-gradient(to left, var(--ph-shade), transparent) right center / 0.8rem 100% no-repeat scroll;
+  background-color: var(--ph-bg);
+}
+.md-typeset table.ph-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; line-height: 1.5; display: table; }
+.md-typeset .ph-table th {
+  text-align: left; font-weight: 600; font-size: 0.75rem; vertical-align: bottom;
+  background: var(--ph-panel); color: var(--ph-text);
+  padding: 0.6rem 0.8rem; border-bottom: 2px solid var(--ph-edge); min-width: 7rem; max-width: 26rem;
+}
+.md-typeset .ph-table td { padding: 0.55rem 0.8rem; vertical-align: top; border-bottom: 1px solid var(--ph-hair); min-width: 7rem; max-width: 26rem; }
+.md-typeset .ph-table tbody tr:last-child td { border-bottom: 0; }
+.md-typeset .ph-table td:first-child { font-weight: 500; }
+.md-typeset .ph-table code { font-size: 0.85em; overflow-wrap: normal; word-break: normal; white-space: nowrap; }
+.md-typeset .ph-table td p { max-width: none; margin: 0; }
+
+/* ---------- code blocks ---------- */
+.md-typeset pre { margin: 1.2rem 0; }
+.md-typeset pre > code,
+.md-typeset .highlighttable {
+  background: var(--ph-panel);
+  color: var(--ph-text);
+  border: 1px solid var(--ph-edge);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  padding: 0.9rem 1rem;
+}
+.md-typeset pre > code { padding-right: calc(var(--ph-hit) + 0.8rem); scrollbar-color: var(--ph-edge) transparent; }
+/* inside a block the mono run needs no pill */
+.md-typeset pre code, .md-typeset .highlight code { border-radius: 6px; }
+.md-typeset .highlight span.filename { background: var(--ph-panel); color: var(--ph-text); border: 1px solid var(--ph-edge); border-bottom: 0; font-size: 0.75rem; }
+.md-typeset .highlight .gp, .md-typeset .highlight .go, .md-typeset .highlight .linenos, .md-typeset .highlight .ln { color: var(--ph-muted); }
+.md-typeset .highlight .hll { background: var(--ph-tint); }
+/* Pygments leaves some tokens at the theme's low-contrast shades. These keep every token at 6.7:1 or more. */
+.md-typeset .highlight .c, .md-typeset .highlight .c1, .md-typeset .highlight .cm, .md-typeset .highlight .ch,
+.md-typeset .highlight .cs, .md-typeset .highlight .cp, .md-typeset .highlight .sd { color: var(--ph-hl-cmt); font-style: italic; }
+.md-typeset .highlight .p { color: var(--ph-hl-op); }
+/* the copy control is always visible with a border and is 44 px square */
+.md-code__nav { padding: 0.15rem; background: var(--ph-panel); border: 1px solid var(--ph-edge); border-radius: 6px; top: 0.4rem; right: 0.4rem; }
+.md-code__button {
+  width: var(--ph-hit); height: var(--ph-hit); display: flex; align-items: center; justify-content: center;
+  color: var(--ph-text); border-radius: 4px;
+}
+.md-code__button:hover, .md-code__button:focus-visible { color: var(--ph-accent); }
+.md-code__button--active { color: var(--ph-accent) !important; }
+.md-code__button:after { width: 1.2rem; height: 1.2rem; margin: 0; }
+.md-clipboard { color: var(--ph-text); }
+.md-annotation__index { background: var(--ph-accent); color: var(--ph-accent-ink); }
+
+/* ---------- admonitions: a word and an icon as well as a colour ---------- */
+/* the theme's per-kind rules are more specific, so the kind colour is set on a variable and !important is used on the few
+   properties they set */
+.md-typeset .admonition, .md-typeset details {
+  --ph-kind: var(--ph-note);
+  font-size: 0.8rem;
+  border: 1px solid var(--ph-edge) !important;
+  border-left: 5px solid var(--ph-kind) !important;
+  border-radius: 6px;
+  background: var(--ph-panel);
+  box-shadow: none;
+  color: var(--ph-text);
+  margin: 1.2rem 0;
+  padding: 0 1rem;
+}
+.md-typeset :is(.admonition, details):is(.warning, .caution, .attention) { --ph-kind: var(--ph-warn); }
+.md-typeset :is(.admonition, details):is(.danger, .error, .failure, .fail, .missing, .bug) { --ph-kind: var(--ph-bad); }
+.md-typeset .admonition-title, .md-typeset summary {
+  background: transparent !important;
+  color: var(--ph-text);
+  font-weight: 600;
+  font-size: 0.8rem;
+  min-height: var(--ph-hit);
+  display: flex; align-items: center;
+  margin: 0 -1rem; padding: 0.3rem 1rem 0.3rem 3rem;
+}
+.md-typeset .admonition-title::before, .md-typeset summary::before { background-color: var(--ph-kind) !important; left: 1rem; top: 50%; transform: translateY(-50%); }
+.md-typeset summary::after { color: var(--ph-text); }
+.md-typeset .admonition > :last-child { margin-bottom: 1rem; }
+.md-typeset details > :last-child { margin-bottom: 1rem; }
+
+/* ---------- content tabs ---------- */
+.md-typeset .tabbed-labels { box-shadow: 0 -1px 0 var(--ph-edge) inset; }
+.md-typeset .tabbed-labels > label {
+  min-height: var(--ph-hit); display: inline-flex; align-items: center; padding: 0 1rem;
+  font-size: 0.75rem; font-weight: 500; color: var(--ph-muted);
+}
+.md-typeset .tabbed-labels > label:hover { color: var(--ph-accent); }
+.md-typeset .tabbed-set > input:checked + * { font-weight: 600; }
+.md-typeset .tabbed-set > input:nth-child(1):focus-visible ~ .tabbed-labels > :nth-child(1),
+.md-typeset .tabbed-set > input:nth-child(2):focus-visible ~ .tabbed-labels > :nth-child(2),
+.md-typeset .tabbed-set > input:nth-child(3):focus-visible ~ .tabbed-labels > :nth-child(3),
+.md-typeset .tabbed-set > input:nth-child(4):focus-visible ~ .tabbed-labels > :nth-child(4),
+.md-typeset .tabbed-set > input:nth-child(5):focus-visible ~ .tabbed-labels > :nth-child(5),
+.md-typeset .tabbed-set > input:nth-child(6):focus-visible ~ .tabbed-labels > :nth-child(6) {
+  outline: 3px solid var(--ph-accent); outline-offset: -3px;
+}
+.md-typeset .tabbed-labels::before { background: var(--ph-accent); height: 3px; }
+
+/* ---------- definition lists, task lists and the rest ---------- */
+.md-typeset dd { margin-left: 1.5rem; }
+.md-typeset .task-list-control .task-list-indicator::before { background-color: var(--ph-accent); }
+.md-typeset img { max-width: 100%; height: auto; }
+.md-typeset .md-button {
+  min-height: var(--ph-hit); display: inline-flex; align-items: center; border-radius: 6px;
+  background: var(--ph-accent); color: var(--ph-accent-ink); border-color: var(--ph-accent);
+}
+
+/* ---------- the home page ---------- */
+.md-typeset .ph-start { margin: 1rem 0 2rem; }
+.md-typeset .ph-start dt { font-weight: 600; font-size: 1.05em; margin-top: 1.4rem; }
+.md-typeset .ph-start dd { margin: 0.2rem 0 0; max-width: 56ch; }
+.md-typeset .ph-status { border-left: 5px solid var(--ph-warn); padding: 0.2rem 0 0.2rem 1rem; margin: 1rem 0 1.5rem; }
+.md-typeset .ph-status p { margin: 0.4rem 0; }
+
+/* ---------- print ---------- */
+@media print {
+  .md-header, .md-tabs, .md-sidebar, .md-footer, .md-top, .md-code__nav { display: none; }
+}
+
+/* ---------- reduced motion: nothing moves or fades or slides and nothing scrolls smoothly ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* a link that stands alone in a table cell or a list item is a target, so it is 44 px high */
+.md-typeset .ph-link-cell a, .md-typeset .ph-links li > a {
+  display: inline-flex; align-items: center; min-height: var(--ph-hit);
+}
+.md-typeset .ph-link-cell { padding-block: 0; }
+.md-typeset .ph-links ul { list-style: none; padding: 0; margin-left: 0; }
+.md-typeset .ph-links li { margin: 0; }
+
+/* a link reached by keyboard in a long contents list is scrolled fully into view, so its ring is never cut at the edge */
+.md-sidebar__scrollwrap, .md-nav__list { scroll-snap-type: none; scroll-padding-block: 1rem; }
+
+/* ---------- table hint and the scroll box ---------- */
+/* the script hides the hint on a table that fits. With script off every table keeps it. The arrow and the words are the cue, never a colour. */
+.ph-table-hint { display: block; margin: 1.2rem 0 -0.9rem; font-size: 0.75rem; color: var(--ph-muted); max-width: none; }
+.ph-table-hint::before { content: "\2194\00a0"; }
+.ph-table-hint[hidden] { display: none !important; }
+.md-typeset .ph-table code { white-space: normal; overflow-wrap: anywhere; }
+
+/* ---------- diagrams ---------- */
+.md-typeset .ph-figure { margin: 1.2rem 0; }
+.md-typeset .ph-diagram { margin: 0; }
+/* with no script the source shows as plain text in a code box */
+.md-typeset .ph-diagram:not([data-ready]) {
+  white-space: pre; overflow-x: auto; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.8rem; line-height: 1.55;
+  background: var(--ph-panel); border: 1px solid var(--ph-edge); border-radius: 6px; padding: 0.9rem 1rem; max-width: 100%;
+}
+.md-typeset .ph-diagram[data-ready] { border: 1px solid var(--ph-edge); border-radius: 6px; background: var(--ph-bg); padding: 0.6rem; }
+.md-typeset .ph-diagram__zoom {
+  min-height: var(--ph-hit); min-width: var(--ph-hit); padding: 0 1rem; margin-bottom: 0.4rem; cursor: pointer;
+  font: inherit; font-size: 0.75rem; font-weight: 500; color: var(--ph-text); background: var(--ph-panel);
+  border: 1px solid var(--ph-edge); border-radius: 6px;
+}
+.md-typeset .ph-diagram__zoom:hover { color: var(--ph-accent); }
+.md-typeset .ph-diagram__zoom[aria-pressed="true"] { box-shadow: inset 0 -3px 0 var(--ph-accent); font-weight: 600; }
+.md-typeset .ph-diagram__scroll { overflow-x: auto; max-width: 100%; }
+.md-typeset .ph-diagram__pic svg { display: block; margin: 0 auto; }
+.md-typeset .ph-diagram__scroll:focus-visible { outline-offset: -3px !important; }
+.md-typeset .ph-diagram__summary { font-size: 0.8rem; font-style: normal; text-align: left; margin: 0.6rem 0 0; color: var(--ph-text); max-width: 56ch; }
+.md-typeset .ph-diagram__text { margin-top: 0.6rem; }
+.md-typeset .ph-diagram__text pre { margin: 0; }
+.ph-diagram:focus-visible { outline-offset: -3px !important; }
+
+/* the theme dims these on hover, which would drop their contrast */
+.md-source:hover, .md-header .md-header__button:hover, .md-footer__link:hover { opacity: 1; }
+/* marker shapes in a drawing keep the text colour, never the library's default black */
+.ph-diagram__pic svg :is(defs, marker) path:not(.arrowMarkerPath) { stroke: var(--ph-text); }
+
+/* the contents heading is a label that opens the list on a narrow screen. On a wide one it is only a title, so it takes no clicks */
+.md-nav--secondary > .md-nav__title { min-height: var(--ph-hit); display: flex; align-items: center; }
+@media screen and (min-width: 76.25em) { .md-nav--secondary > .md-nav__title { pointer-events: none; } }
+
+/* a control that is out of sight is out of the tab order too */
+.md-top[hidden] { visibility: hidden; }
+
+/* ---------- an admonition for figures that come from simulated data ----------
+   in a page:   !!! simulated "Figures from simulated data"
+                    One sentence that says what was simulated and that no real machine was measured.        */
+.md-typeset .admonition.simulated { --ph-kind: var(--ph-warn); }
+.md-typeset .simulated > .admonition-title::before {
+  -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 2v2h1v5.2L3.7 18.4C3 19.8 4 21.5 5.6 21.5h12.8c1.6 0 2.6-1.7 1.9-3.1L16 9.2V4h1V2zm3 2h4v5.6l.1.4 1.7 3.5H8.2L9.9 10l.1-.4zM6.4 19.5l1.8-3.5h7.6l1.8 3.5z"/></svg>');
+  mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 2v2h1v5.2L3.7 18.4C3 19.8 4 21.5 5.6 21.5h12.8c1.6 0 2.6-1.7 1.9-3.1L16 9.2V4h1V2zm3 2h4v5.6l.1.4 1.7 3.5H8.2L9.9 10l.1-.4zM6.4 19.5l1.8-3.5h7.6l1.8 3.5z"/></svg>');
+}

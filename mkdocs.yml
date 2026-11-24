@@ -1,4 +1,4 @@
-site_name: Phaemos
+site_name: PHAEMOS
 site_description: Industrial IoT predictive maintenance platform - documentation
 site_url: https://docs.phaemos.com
 repo_url: https://github.com/phaemos/phaemos
@@ -7,15 +7,32 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  # no font host: Exo 2, Manrope and IBM Plex Mono are served from docs/assets/fonts (see NOTICE.txt there)
+  font: false
+  custom_dir: docs/overrides
+  logo: assets/icons/emblem-light.png
+  favicon: assets/icons/emblem-light.png
+  language: en
   palette:
-    scheme: slate
-    primary: indigo
-    accent: indigo
+    # both themes follow the reader's system setting at first. The switch in the header then keeps their choice.
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to the dark theme
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to the light theme
   features:
     - navigation.tabs
     - navigation.sections
     - navigation.top
-    - navigation.instant
     - search.highlight
     - search.suggest
     - content.code.copy
@@ -23,14 +40,23 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+extra_css:
+  - stylesheets/phaemos.css
+
+extra_javascript:
+  - assets/js/phaemos.js
+
+# adds a scroll box and a label to every table so a wide one scrolls inside itself, with or without script
+hooks:
+  - docs/overrides/hooks.py
+
 extra:
+  # the theme's own credit line is left out of the footer
+  generator: false
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/phaemos/phaemos
       name: Phaemos on GitHub
-    - icon: fontawesome/brands/patreon
-      link: https://www.patreon.com/c/zaccesss
-      name: Support on Patreon
 
 docs_dir: docs
 
@@ -44,6 +70,8 @@ nav:
     - Scalability: scalability.md
   - Reference:
     - API Reference: api-reference.md
+    - API Conventions: api-conventions.md
+    - API Stability: api-stability.md
     - Sensor Reference: sensor_reference.md
     - Database Schema: schema.md
     - Tech Stack: tech-stack.md
@@ -58,17 +86,19 @@ nav:
 
 exclude_docs: |
   README.md
+  overrides/
 
 markdown_extensions:
   - admonition
   - pymdownx.details
+  # a diagram is written into the page as text and drawn by the vendored library in assets/vendor (the theme's own diagram
+  # support would fetch the library from a third party host and this site makes no request to any other origin)
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.highlight:
-      anchor_linenums: true
+          class: ph-diagram
+          format: !!python/name:pymdownx.superfences.fence_div_format
+  - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.tabbed:

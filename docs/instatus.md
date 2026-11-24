@@ -1,6 +1,6 @@
 # Status Page - Instatus Setup
 
-Phaemos uses [Instatus](https://instatus.com) to host the public status page at `status.phaemos.com`. Instatus is hosted independently of the VPS - if the VPS goes down, the status page remains reachable.
+Phaemos plans to use [Instatus](https://instatus.com) to host the public status page at `status.phaemos.com`. The page is not set up yet. Instatus is hosted independently of the VPS, so if the VPS goes down the status page stays reachable.
 
 ---
 

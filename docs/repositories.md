@@ -42,7 +42,7 @@ phaemos/
 ├── edge/           phaemos-edge, the Rust store-and-forward gateway
 ├── client/         python/ (SDK and phaemos-sim) and go/ (phaemosctl)
 ├── infra/          Docker Compose stack, Prometheus and Grafana, SQL reports and seed data
-├── discord/        The Discord server setup script and the planned community bot
+├── discord/        The community Discord server: layout, setup script, GitHub relay and slash command worker
 ├── docs/           This documentation
 ├── assets/         Logos, colours and the social preview card
 ├── Makefile        make dev, test, lint, build, migrate, seed and docs

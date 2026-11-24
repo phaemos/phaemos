@@ -293,12 +293,15 @@ DigitalOcean VPS with Docker Compose + Nginx reverse proxy.
 **Consequences:**
 
 - A $6/month DigitalOcean droplet (covered by GitHub Student Pack credit) gives full root access, no cold-start latency and predictable costs.
-- Docker Compose on the VPS mirrors the local dev environment exactly - same `docker-compose.yml`, same env vars.
+- Docker Compose on the VPS mirrors the local dev environment closely - the same images and services (see the 2026-11-22 update below).
 - Nginx handles SSL termination (Certbot), reverse proxy to the FastAPI container and sets `X-Real-IP` so rate limiting works correctly.
 - No vendor lock-in: the Docker Compose stack is portable to any VPS provider.
 
 **Update (2026-10-07):**
 The VPS is the production target for the Launch milestone and has not been provisioned yet. Until then the `Deploy` workflow still holds the earlier Render deploy hook and is disabled, so the backend is not deployed automatically. The workflow is updated for the VPS when it goes live.
+
+**Update (2026-11-22):**
+The VPS does not run the development compose file. Production uses `infra/docker-compose.prod.yml`: database, Redis and API only, with `backend/.env` as the single source of settings, memory limits for a 1 GB droplet and no source mount. The dashboard stays on Vercel. The Nginx site and the server scripts are in `infra/`. The steps are in the deployment guide.
 
 ---
 
