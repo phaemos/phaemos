@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  <link rel="preload" href="{{ 'assets/fonts/Manrope-Variable.woff2' | url }}" as="font" type="font/woff2" crossorigin>
+  {#- scripts only from this site and by hash, images only from this site and data: addresses, no plug-ins. The hashes are added at build time by hooks.py -#}
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' __SCRIPT_HASHES__; worker-src 'self' blob:; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  {#- with script off the theme cannot read the reader's system setting, so the whole dark set is repeated here for that case only -#}
+  <noscript>
+    <style>
+      /* with script off the drawer's checkbox is the menu button. It is hidden to the eye and kept for the keyboard and the ring
+         goes on the label the reader sees. Space opens the drawer and the theme's own styles do the rest. */
+      @media screen and (max-width: 76.1875em) {
+        .md-toggle[data-md-toggle="drawer"] { display: block; position: fixed; top: 4px; left: 4px; width: 44px; height: 44px; margin: 0; opacity: 0; z-index: 5; }
+        body:has(.md-toggle[data-md-toggle="drawer"]:focus-visible) label.md-header__button[for="__drawer"] { outline: 3px solid var(--ph-accent); outline-offset: -3px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        body[data-md-color-scheme="default"] {
+          color-scheme: dark;
+          --ph-bg: #0b0c0e; --ph-panel: #131519; --ph-text: #f7f8f9; --ph-muted: #a1a6b0; --ph-edge: #7b818c;
+          --ph-hair: #22252b; --ph-accent: #60a5fa; --ph-accent-ink: #0b0c0e; --ph-tint: #172554;
+          --ph-note: #a1a6b0; --ph-warn: #fbbf24; --ph-bad: #f87171;
+          --ph-hl-kw: #93c5fd; --ph-hl-str: #86efac; --ph-hl-num: #fdba74; --ph-hl-fn: #d8b4fe; --ph-hl-var: #67e8f9;
+          --ph-hl-special: #fca5a5; --ph-hl-cmt: #a1a6b0; --ph-hl-op: #d4d7dd; --ph-shade: rgba(247, 248, 249, 0.2);
+        }
+        body[data-md-color-scheme="default"] .md-header__button.md-logo img.ph-logo--light { display: none; }
+        body[data-md-color-scheme="default"] .md-header__button.md-logo img.ph-logo--dark { display: block; }
+      }
+    </style>
+  </noscript>
+{% endblock %}
