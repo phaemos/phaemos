@@ -1,8 +1,8 @@
 # firmware/pico_w/bme280.py
-# full MicroPython BME280 driver - no external library required.
+# full MicroPython BME280 and BMP280 driver - no external library required.
 #
-# include the full compensation math here rather than returning raw ADC
-# values because the Pico does not have the precision integer math limitations
+# include the full compensation maths here rather than returning raw ADC
+# values because the Pico does not have the precision integer maths limitations
 # of an 8-bit AVR.  The RP2350 handles 32-bit and 64-bit integer arithmetic
 # natively, so the Bosch-specified compensation formulas run correctly without
 # the workarounds needed on Arduino.
@@ -17,6 +17,7 @@
 #   temperature : int, units of 0.01 degC  (divide by 100 for Celsius)
 #   pressure    : int, units of 1/256 Pa   (divide by 256 for Pa, /25600 for hPa)
 #   humidity    : int, units of 1/1024 %RH (divide by 1024 for %RH)
+#                 none for a BMP280, which has no humidity element
 
 
 class BME280:
@@ -24,7 +25,7 @@ class BME280:
 
     # register addresses from BME280 datasheet Table 18 / Table 19
     _REG_CALIB_T_P  = 0x88   # start of temperature and pressure calibration data (24 bytes)
-    _REG_ID         = 0xD0   # chip ID register - should read 0x60 for BME280
+    _REG_ID         = 0xD0   # chip ID register - 0x60 for BME280, 0x58 for BMP280
     _REG_RESET      = 0xE0
     _REG_CALIB_H1   = 0xA1   # dig_H1 (1 byte)
     _REG_CTRL_HUM   = 0xF2
@@ -34,10 +35,14 @@ class BME280:
     _REG_PRESS_MSB  = 0xF7   # start of measurement data block (8 bytes)
     _REG_CALIB_H2   = 0xE1   # start of dig_H2..dig_H6 (7 bytes)
 
+    # chip IDs from the Bosch datasheets
+    CHIP_ID_BME280 = 0x60
+    CHIP_ID_BMP280 = 0x58
+
     def __init__(self, i2c, addr=0x76):
         """Initialise BME280 and read all calibration registers.
 
-        I read calibration on __init__ rather than on each measurement call
+        calibration is read on __init__ rather than on each measurement call
         because calibration registers are one-time programmed in the sensor
         factory and never change - reading them once at startup avoids 24+
         extra I2C bytes per measurement at 5-second intervals.
@@ -53,13 +58,17 @@ class BME280:
         # check the chip ID so a wiring error produces a clear error message
         # instead of silently reading garbage calibration data.
         chip_id = self._read_byte(self._REG_ID)
-        if chip_id not in (0x60, 0x58):
-            # 0x60 = BME280, 0x58 = BMP280 (no humidity but compatible otherwise)
+        if chip_id not in (self.CHIP_ID_BME280, self.CHIP_ID_BMP280):
             raise RuntimeError(
-                "BME280 not found at 0x{:02X} (chip ID=0x{:02X})".format(
+                "BME280 or BMP280 not found at 0x{:02X} (chip ID=0x{:02X})".format(
                     addr, chip_id
                 )
             )
+
+        # a BMP280 shares the temperature and pressure maths but has no
+        # humidity element, so its humidity is reported as None rather than
+        # computed from registers that do not exist on that chip.
+        self.has_humidity = (chip_id == self.CHIP_ID_BME280)
 
         self._read_calibration()
         self._configure()
@@ -79,7 +88,7 @@ class BME280:
     def _read_calibration(self):
         """Read all factory calibration coefficients from the sensor.
 
-        I store them as instance attributes with the same names as the
+        they are stored as instance attributes with the same names as the
         datasheet (dig_T1, dig_P1, etc.) so the compensation formulas
         in read_compensated_data() can be verified against the datasheet
         line-by-line.
@@ -102,6 +111,9 @@ class BME280:
         self.dig_P8 = self._signed16((raw[21] << 8) | raw[20])
         self.dig_P9 = self._signed16((raw[23] << 8) | raw[22])
 
+        if not self.has_humidity:
+            return
+
         # humidity calibration (split across two non-contiguous register banks)
         self.dig_H1 = self._read_byte(self._REG_CALIB_H1)   # uint8
 
@@ -117,14 +129,16 @@ class BME280:
     def _configure(self):
         """Put the sensor into normal mode with 1x oversampling.
 
-        I use 1x oversampling on all three measurements because the Pico
+        1x oversampling is used on all three measurements because the Pico
         node posts every 5 seconds and sensor noise averaging is not critical
         for the ambient monitoring use case.  Higher oversampling would
         increase current draw without benefit at this reporting rate.
         """
         # I2C mode (no SPI) is selected by the sensor's CSB pin wiring.
         # set humidity oversampling to 1x before ctrl_meas (datasheet requirement).
-        self._write_byte(self._REG_CTRL_HUM, 0x01)   # osrs_h = 1x
+        # skipped on a BMP280 because that register is reserved there.
+        if self.has_humidity:
+            self._write_byte(self._REG_CTRL_HUM, 0x01)   # osrs_h = 1x
         # normal mode, temperature 1x, pressure 1x
         self._write_byte(self._REG_CTRL_MEAS, 0x27)  # osrs_t=1, osrs_p=1, mode=normal
         # standby 1000ms, filter off, SPI 3-wire off
@@ -148,15 +162,16 @@ class BME280:
               temperature : units of 0.01 degC  - divide by 100.0 for Celsius
               pressure    : units of 1/256 Pa   - divide by 25600.0 for hPa
               humidity    : units of 1/1024 %RH - divide by 1024.0 for %RH
+                            None for a BMP280
         """
         # read all 8 measurement bytes in one I2C transaction to ensure
         # all three values are from the same sensor measurement snapshot.
-        raw = self._read_bytes(self._REG_PRESS_MSB, 8)
+        # a BMP280 has only six data bytes (no humidity bytes).
+        raw = self._read_bytes(self._REG_PRESS_MSB, 8 if self.has_humidity else 6)
 
         # unpack 20-bit ADC values (MSB, LSB, XLSB format)
         adc_P = (raw[0] << 12) | (raw[1] << 4) | (raw[2] >> 4)
         adc_T = (raw[3] << 12) | (raw[4] << 4) | (raw[5] >> 4)
-        adc_H = (raw[6] << 8)  |  raw[7]
 
         # ---- Temperature compensation (datasheet 4.2.3, listing 1) ----
         # var1 and var2 use a "t_fine" intermediate value that is also reused
@@ -187,7 +202,11 @@ class BME280:
             p = p + (var1 + var2 + self.dig_P7) / 16.0
             pressure = int(p * 256)   # units: 1/256 Pa
 
+        if not self.has_humidity:
+            return temperature, pressure, None
+
         # ---- Humidity compensation (datasheet 4.2.3, listing 1) ----
+        adc_H = (raw[6] << 8) | raw[7]
         h = self._t_fine - 76800.0
         h = ((adc_H - (self.dig_H4 * 64.0 + self.dig_H5 / 16384.0 * h)) *
              (self.dig_H2 / 65536.0 *

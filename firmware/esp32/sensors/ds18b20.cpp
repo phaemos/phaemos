@@ -9,8 +9,15 @@
 static OneWire           oneWire(DS18B20_PIN);
 static DallasTemperature sensors(&oneWire);
 
-void initDS18B20() {
+bool initDS18B20(bool quiet) {
     sensors.begin();
+
+    // a probe that is not on the bus would otherwise read as a fake value, so
+    // report it missing here and let the caller skip it.
+    if (sensors.getDeviceCount() == 0) {
+        if (!quiet) Serial.println("[DS18B20] ERROR: no probe found on the 1-wire bus");
+        return false;
+    }
 
     // set resolution here rather than leaving it at the library default (9-bit)
     // because 12-bit resolution gives 0.0625 degC steps which is adequate for
@@ -25,6 +32,7 @@ void initDS18B20() {
     sensors.requestTemperatures();
 
     Serial.println("[DS18B20] init OK");
+    return true;
 }
 
 float readDS18B20() {

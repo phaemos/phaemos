@@ -6,19 +6,32 @@
 // and it is less error-prone than manually keeping guard macro names unique.
 
 #include <Arduino.h>
-#include <Adafruit_BME280.h>
 
-// group the BME280 readings into a struct rather than using global variables
+// group the sensor readings into a struct rather than using global variables
 // because structs let the compiler catch type mismatches at the call site and
 // make the main sketch read like self-documenting data flow.
 struct BME280Data {
     float temperature;  // degrees Celsius
-    float humidity;     // percent relative humidity
+    float humidity;     // percent relative humidity, only valid when has_humidity is true
     float pressure;     // hPa
-    bool  ok;           // true if the sensor initialised and the read succeeded
+    bool  ok;           // true only when the values are real: no status bit below is set
+    bool  has_humidity; // false for a BMP280, which has no humidity element
+    uint8_t status;     // the ST_BME_* bits that apply to this read, 0 when all is well
 };
 
-// initBME280Nano - Try I2C addresses 0x76 then 0x77.
+// status bit mask sent as ST.  the numbers are fixed by the serial link contract.
+// the first four bits and the last one come from the sensor driver, the rest from the sketch.
+static const uint8_t ST_BME_MISSING     = 1;   // the sensor does not answer
+static const uint8_t ST_BME_STUCK       = 2;   // every raw value identical for BME_STUCK_READS reads
+static const uint8_t ST_BME_ASLEEP      = 4;   // control registers read back wrong, set-up rewritten
+static const uint8_t ST_SUPPLY_RANGE    = 8;   // VCC under 4000 or over 6000 mV (4500 and 5500 when calibrated)
+static const uint8_t ST_RESET_WATCHDOG  = 16;  // this boot followed a watchdog reset
+static const uint8_t ST_RESET_BROWNOUT  = 32;  // this boot followed a brown-out reset
+static const uint8_t ST_BME_RANGE       = 64;  // a compensated value is outside the data sheet range
+
+// initBME280Nano - Try I2C addresses 0x76 then 0x77 and accept a BME280 or BMP280.
+// the chip ID register tells the two parts apart (0x60 for a BME280 and 0x58
+// for a BMP280) so one firmware image serves both breakouts.
 // try both addresses here so the same firmware works with both the common
 // 0x76 (SDO tied low) and 0x77 (SDO tied high) module variants without
 // requiring a recompile.
@@ -46,3 +59,8 @@ int readMoisture();
 // supply and 10-bit ADC.  Adjust this constant for your specific sensor and
 // supply voltage.
 bool isWaterDetected(int moisture);
+
+// readSupplyMv - Return the supply voltage in millivolts, measured against the internal band gap.
+// the ADC is shared with the LDR and the moisture probe, so the multiplexer and reference are
+// put back afterwards.  returns 0 if the conversion gave nothing usable.
+uint16_t readSupplyMv();

@@ -1,0 +1,6 @@
+NAME       STATE    LINK     LAST SEEN                OPEN ALERTS  MODEL     REPLAY
+press-01   online   online   2026-11-22 12:59:55 BST  2            ready     on
+pump-02    offline  offline  2026-11-22 10:00:00 BST  1            learning  off
+Press-01b  online   late     2026-11-22 12:59:30 BST  0            -         refused 4
+twin       online   online   2026-11-22 12:59:00 BST  0            -         off
+twin       online   online   2026-11-22 12:58:00 BST  0            -         off

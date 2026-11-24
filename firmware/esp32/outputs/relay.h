@@ -2,6 +2,8 @@
 // include guards.
 #pragma once
 
+#include <stdint.h>
+
 // use a named enum for relay channels so call sites cannot accidentally pass
 // a raw GPIO number to triggerRelay - the type system catches the mistake.
 enum RelayChannel {
@@ -12,10 +14,22 @@ enum RelayChannel {
 };
 
 // initRelay - configures all four relay pins as outputs and sets them to the
-// off state. Call once in setup().
+// off state (pins LOW). Call it as the first thing in setup() so no load
+// switches while the rest of the boot runs.
 void initRelay();
+
+// relayAllowGpio14 says whether GPIO14 may be driven as relay 3. it is a relay pin only in the
+// present-board image. only when the board really is the present board. until it is
+// called with true, nothing touches GPIO14. calling it with true sets the pin low as an output.
+void relayAllowGpio14(bool allow);
 
 // triggerRelay - sets a single relay channel on or off.
 // on=true energises the relay coil (closes the load circuit).
 // on=false de-energises it (opens the load circuit).
 void triggerRelay(RelayChannel ch, bool on);
+
+// relayStateMask returns the commanded state of the four relays, bit n for relay n+1.
+uint8_t relayStateMask();
+
+// relayRestore drives the relays to a saved state straight after initRelay() on a warm reset.
+void relayRestore(uint8_t mask);

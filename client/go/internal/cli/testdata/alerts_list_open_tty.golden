@@ -1,0 +1,4 @@
+TRIGGERED                SEVERITY  STATE  MACHINE   MESSAGE                                             ID
+2026-11-22 12:50:00 BST  critical  open   press-01  press-01: temperature above 80 for 30 s             a1000000-0000-4000-8000-000000000001
+2026-11-22 12:40:00 BST  warning   open   press-01  press-01: sensor bme280 is not answering (missing)  a2000000-0000-4000-8000-000000000002
+2026-11-20 10:00:00 BST  warning   open   pump-02   pump-02 has not reported for 2 minutes              a4000000-0000-4000-8000-000000000004

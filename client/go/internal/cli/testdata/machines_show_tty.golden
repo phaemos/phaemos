@@ -1,0 +1,27 @@
+name                 press-01
+id                   11111111-1111-4111-8111-111111111111
+state                online
+link                 online
+last seen            2026-11-22 12:59:55 BST (5s ago)
+expected interval    5 s
+type                 esp32
+location             Bay A
+owner                Sam
+tags                 pump-room
+firmware             2.4.1
+open alerts          2
+                     critical  press-01: temperature above 80 for 30 s  a1000000-0000-4000-8000-000000000001
+                     warning  press-01: sensor bme280 is not answering (missing)  a2000000-0000-4000-8000-000000000002
+model                ready (machine)
+model data           336.0 of 24.0 hours collected
+model false alerts   0.00 a week
+model trained        2026-11-21 05:10:00 BST
+replay protection    on
+replay counter       boot 7, seq 1042
+replay status        Replay protection is on.
+health boot_count    7
+health faults        {"bme280":"missing"}
+health lost_posts    3
+health reset_reason  poweron
+health rssi          -61
+health uptime_s      3600

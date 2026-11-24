@@ -9,5 +9,6 @@ struct INA219Reading {
     float power_mw;    // milliwatts
 };
 
-void initINA219();
+// returns true when the sensor answered, false when it is missing so the caller can skip it.
+bool initINA219();
 void readINA219(INA219Reading* r);

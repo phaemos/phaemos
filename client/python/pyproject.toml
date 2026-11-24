@@ -5,6 +5,13 @@ description = "Python client for the PHAEMOS API and a telemetry simulator for t
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.12"
+keywords = ["phaemos", "predictive maintenance", "telemetry"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+    "Topic :: System :: Monitoring",
+]
 dependencies = ["httpx>=0.28"]
 
 [project.optional-dependencies]
@@ -13,9 +20,16 @@ dev = ["pytest>=8.4", "ruff>=0.14", "mypy>=1.18"]
 [project.scripts]
 phaemos-sim = "phaemos_client.simulator:main"
 
+[project.urls]
+Repository = "https://github.com/phaemos/client"
+Issues = "https://github.com/phaemos/phaemos/issues"
+
 [build-system]
 requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+phaemos_client = ["py.typed"]
 
 [tool.setuptools.packages.find]
 include = ["phaemos_client*"]

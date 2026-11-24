@@ -1,0 +1,11 @@
+:name: Black Pill F411CEU6
+mach create "blackpill"
+include @mpu6050_sim.cs
+machine LoadPlatformDescription $repl
+sysbus LoadELF $elf
+
+# a machine reset (the IWDG model requests one) loads the ELF again, as a real reset restarts the firmware
+macro reset
+"""
+    sysbus LoadELF $elf
+"""
