@@ -1,0 +1,6 @@
+{
+  "about": "The seed split of the anomaly model's evaluation. The tuning (evaluate_model.py --tune) reads its seeds from validation and refuses any seed in test. The reported figures come from test. A seed may be in one list only. The builder's own seed and seeds used by the reviews are listed so they are never mistaken for unseen ones.",
+  "validation": [9101, 9202, 9303],
+  "test": [7101, 7202, 7303, 7404, 7505, 7606],
+  "used_elsewhere": {"development": [20260302, 20261302, 20262302], "check set 1": [11, 22, 33, 44, 55, 66], "replay test": [4242], "check set 2": [4242, 5353]}
+}

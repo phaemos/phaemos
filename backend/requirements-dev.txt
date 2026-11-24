@@ -1,0 +1,11 @@
+# everything production needs, plus what the tests and the model evaluation script use. The production image
+# installs requirements.txt only, so it carries no test or plotting packages. `make test`, the development
+# compose file and CI install this file.
+-r requirements.txt
+matplotlib==3.11.2
+pytest==9.2.0
+pytest-cov==7.1.0
+# pytest-asyncio needed for async FastAPI endpoint tests
+pytest-asyncio==1.5.0
+# the deploy guard test reads the compose file without Docker
+PyYAML==6.0.2

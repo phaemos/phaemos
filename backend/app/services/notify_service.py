@@ -5,12 +5,11 @@ so a broken webhook never crashes the telemetry ingest flow.
 """
 
 import logging
-import smtplib
-from email.mime.text import MIMEText
 
 import httpx
 
 from app.config import settings
+from app.services import email_service
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +17,15 @@ logger = logging.getLogger(__name__)
 _NOTIFY_SEVERITIES = {"critical", "warning"}
 
 
-def send_discord_alert(message: str, severity: str) -> None:
-    """POST a message to the configured Discord webhook channel."""
-    if not settings.discord_webhook_url:
-        return  # webhook not configured, skip silently
-    if severity not in _NOTIFY_SEVERITIES:
-        return
+def discord_wanted(severity: str) -> bool:
+    """True when a Discord message would be sent for this severity, so a caller can skip its repeat window."""
+    return bool(settings.discord_webhook_url) and severity in _NOTIFY_SEVERITIES
+
+
+def send_discord_alert(message: str, severity: str) -> bool:
+    """POST a message to the configured Discord webhook channel. True once Discord accepted it."""
+    if not discord_wanted(severity):
+        return False  # webhook not configured or an info alert, skip silently
 
     # Discord embeds use colour codes - red for critical, yellow for warning.
     colour = 0xFF0000 if severity == "critical" else 0xFFA500
@@ -39,25 +41,23 @@ def send_discord_alert(message: str, severity: str) -> None:
         with httpx.Client(timeout=5) as client:
             res = client.post(settings.discord_webhook_url, json=payload)
             res.raise_for_status()
+        return True
+    except httpx.HTTPStatusError as exc:
+        # the exception text carries the webhook URL, which is a secret, so only the status is logged
+        logger.warning("Discord notification failed (HTTP %s)", exc.response.status_code)
     except Exception as exc:
-        logger.warning("Discord notification failed: %s", exc)
+        logger.warning("Discord notification failed (%s)", type(exc).__name__)
+    return False
 
 
-def send_email_alert(subject: str, body: str) -> None:
-    """Send a plain-text alert email via SMTP."""
-    if not settings.smtp_host or not settings.alert_email_to:
-        return  # email not configured, skip silently
-
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = settings.smtp_user or "phaemos@noreply.local"
-    msg["To"] = settings.alert_email_to
-
+def send_email_alert(subject: str, body: str) -> bool:
+    """Email an alert to ALERT_EMAIL_TO through Resend. Never raises."""
+    recipients = email_service.parse_recipients(settings.alert_email_to)
+    if not recipients:
+        return False  # no alert address configured, skip silently
     try:
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-            if settings.smtp_user and settings.smtp_password:
-                server.starttls()  # encrypt the connection before sending credentials
-                server.login(settings.smtp_user, settings.smtp_password)
-            server.send_message(msg)
+        return email_service.send_email(recipients, subject, body)
     except Exception as exc:
-        logger.warning("Email notification failed: %s", exc)
+        # a failed alert email must never break telemetry ingest.
+        logger.warning("Email notification failed (%s)", type(exc).__name__)
+        return False
