@@ -8,7 +8,7 @@ from fastapi import HTTPException
 
 from app.config import settings
 from app.routes.auth import (
-    _create_invite_token, _encode, create_access_token, create_refresh_token, decode_token,
+    _create_invite, _encode, create_access_token, create_refresh_token, decode_token,
 )
 
 _CLAIMS = {"sub": "0b7c5a52-6f0e-4a8e-9a39-2f3f3c1d9e11", "role": "admin", "ver": 3}
@@ -83,21 +83,26 @@ def test_expired_token_is_refused_by_a_protected_route(client):
     assert res.status_code == 401
 
 
-def test_expired_invite_is_refused(client):
-    token = jwt.encode(
-        {"sub": "late@example.com", "role": "viewer", "type": "invite",
-         "exp": datetime.now(timezone.utc) - timedelta(seconds=1)},
-        settings.secret_key, algorithm=settings.algorithm,
-    )
-    res = client.get(f"/api/v1/auth/accept-invite/{token}")
+def test_expired_invite_is_refused(client, db):
+    from app.models.invitation import Invitation
+    token = _create_invite(db, "late@example.com", "viewer")
+    db.query(Invitation).filter(Invitation.email == "late@example.com").update({"expires_at": datetime.now(timezone.utc) - timedelta(seconds=1)})
+    db.flush()
+    res = client.post("/api/v1/auth/accept-invite", json={"token": token, "name": "Late", "password": "Secret123!"})
     assert res.status_code == 400
 
 
-def test_valid_invite_is_read(client):
-    token = _create_invite_token("new@example.com", "technician")
-    res = client.get(f"/api/v1/auth/accept-invite/{token}")
-    assert res.status_code == 200
-    assert res.json() == {"email": "new@example.com", "role": "technician"}
+def test_valid_invite_is_accepted_with_the_role_it_carries(client, db):
+    token = _create_invite(db, "new@example.com", "technician")
+    res = client.post("/api/v1/auth/accept-invite", json={"token": token, "name": "New", "password": "Secret123!"})
+    assert res.status_code == 201
+    assert res.json()["role"] == "technician"
+
+
+def test_the_invite_read_route_is_gone(client, db):
+    # it put the token in the path, which reaches proxy access logs. The token is only ever posted
+    token = _create_invite(db, "gone@example.com", "viewer")
+    assert client.get(f"/api/v1/auth/accept-invite/{token}").status_code in (404, 405)
 
 
 # ── tampering ─────────────────────────────────────────────────────────────────
@@ -160,12 +165,10 @@ def test_tampered_token_is_refused_by_a_protected_route(client):
     assert res.status_code == 401
 
 
-def test_tampered_invite_is_refused(client):
-    header, body, signature = _segments(_create_invite_token("someone@example.com", "viewer"))
-    claims = _unb64(body)
-    claims["role"] = "admin"
-    tampered = ".".join([header, _b64(claims), signature])
-    assert client.get(f"/api/v1/auth/accept-invite/{tampered}").status_code == 400
+def test_a_changed_or_invented_invite_is_refused(client, db):
+    # an invitation is 256 random bits looked up by its hash, so changing one character or making one up, finds nothing
+    real = _create_invite(db, "someone@example.com", "viewer")
+    tampered = ("A" if real[0] != "A" else "B") + real[1:]
     res = client.post(
         "/api/v1/auth/accept-invite",
         json={"token": tampered, "name": "Someone", "password": "Secret123!"},

@@ -9,12 +9,16 @@ Note: uses a simple in-memory dict. Works correctly for a single-worker
 deployment. A multi-worker setup would require a Redis pub/sub broker here.
 """
 
+import asyncio
 import logging
 from collections import defaultdict
 
 from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
+
+# the longest one client may take to accept a reading before it is dropped
+_SEND_SECONDS = 2
 
 # device_id (str) → list of active WebSocket connections for that device.
 _connections: dict[str, list[WebSocket]] = defaultdict(list)
@@ -36,11 +40,24 @@ def unsubscribe(device_id: str, ws: WebSocket) -> None:
 async def broadcast(device_id: str, data: str) -> None:
     """Send a JSON string to every client watching this device.
     Dead connections are cleaned up automatically."""
-    dead: list[WebSocket] = []
-    for ws in list(_connections[device_id]):
+    # sent to everyone at once with a time limit each, so one slow client cannot hold up the rest
+    # and with them the alert emails that wait behind this task
+    clients = list(_connections[device_id])
+
+    async def send(ws: WebSocket) -> bool:
         try:
-            await ws.send_text(data)
+            await asyncio.wait_for(ws.send_text(data), timeout=_SEND_SECONDS)
+            return True
         except Exception:
-            dead.append(ws)
-    for ws in dead:
-        unsubscribe(device_id, ws)
+            # a client that cannot keep up is closed, so it reconnects. Left open it would stay in the
+            # dashboard with a chart that never moves until its token expires
+            try:
+                await ws.close(code=1013)
+            except Exception:
+                pass
+            return False
+
+    results = await asyncio.gather(*(send(ws) for ws in clients))
+    for ws, delivered in zip(clients, results):
+        if not delivered:
+            unsubscribe(device_id, ws)

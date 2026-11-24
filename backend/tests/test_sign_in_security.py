@@ -53,7 +53,7 @@ def test_challenge_and_code_complete_sign_in(client, db):
     code = pyotp.TOTP(user.totp_secret).now()
     res = client.post("/api/v1/auth/2fa/verify", json={"mfa_token": challenge, "code": code})
     assert res.status_code == 200
-    assert "refresh_token" in res.cookies
+    assert res.cookies.get("refresh_token", path="/api/v1/auth/refresh")
     me = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {res.json()['access_token']}"})
     assert me.status_code == 200
     assert me.json()["email"] == "mfa2@example.com"
@@ -112,7 +112,7 @@ def test_password_change_ends_other_sessions(client, db):
         headers=old,
     )
     assert res.status_code == 204
-    assert "refresh_token" in res.cookies
+    assert res.cookies.get("refresh_token", path="/api/v1/auth/refresh")
     assert client.get("/api/v1/auth/me", headers=old).status_code == 401
 
 
@@ -136,8 +136,8 @@ def test_enable_is_refused_while_2fa_is_on(client, db):
 def test_confirming_2fa_ends_other_sessions(client, db):
     user = _user(db, "enrol2@example.com")
     old = _bearer(user)
-    secret = client.post("/api/v1/auth/2fa/enable", headers=old).json()["secret"]
-    res = client.post(f"/api/v1/auth/2fa/confirm?code={pyotp.TOTP(secret).now()}", headers=old)
+    secret = client.post("/api/v1/auth/2fa/enable", headers=old, json={"password": _PASSWORD}).json()["secret"]
+    res = client.post("/api/v1/auth/2fa/confirm", headers=old, json={"code": pyotp.TOTP(secret).now()})
     assert res.status_code == 200
     fresh = {"Authorization": f"Bearer {res.json()['access_token']}"}
     assert client.get("/api/v1/auth/me", headers=old).status_code == 401
@@ -207,7 +207,7 @@ def test_viewers_cannot_change_devices_or_see_keys(client, db):
     viewer = _user(db, "viewer@example.com")
     device = _device(db)
     headers = _bearer(viewer)
-    assert client.post(f"/api/v1/devices/{device.id}/rotate-key", headers=headers).status_code == 403
+    assert client.post(f"/api/v1/devices/{device.id}/rotate-key", json={"password": _PASSWORD}, headers=headers).status_code == 403
     assert client.patch(f"/api/v1/devices/{device.id}", json={"name": "X"}, headers=headers).status_code == 403
     assert client.delete(f"/api/v1/devices/{device.id}", headers=headers).status_code == 403
 
@@ -217,8 +217,8 @@ def test_technicians_manage_only_their_own_devices(client, db):
     other = _user(db, "other@example.com", role="technician")
     mine, theirs = _device(db, tech), _device(db, other)
     headers = _bearer(tech)
-    assert client.post(f"/api/v1/devices/{mine.id}/rotate-key", headers=headers).status_code == 200
-    assert client.post(f"/api/v1/devices/{theirs.id}/rotate-key", headers=headers).status_code == 403
+    assert client.post(f"/api/v1/devices/{mine.id}/rotate-key", json={"password": _PASSWORD}, headers=headers).status_code == 200
+    assert client.post(f"/api/v1/devices/{theirs.id}/rotate-key", json={"password": _PASSWORD}, headers=headers).status_code == 404
     assert client.delete(f"/api/v1/devices/{mine.id}", headers=headers).status_code == 403
 
 

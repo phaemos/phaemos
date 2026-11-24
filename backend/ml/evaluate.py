@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import joblib
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -25,8 +24,9 @@ ANOMALY_SCORE_THRESHOLD = ml_service.ANOMALY_THRESHOLD
 
 
 def load_model(model_path: str) -> Any:
-    """Load a saved bundle of models (or a single model from an earlier version)."""
-    return joblib.load(model_path)
+    """Load a saved bundle. Only a file this server signed is read, so a planted pickle never runs (ml_service._load_file)."""
+    ml_service.MODEL_PATH = str(model_path)
+    return ml_service._load_file(str(model_path))
 
 
 def score_rows(model: Any, rows: list[dict]) -> np.ndarray:

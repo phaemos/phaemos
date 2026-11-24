@@ -18,16 +18,13 @@ joblib==1.6.0
 httpx==0.28.1
 # authlib 1.9.1 is the first release with every published authlib advisory fixed, so keep it at or above
 authlib==1.9.9
+# two-step secrets are encrypted with Fernet. authlib already installs it. Declared here because the app imports it directly.
+# This is a lower bound for now. Pin an exact version after the first install as the other lines are. Check the advisories then.
+cryptography>=43.0.1
 pyotp==2.12.1
-qrcode==8.2
+qrcode[pil]==8.2
 prometheus-fastapi-instrumentator==8.1.0
 resend==2.55.0
-sib-api-v3-sdk==7.6.0
 apscheduler==3.11.3
-matplotlib==3.11.2
-pytest==9.2.0
-pytest-cov==7.1.0
 # python-dotenv added in v2.0 for local .env loading in scripts and evaluate.py
 python-dotenv==1.2.4
-# pytest-asyncio needed for async FastAPI endpoint tests
-pytest-asyncio==1.5.0
