@@ -13,19 +13,31 @@ on:
     - cron: "0 9 * * 1"
   workflow_dispatch:
 
+# default: read-only. The job that opens the issue asks for the one extra right it needs
 permissions:
   contents: read
-  issues: write
+
+# one audit at a time. A run in progress is never cancelled
+concurrency:
+  group: biweekly-security-issue
+  cancel-in-progress: false
 
 jobs:
   frontend-prod-audit:
     name: Frontend production audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      issues: write
 
     steps:
       # checkout repository content.
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # set up Node.js for npm audit commands.
       - name: Set up Node.js
@@ -69,10 +81,12 @@ jobs:
           MODERATE="$(jq '.metadata.vulnerabilities.moderate // 0' audit.json)"
           HIGH="$(jq '.metadata.vulnerabilities.high // 0' audit.json)"
           CRITICAL="$(jq '.metadata.vulnerabilities.critical // 0' audit.json)"
-          echo "total=${TOTAL}" >> "$GITHUB_OUTPUT"
-          echo "moderate=${MODERATE}" >> "$GITHUB_OUTPUT"
-          echo "high=${HIGH}" >> "$GITHUB_OUTPUT"
-          echo "critical=${CRITICAL}" >> "$GITHUB_OUTPUT"
+          {
+            echo "total=${TOTAL}"
+            echo "moderate=${MODERATE}"
+            echo "high=${HIGH}"
+            echo "critical=${CRITICAL}"
+          } >> "$GITHUB_OUTPUT"
 
       # create or update an issue if production vulnerabilities are present.
       - name: Create or update tracking issue
@@ -87,7 +101,7 @@ jobs:
           # ensure security label exists before creating an issue.
           gh label create "${LABEL}" --color "d73a4a" --description "Security related work" 2>/dev/null || true
 
-          OPEN_ISSUE="$(gh issue list --state open --search "${TITLE} in:title" --json number --jq '.[0].number // empty')"
+          OPEN_ISSUE="$(gh issue list --state open --author "app/github-actions" --search "${TITLE} in:title" --json number --jq '.[0].number // empty')"
 
           BODY=$(cat <<EOF
           ## What
@@ -113,7 +127,7 @@ jobs:
           )
 
           if [[ -n "${OPEN_ISSUE}" ]]; then
-            gh issue comment "${OPEN_ISSUE}" --body "Biweekly audit still reports production vulnerabilities.\n\n${BODY}"
+            gh issue comment "${OPEN_ISSUE}" --body "$(printf 'Biweekly audit still reports production vulnerabilities.\n\n%s' "${BODY}")"
           else
             gh issue create --title "${TITLE}" --label "${LABEL}" --body "${BODY}"
           fi

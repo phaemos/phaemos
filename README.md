@@ -19,9 +19,9 @@ Reveal before failure. PHAEMOS is an open industrial IoT platform for predictive
 
 - **Four sensor nodes.** An ESP32 gateway with 11 sensors, an STM32 running a vibration FFT at 100 Hz, an Arduino Nano and a Raspberry Pi Pico 2W cover temperature, vibration, current, gas, sound, distance and shaft speed.
 - **Real-time pipeline.** A FastAPI backend scores and stores every reading in PostgreSQL and streams it to the dashboard over WebSocket.
-- **Anomaly detection.** An Isolation Forest scores each reading as it arrives and raises an alert when a machine drifts. It needs no labelled fault data.
+- **Anomaly detection.** Each machine's own model (an Isolation Forest, a per-sensor baseline and a change detector) scores each reading as it arrives and raises an alert when the machine stays out of its normal. It needs no labelled fault data. Its figures so far come from simulated machines only: see [what it detects and what it does not](docs/architecture.md#the-anomaly-model).
 - **Operations built in.** Alert rules, maintenance windows, tickets, webhooks to Slack, Discord and Teams, email and SMS, an audit log of every change and role-based access with optional two-factor enrolment.
-- **Resilient at the edge.** A Rust gateway beside the machines reads a node's serial output, spools every reading to disk during a network outage and sends it on once the link returns, so nothing is lost.
+- **Resilient at the edge.** A Rust gateway beside the machines reads a node's serial output, spools every reading to disk during a network outage and sends it on once the link returns. The spool holds up to 8 MiB and seven days, so only a very long outage loses the oldest readings.
 - **Tools for developers.** A Python SDK, a simulator with injectable faults and a Go CLI for load testing.
 
 ## The name
@@ -70,11 +70,11 @@ This repository is the single source of truth. Each component folder is self-con
 | [`backend/`](backend/) | FastAPI service: ingest, auth, alerts, tickets, webhooks and the Isolation Forest model | [`phaemos/backend`](https://github.com/phaemos/backend) |
 | [`frontend/`](frontend/) | Next.js dashboard, admin panel and public pages | [`phaemos/frontend`](https://github.com/phaemos/frontend) |
 | [`firmware/`](firmware/) | Code for the four nodes: ESP32, STM32, Arduino Nano and Pico 2W | [`phaemos/firmware`](https://github.com/phaemos/firmware) |
-| [`hardware/`](hardware/) | Wiring tables, schematics, PCB layouts and the parts inventory | [`phaemos/hardware`](https://github.com/phaemos/hardware) |
+| [`hardware/`](hardware/) | Wiring tables, schematics and the parts inventory | [`phaemos/hardware`](https://github.com/phaemos/hardware) |
 | [`edge/`](edge/) | Rust store-and-forward gateway | [`phaemos/edge`](https://github.com/phaemos/edge) |
 | [`client/`](client/) | Python SDK and simulator, plus a Go CLI | [`phaemos/client`](https://github.com/phaemos/client) |
 | [`infra/`](infra/) | Docker Compose stack, Prometheus and Grafana, SQL reports | [`phaemos/infra`](https://github.com/phaemos/infra) |
-| [`discord/`](discord/) | The Discord server setup script and the planned community bot | [`phaemos/discord`](https://github.com/phaemos/discord) |
+| [`discord/`](discord/) | The community Discord server: its layout, the setup script, the GitHub relay and the slash command worker | [`phaemos/discord`](https://github.com/phaemos/discord) |
 | [`docs/`](docs/) | Architecture, API, deployment, security and decisions | stays here |
 | [`assets/`](assets/) | Logos, colours and the social preview card | stays here |
 
@@ -98,7 +98,7 @@ The simulator produces readings for any of the four node types and can inject fa
 
 ## Hardware
 
-Four nodes are planned, each with its own role and sensors. The firmware and backend are ready, but the boards are still being wired and validated, so readings so far come from the simulator. Every node's circuit is simulated in Proteus first. The schematics and PCB layouts that get manufactured are planned in KiCad. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
+Four nodes are planned, each with its own role and sensors. The firmware and backend are written, but the nodes are designed and not yet built, so readings so far come from the simulator. Every node's circuit is simulated in Proteus first. The schematics and PCB layouts that get manufactured are planned in KiCad. The boards, their sensors and the wiring are in [hardware/README.md](hardware/README.md) and [docs/sensor_reference.md](docs/sensor_reference.md).
 
 ## Documentation
 
@@ -110,4 +110,4 @@ Software is licensed under the GNU Affero General Public License v3.0 or later, 
 
 ## Contributing and support
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved and [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) for questions, ideas and chat. A community Discord server is planned. Until it opens, Discussions is the place to talk. [SUPPORT.md](SUPPORT.md) lists every help channel, [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately and [ACCESSIBILITY.md](ACCESSIBILITY.md) says what the platform does for accessibility. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved. Chat with us on the [PHAEMOS Discord server](https://discord.gg/C6WRDzSrG) and ask on [GitHub Discussions](https://github.com/phaemos/phaemos/discussions) when you want the answer to stay searchable. [SUPPORT.md](SUPPORT.md) lists every help channel, [SECURITY.md](SECURITY.md) explains how to report a vulnerability privately and [ACCESSIBILITY.md](ACCESSIBILITY.md) says what the platform does for accessibility. For anything else, email [contact@phaemos.com](mailto:contact@phaemos.com).

@@ -2,3 +2,13 @@
 # All files in this repository are owned by @zaccesss.
 # This file exists so that any pull request automatically requests a review.
 * @zaccesss
+
+# the workflows, the scripts they run and the secret scanner's settings decide what ships and what
+# passes, so they are listed on their own. GitHub applies the LAST matching line, so each of these
+# lines must name an owner that resolves: a team name that does not exist would leave the path with
+# no owner at all. A team can replace the owner here later, once it exists and has write access.
+# The main ruleset requires code owner review: see .github/workflows/README.md.
+/.github/ @zaccesss
+/infra/scripts/ @zaccesss
+/.github/gitleaks.toml @zaccesss
+/.github/gitleaksignore @zaccesss

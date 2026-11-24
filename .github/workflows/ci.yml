@@ -1,16 +1,35 @@
-# CI pipeline - runs on every push to main and every pull request targeting main.
+# CI pipeline - runs on every push to main and every pull request targeting main. It has no
+# schedule and no manual trigger on purpose: deploy.yml starts after every completed run of this
+# workflow on main. The weekly dependency audit is audit.yml.
 #
 # jobs:
-#   backend-lint  - installs Python deps and runs ruff for style and error checks
-#   frontend-check - installs Node deps, runs ESLint and performs a production build
-#   client-python  - ruff, mypy and pytest for the Python SDK and simulator
-#   client-go      - gofmt, vet and tests for phaemosctl
-#   edge           - rustfmt, clippy and tests for the edge gateway
+#   changes          - says which parts of the repository the change touches (infra/scripts/changed-areas.sh)
+#   workflows        - actionlint on the workflows and the check that every action is pinned to a commit
+#   backend-lint     - ruff for the backend
+#   backend-test     - pytest against a throwaway PostgreSQL
+#   backend-lock     - backend/requirements.lock still matches requirements.txt
+#   backend-extras   - migrations apply from empty and twice changes nothing, the OpenAPI document and the route
+#                      table are current, the route class test passes
+#   frontend-check   - ESLint, unit tests and a production build of the dashboard
+#   client-python    - ruff, mypy and pytest for the Python SDK and simulator
+#   client-go        - gofmt, vet and tests for phaemosctl
+#   edge             - rustfmt, clippy and tests for the edge gateway
+#   discord          - ruff, pytest and the layout check for the server tooling, then the worker's tests and type check
+#   firmware         - `make firmware-check` and the host tests of the MicroPython node
+#   infra            - shellcheck on infra/scripts and the deploy guard tests
+#   secret-scan      - gitleaks over every commit of the change (gitleaks-scan.yml)
+#   scripts          - the changed-areas tests and the release scripts, on every change to them
+#   docs             - mkdocs build --strict after generating the OpenAPI document
+#   audit            - dependency audits for Python, Node, Rust and Go (audit.yml, policy in README.md)
+#   ci-passed        - the one check that branch protection requires. It needs every job above
+#   ci-alert         - on a failure on main only, tells the staff channel on Discord (discord/relay/post.py --ci-failure)
 #
 # third-party actions are pinned to a full commit SHA to prevent a mutable tag
 # (e.g. @v4) from silently updating to malicious code (supply-chain hardening).
+# infra/scripts/check-action-pins.sh enforces it in the `workflows` job.
 #
-# GITHUB_TOKEN is scoped to the minimum required permissions for each job.
+# no job reads a pull request's title, branch name or body. Values that come from the event
+# reach a script only through an environment variable.
 
 name: CI
 
@@ -23,11 +42,88 @@ on:
 # default: no permissions - each job declares only what it needs.
 permissions: {}
 
+# a newer push to the same pull request replaces the run in progress. A run on main is never
+# cancelled, so every merge keeps its own result.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # ── Which parts changed ──────────────────────────────────────────────────────
+  changes:
+    name: Changed areas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    outputs:
+      backend: ${{ steps.areas.outputs.backend }}
+      frontend: ${{ steps.areas.outputs.frontend }}
+      client_python: ${{ steps.areas.outputs.client_python }}
+      client_go: ${{ steps.areas.outputs.client_go }}
+      edge: ${{ steps.areas.outputs.edge }}
+      discord: ${{ steps.areas.outputs.discord }}
+      firmware: ${{ steps.areas.outputs.firmware }}
+      infra: ${{ steps.areas.outputs.infra }}
+      docs: ${{ steps.areas.outputs.docs }}
+      scripts: ${{ steps.areas.outputs.scripts }}
+
+    steps:
+      # the whole history, so the pull request can be compared with its base commit
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Work out the changed areas
+        id: areas
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash infra/scripts/changed-areas.sh | tee -a "$GITHUB_OUTPUT"
+
+  # ── Workflow files ───────────────────────────────────────────────────────────
+  # always runs: it is quick and a bad workflow breaks every other check
+  workflows:
+    name: Workflows (actionlint, pins)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # shellcheck is installed beside actionlint so the run: blocks are checked too
+      - name: Install actionlint and shellcheck
+        run: pip install actionlint-py==1.7.12.25 shellcheck-py==0.11.0.1
+
+      - name: Lint the workflows
+        run: actionlint
+
+      - name: Check every action is pinned to a full commit
+        run: bash infra/scripts/check-action-pins.sh
+
   # ── Backend lint ─────────────────────────────────────────────────────────────
   backend-lint:
     name: Backend lint (ruff)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
 
     permissions:
       contents: read # needed to checkout the repository
@@ -36,6 +132,8 @@ jobs:
       # checkout the repository source code
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # set up Python 3.12 matching the production runtime
       - name: Set up Python
@@ -57,7 +155,11 @@ jobs:
   backend-test:
     name: Backend tests (pytest)
     runs-on: ubuntu-latest
-    needs: backend-lint  # only run tests if lint passes
+    # the anomaly model tests train and replay simulated machines, so the suite runs past 20 minutes on a
+    # hosted runner. The limit leaves room for a slow runner and still stops a hung run
+    timeout-minutes: 40
+    needs: [changes, backend-lint] # only run tests if lint passes
+    if: needs.changes.outputs.backend == 'true'
 
     permissions:
       contents: read
@@ -65,35 +167,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
-      # pull the image explicitly so transient Docker Hub timeouts can be retried.
-      # service containers start before any steps and cannot be retried on failure.
-      - name: Pull PostgreSQL image
-        run: |
-          for i in 1 2 3 4 5; do
-            docker pull postgres:15 && break
-            echo "Pull attempt $i failed, retrying in 15s..."
-            sleep 15
-          done
-
       - name: Start PostgreSQL
-        run: |
-          docker run -d \
-            --name postgres \
-            -e POSTGRES_USER=postgres \
-            -e POSTGRES_PASSWORD=password \
-            -e POSTGRES_DB=phaemos_test \
-            -p 5432:5432 \
-            postgres:15
-          until docker exec postgres pg_isready -U postgres; do sleep 1; done
+        run: bash infra/scripts/start-ci-postgres.sh postgres phaemos_test
 
       - name: Install dependencies
-        run: pip install -r backend/requirements.txt
+        run: pip install -r backend/requirements-dev.txt
 
       - name: Run tests
         working-directory: backend
@@ -103,10 +189,190 @@ jobs:
           SECRET_KEY: ci-test-secret-key-not-for-production
           REDIS_URL: redis://localhost:6379
 
+  # ── Backend: the lock file ───────────────────────────────────────────────────
+  backend-lock:
+    name: Backend lock is current
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # resolves again inside the pinned Python image the Dockerfile builds on and compares
+      - name: Check backend/requirements.lock
+        run: bash infra/scripts/lock-requirements.sh --check
+
+  # ── Backend: migrations, API document, route table ───────────────────────────
+  backend-extras:
+    name: Backend migrations, OpenAPI and routes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+
+    permissions:
+      contents: read
+
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/phaemos_migrate_test
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Start PostgreSQL
+        run: bash infra/scripts/start-ci-postgres.sh postgres phaemos_migrate_test
+
+      # a first install: the schema job makes the tables, then the migrations run. A second
+      # run must apply nothing and leave the schema as it was
+      - name: Migrations apply from empty and twice changes nothing
+        run: |
+          (cd backend && python -c "import app.main; from app.db import create_tables; create_tables()")
+          bash infra/scripts/check-migrations.sh
+        env:
+          MIGRATE_DEV_CONTAINER: postgres
+          MIGRATE_DEV_DB: phaemos_migrate_test
+
+      # `make openapi` writes the two generated documents and needs no database. Any difference
+      # from the committed copies (or a copy that was never committed) fails the job
+      - name: OpenAPI document and route table are current
+        run: |
+          make openapi
+          git status --porcelain -- docs/openapi.json docs/api-routes.md > openapi-status.txt
+          if [ -s openapi-status.txt ]; then
+            echo "docs/openapi.json or docs/api-routes.md differs from what the code generates:" >&2
+            cat openapi-status.txt >&2
+            git diff --stat -- docs/openapi.json docs/api-routes.md >&2
+            echo "run make openapi and commit the result" >&2
+            exit 1
+          fi
+
+      # the test prints the route class table, so the log shows it. It runs last: the test session
+      # drops the tables of its database when it ends
+      - name: Route class table test
+        working-directory: backend
+        run: pytest -s "tests/test_access_tokens.py::test_every_route_is_in_exactly_one_stated_class_and_the_table_is_printed"
+
+  # ── Secret scanning ──────────────────────────────────────────────────────────
+  # always runs, over every commit of the change. It is part of CI passed
+  secret-scan:
+    name: Secret scan
+    uses: ./.github/workflows/gitleaks-scan.yml
+    permissions:
+      contents: read
+
+  # ── Scripts: gate, release and checksums ─────────────────────────────────────
+  # the release scripts run here on every change to them, so they do not first run on a real tag
+  scripts:
+    name: Release and gate scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: changes
+    if: needs.changes.outputs.scripts == 'true'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # the same Go as the release build
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.4"
+          cache: false
+
+      - name: Changed-areas gate
+        run: bash infra/scripts/test-changed-areas.sh
+
+      # the checksum step 200 times, the version check, the release notes and the builds of
+      # phaemosctl, the Python client and the edge gateway
+      - name: Release scripts
+        run: bash infra/scripts/test-release-scripts.sh
+
+  # ── Documentation site ───────────────────────────────────────────────────────
+  # the API pages link to the generated OpenAPI document, so it is generated first. The browser
+  # check (docs/overrides/check_site.py) is not run here: it needs a Chromium that nothing in
+  # this repository pins, so it stays a local check described in docs/README.md
+  docs:
+    name: Docs site (mkdocs strict)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: changes
+    if: needs.changes.outputs.docs == 'true' || needs.changes.outputs.backend == 'true'
+
+    permissions:
+      contents: read
+
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/phaemos_docs_test
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install the backend
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Generate the OpenAPI document
+        run: make openapi
+
+      # a separate environment, because the docs tools pin other versions of some shared packages
+      - name: Install the docs tools
+        run: |
+          python -m venv "${RUNNER_TEMP}/docs-venv"
+          "${RUNNER_TEMP}/docs-venv/bin/pip" install -r requirements-docs.txt
+
+      - name: Build the site
+        run: '"${RUNNER_TEMP}/docs-venv/bin/mkdocs" build --strict -d "${RUNNER_TEMP}/site"'
+
   # ── Frontend check ───────────────────────────────────────────────────────────
   frontend-check:
     name: Frontend lint and build (Next.js)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
 
     permissions:
       contents: read # needed to checkout the repository
@@ -115,6 +381,8 @@ jobs:
       # checkout the repository source code
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # set up Node 24 LTS with npm cache for faster installs. Node 24 runs the
       # TypeScript unit tests directly through its built-in type stripping.
@@ -148,11 +416,17 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://placeholder
+          # the build refuses an API address that is not https. This build only checks types
+          # and imports and ships nothing, so the placeholder may stay plain http here
+          ALLOW_INSECURE_API_URL: "1"
 
   # ── Client: Python SDK and simulator ─────────────────────────────────────────
   client-python:
     name: Client Python (ruff, mypy, pytest)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: changes
+    if: needs.changes.outputs.client_python == 'true'
 
     permissions:
       contents: read
@@ -164,6 +438,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -186,6 +462,9 @@ jobs:
   client-go:
     name: Client Go (vet, test)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: changes
+    if: needs.changes.outputs.client_go == 'true'
 
     permissions:
       contents: read
@@ -197,6 +476,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Go
         uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
@@ -217,6 +498,9 @@ jobs:
   edge:
     name: Edge (clippy, test)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: changes
+    if: needs.changes.outputs.edge == 'true'
 
     permissions:
       contents: read
@@ -228,6 +512,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Lint and test
         run: |
@@ -235,3 +521,241 @@ jobs:
           cargo fmt --check
           cargo clippy --all-targets -- -D warnings
           cargo test
+
+  # ── Discord: server tooling, relay and worker ────────────────────────────────
+  discord:
+    name: Discord (ruff, pytest, worker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: changes
+    if: needs.changes.outputs.discord == 'true'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        working-directory: discord
+        run: pip install -r requirements-dev.txt
+
+      # no secret is needed: the tests talk to servers on 127.0.0.1 and nothing else
+      - name: Lint and test
+        working-directory: discord
+        run: |
+          ruff check .
+          pytest
+          python -m serverkit check --layout layout/phaemos.toml
+          python -m serverkit export-content --check --layout layout/phaemos.toml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: discord/worker/package-lock.json
+
+      - name: Worker tests and type check
+        working-directory: discord/worker
+        run: |
+          npm ci
+          npm test
+          npm run typecheck
+
+  # ── Firmware ─────────────────────────────────────────────────────────────────
+  # nothing here runs on a board: the firmware is built for every environment and the host tests
+  # (hub and Black Pill) are compiled and run on the runner. The MicroPython node's tests run on
+  # a desktop Python with stand-ins for the board modules
+  firmware:
+    name: Firmware (build, host tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: changes
+    if: needs.changes.outputs.firmware == 'true'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio==6.2.0
+
+      # the toolchains and libraries are large. The key changes when a platform or library does
+      - name: Cache PlatformIO
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-6.2.0-${{ hashFiles('firmware/**/platformio.ini') }}
+
+      - name: Build every environment and run the host tests
+        run: make firmware-check
+
+      - name: MicroPython node tests
+        working-directory: firmware/pico_w
+        run: python -m unittest discover -v
+
+  # ── Infra: scripts and deploy guards ─────────────────────────────────────────
+  infra:
+    name: Infra (shellcheck, deploy guards)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # PyYAML is left out on purpose so this job covers the path where the guard tests ask
+      # `docker compose config` (the runner has Docker). backend-test installs PyYAML through
+      # requirements-dev.txt and covers the other path. The tests give the same result on both
+      - name: Install tools
+        run: pip install pytest==9.2.0 shellcheck-py==0.11.0.1
+
+      # -x follows the sourced lib.sh and -P SCRIPTDIR finds it next to each script
+      - name: Shellcheck
+        run: shellcheck -x -P SCRIPTDIR infra/scripts/*.sh
+
+      # check-nginx.sh needs the installed Nginx, so here it is read for syntax and exercised
+      # by the deploy guard tests, which build a throwaway site and dump for it
+      - name: Syntax of the scripts
+        run: |
+          for script in infra/scripts/*.sh; do
+            bash -n "${script}"
+          done
+
+      # the tests build a throwaway signed git repository and run deploy.sh against stand-ins for
+      # docker and curl. They take a few minutes. --noconftest because they need no application
+      - name: Deploy guard tests
+        run: python -m pytest --noconftest -p no:cacheprovider backend/tests/test_deploy_script.py -q
+
+  # ── Dependency audits ────────────────────────────────────────────────────────
+  # the jobs live in audit.yml so the same ones also run weekly on their own. This file has no
+  # schedule because deploy.yml starts after every completed run of this workflow on main, so a
+  # weekly run here would start a deploy. The README next to this file says what fails the build and why
+  audit:
+    name: Audit
+    needs: changes
+    uses: ./.github/workflows/audit.yml
+    permissions:
+      contents: read
+    with:
+      python: ${{ needs.changes.outputs.backend == 'true' }}
+      frontend: ${{ needs.changes.outputs.frontend == 'true' }}
+      discord: ${{ needs.changes.outputs.discord == 'true' }}
+      rust: ${{ needs.changes.outputs.edge == 'true' }}
+      go: ${{ needs.changes.outputs.client_go == 'true' }}
+
+  # ── The one required check ───────────────────────────────────────────────────
+  # branch protection requires this job and nothing else. A job that was skipped because its
+  # area did not change counts as passed. A failed or cancelled job fails this one
+  ci-passed:
+    name: CI passed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: ${{ always() }}
+    needs:
+      - changes
+      - workflows
+      - backend-lint
+      - backend-test
+      - backend-lock
+      - backend-extras
+      - frontend-check
+      - client-python
+      - client-go
+      - secret-scan
+      - scripts
+      - docs
+      - edge
+      - discord
+      - firmware
+      - infra
+      - audit
+
+    permissions: {}
+
+    steps:
+      - name: Check every job
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "${NEEDS}" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          if echo "${NEEDS}" | jq -e 'any(.[]; .result == "failure" or .result == "cancelled")' > /dev/null; then
+            echo "at least one job failed or was cancelled" >&2
+            exit 1
+          fi
+
+  # ── Alert staff when main breaks ─────────────────────────────────────────────
+  # the last job: it runs only when a job above failed on a push to main of this repository, so a
+  # pull request and a fork never reach the webhook. the alert holds the run number and a link and
+  # nothing from a log
+  ci-alert:
+    name: CI alert
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'phaemos/phaemos'
+    needs:
+      - changes
+      - workflows
+      - backend-lint
+      - backend-test
+      - backend-lock
+      - backend-extras
+      - frontend-check
+      - client-python
+      - client-go
+      - secret-scan
+      - scripts
+      - docs
+      - edge
+      - discord
+      - firmware
+      - infra
+      - audit
+      - ci-passed
+    environment: community
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the poster
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: discord
+          fetch-depth: 1
+
+      - name: Post the alert
+        env:
+          DISCORD_WEBHOOK_CI_ALERTS: ${{ secrets.DISCORD_WEBHOOK_CI_ALERTS }}
+        run: python3 discord/relay/post.py --layout discord/layout/phaemos.toml --ci-failure

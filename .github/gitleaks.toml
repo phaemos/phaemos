@@ -1,0 +1,9 @@
+# settings for the secret scan (infra/scripts/run-gitleaks.sh). The scan reads this file from the base
+# commit of a pull request, so a change cannot loosen the scan it is itself checked by.
+#
+# the default rules apply in full. Test and example values are chosen so the scanner does not take them for
+# secrets, so no exception is needed. If one ever is, it pins one value in one file and is added in its own
+# reviewed pull request.
+
+[extend]
+useDefault = true
