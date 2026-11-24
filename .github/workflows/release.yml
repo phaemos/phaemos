@@ -1,8 +1,24 @@
-# release workflow - runs when a semantic version tag is pushed.
+# release workflow - runs when a version tag (vX.Y.Z) is pushed to this repository.
 #
-# purpose: validate that CHANGELOG.md contains a matching version heading.
-# the signed tag and the GitHub release are created by a maintainer, so this
-# workflow only checks and never publishes.
+# what it does, in order:
+#   verify          - refuses the tag unless it is annotated, signed (verified by GitHub), on main and
+#                     the same version as every package, with a CHANGELOG.md section
+#   build-*         - phaemosctl for Linux, macOS and Windows on amd64 and arm64, the edge gateway for
+#                     Linux amd64 and arm64, the Python client as an sdist and a wheel
+#   checksums       - a SHA-256 checksums file for every file, with build provenance attached
+#   draft-release   - a DRAFT GitHub release with that version's changelog notes. A person publishes it
+#
+# nothing here publishes anything. The Python client goes to PyPI from publish-pypi.yml, which runs
+# only after a person has published the draft.
+#
+# nothing here runs on a fork or on a pull request: the only trigger is a tag push and every job is
+# skipped when the repository is a fork. The tag name is user input, so it is checked against a
+# pattern first and reaches scripts only through an environment variable.
+#
+# this file is the copy at the tagged commit, so anyone who can push a tag can change it. The checks
+# below cannot defend themselves. The tag ruleset and the other settings in
+# .github/workflows/README.md do. docs/releases.md says how to verify with them in mind;
+# this workflow has never run on a hosted runner: see .github/workflows/README.md.
 
 name: Release
 
@@ -11,38 +27,316 @@ on:
     tags:
       - "v*.*.*"
 
-permissions:
-  contents: read
+# default: no permissions - each job declares only what it needs.
+permissions: {}
+
+# one release run per tag. It is never cancelled because a half-finished release is worse than a slow one
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  release:
-    name: Validate changelog
+  # ── Refuse a tag that is not ready ───────────────────────────────────────────
+  verify:
+    name: Verify the tag
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ !github.event.repository.fork }}
+
+    permissions:
+      contents: read
+
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      sha: ${{ steps.check.outputs.sha }}
+      commit_time: ${{ steps.check.outputs.commit_time }}
 
     steps:
-      # check out the repository at the tagged commit
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
-      # extract the version string from the Git ref.
-      # example: refs/tags/v0.3.0 -> 0.3.0
-      - name: Derive version from tag
-        id: version
-        shell: bash
+      # checkout turns an annotated tag into a plain reference to its commit, so the tag object
+      # is fetched again to see what it really is
+      - name: Check the tag
+        id: check
+        env:
+          TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          VERSION="${TAG#v}"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-
-      # ensure CHANGELOG.md has a heading for this version.
-      # expected format: ## [0.3.0] - YYYY-MM-DD (Keep a Changelog uses ISO dates)
-      - name: Validate changelog entry
-        shell: bash
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if ! grep -Eq "^## \[${VERSION}\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
-            echo "Missing changelog section for version ${VERSION}."
-            echo "Expected line format: ## [${VERSION}] - YYYY-MM-DD"
+          if ! [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "the tag '${TAG}' is not a final release tag (vX.Y.Z). Pre-release tags are not released by this workflow." >&2
             exit 1
           fi
+          version="${TAG#v}"
+
+          git fetch --force origin "refs/tags/${TAG}:refs/tags/${TAG}"
+          if [ "$(git cat-file -t "refs/tags/${TAG}")" != "tag" ]; then
+            echo "${TAG} is a lightweight tag. Create it with git tag -s so it is annotated and signed." >&2
+            exit 1
+          fi
+
+          # GitHub checks the signature against the signing keys on the tagger's account
+          tag_object="$(gh api "repos/${REPOSITORY}/git/ref/tags/${TAG}" --jq .object.sha)"
+          verified="$(gh api "repos/${REPOSITORY}/git/tags/${tag_object}" --jq .verification.verified)"
+          if [ "${verified}" != "true" ]; then
+            echo "GitHub does not verify the signature on ${TAG}. Sign it with a key that is registered as a signing key on the tagger's account." >&2
+            exit 1
+          fi
+
+          # the tag as it is now must point at the commit this run was started for. Every job builds
+          # that commit, so a tag moved after the push cannot make the run ship other code
+          commit="$(git rev-parse "refs/tags/${TAG}^{commit}")"
+          if [ "${commit}" != "${EVENT_SHA}" ]; then
+            echo "${TAG} now points at ${commit} but this run was started for ${EVENT_SHA}: the tag was moved. Refusing." >&2
+            exit 1
+          fi
+
+          # a tag on a branch that never reached main would release code nobody reviewed
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "${commit}" origin/main; then
+            echo "${TAG} is not on main. Merge the release pull request first and tag the merge commit." >&2
+            exit 1
+          fi
+
+          bash infra/scripts/check-release-version.sh "${version}"
+
+          {
+            echo "version=${version}"
+            echo "sha=${commit}"
+            echo "commit_time=$(git log -1 --format=%ct "${commit}")"
+          } >> "$GITHUB_OUTPUT"
+
+  # ── phaemosctl ───────────────────────────────────────────────────────────────
+  # pure Go with no cgo, so every target cross-compiles from one runner. -trimpath removes the
+  # build machine's paths, -buildid= and -buildvcs=false remove the other things that differ
+  # between builds and the archive is written with fixed times, owners and ordering. The same
+  # tag built twice gives the same files
+  build-phaemosctl:
+    name: phaemosctl (${{ matrix.goos }} ${{ matrix.goarch }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: verify
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { goos: linux, goarch: amd64 }
+          - { goos: linux, goarch: arm64 }
+          - { goos: darwin, goarch: amd64 }
+          - { goos: darwin, goarch: arm64 }
+          - { goos: windows, goarch: amd64 }
+          - { goos: windows, goarch: arm64 }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          # go.mod names the oldest Go that may build the code (1.24). A release is built with a
+          # patched toolchain instead, because the standard library is compiled into the binary
+          # and the 1.24 line has known vulnerabilities. Raise it when govulncheck says so
+          go-version: "1.27.4"
+          cache: false
+
+      - name: Build and archive
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          SOURCE_DATE_EPOCH: ${{ needs.verify.outputs.commit_time }}
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: bash infra/scripts/build-release-go.sh "${VERSION}" "${GOOS}" "${GOARCH}" "${PWD}/dist"
+
+      - name: Upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: phaemosctl-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  # ── Edge gateway ─────────────────────────────────────────────────────────────
+  # built on a runner of its own architecture and not cross-compiled, because the HTTP client's
+  # TLS library has C code that needs a matching C toolchain for each target. The older Ubuntu
+  # image keeps the glibc requirement low so the binary runs on older distributions. macOS and
+  # Windows are not built: see .github/workflows/README.md
+  build-edge:
+    name: Edge gateway (linux ${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    needs: verify
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-22.04 }
+          - { arch: arm64, runner: ubuntu-22.04-arm }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+
+      - name: Build and archive
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          SOURCE_DATE_EPOCH: ${{ needs.verify.outputs.commit_time }}
+          ARCH: ${{ matrix.arch }}
+        run: bash infra/scripts/build-release-edge.sh "${VERSION}" "${ARCH}" "${PWD}/dist"
+
+      - name: Upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: edge-linux-${{ matrix.arch }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  # ── Python client ────────────────────────────────────────────────────────────
+  build-python:
+    name: Python client (sdist, wheel)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: verify
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Build the sdist and the wheel
+        env:
+          SOURCE_DATE_EPOCH: ${{ needs.verify.outputs.commit_time }}
+        run: bash infra/scripts/build-release-python.sh "${PWD}/dist"
+
+      - name: Upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python-client
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  # ── Checksums and provenance ─────────────────────────────────────────────────
+  checksums:
+    name: Checksums and provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [verify, build-phaemosctl, build-edge, build-python]
+
+    permissions:
+      contents: read
+      id-token: write # the signing identity for the attestation
+      attestations: write # where the attestation is stored
+
+    steps:
+      - name: Download every build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: parts
+          merge-multiple: true
+
+      # one file, sorted by name, in the format sha256sum -c reads. The script writes it outside
+      # the folder and moves it in, because writing it into the folder races. The script comes from
+      # the verified commit. It runs before any build output is trusted
+      - name: Checkout the scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+          path: source
+
+      - name: Write the checksums
+        run: |
+          mkdir release
+          cp parts/* release/
+          bash source/infra/scripts/write-checksums.sh release
+          cat release/SHA256SUMS
+
+      # the attestation names every file in the checksums file. Check one with
+      # gh attestation verify <file> --repo <owner>/<repo>
+      - name: Attach build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: release/SHA256SUMS
+
+      - name: Upload the release files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-files
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
+
+  # ── The draft release ────────────────────────────────────────────────────────
+  # a draft, so nobody sees it until a person has checked it and published it
+  draft-release:
+    name: Draft GitHub release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [verify, checksums]
+
+    permissions:
+      contents: write # creates the draft release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+
+      - name: Download the release files
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+          path: release
+
+      - name: Create the draft
+        env:
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.verify.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # a tag pushed again must not leave a second draft with the same name
+          if gh release list --limit 200 --json tagName --jq '.[].tagName' | grep -Fxq -- "${TAG}"; then
+            echo "a release for ${TAG} already exists (draft or published). Delete it first if this run should replace it." >&2
+            exit 1
+          fi
+          bash infra/scripts/changelog-section.sh "${VERSION}" > notes.md
+          gh release create "${TAG}" release/* \
+            --draft \
+            --verify-tag \
+            --title "${TAG}" \
+            --notes-file notes.md

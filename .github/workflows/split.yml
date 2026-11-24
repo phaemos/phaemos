@@ -1,8 +1,6 @@
 # publishes each component folder to its own read-only repository.
-# git subtree split and the author rewrite are both deterministic, so every
-# publish is a fast-forward.
-# the copies credit the automation account, since the monorepo is where each
-# change is reviewed and attributed; messages and dates stay as they are.
+# git subtree split is deterministic, so every publish is a fast-forward of the copy.
+# messages, authors and dates stay as they are in this repository.
 
 name: Publish components
 
@@ -22,6 +20,7 @@ jobs:
   publish:
     name: Publish ${{ matrix.folder }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -49,17 +48,15 @@ jobs:
         env:
           SPLIT_TOKEN: ${{ secrets.SPLIT_TOKEN }}
           FOLDER: ${{ matrix.folder }}
-          FILTER_BRANCH_SQUELCH_WARNING: "1"
         run: |
           git subtree split --prefix="$FOLDER" --branch "publish-$FOLDER"
-          git filter-branch --env-filter '
-            if [ "$GIT_AUTHOR_EMAIL" = "code@isaacadjei.me" ]; then
-              export GIT_AUTHOR_NAME="Zac Bot" GIT_AUTHOR_EMAIL="automation@isaacadjei.me"
-            fi
-            if [ "$GIT_COMMITTER_EMAIL" = "code@isaacadjei.me" ]; then
-              export GIT_COMMITTER_NAME="Zac Bot" GIT_COMMITTER_EMAIL="automation@isaacadjei.me"
-            fi
-          ' "publish-$FOLDER"
-          # the copies are read-only mirrors of this history, so the push replaces their main
-          # outright: after a rewrite here the split commits change too and a plain push is refused
-          git push --force "https://x-access-token:${SPLIT_TOKEN}@github.com/phaemos/${FOLDER}.git" "publish-$FOLDER:main"
+          # the copies are read-only mirrors of this folder, so their main always takes the split result
+          # the token goes in a request header and not in the address, so it is in no URL or remote
+          auth="$(printf 'x-access-token:%s' "${SPLIT_TOKEN}" | base64 -w0)"
+          header="AUTHORIZATION: basic ${auth}"
+          # the base64 form is not the token, so the log masking does not know it. Both forms and the
+          # whole header are masked before anything uses them
+          echo "::add-mask::${SPLIT_TOKEN}"
+          echo "::add-mask::${auth}"
+          echo "::add-mask::${header}"
+          git -c "http.https://github.com/.extraheader=${header}" push --force "https://github.com/phaemos/${FOLDER}.git" "publish-$FOLDER:main"

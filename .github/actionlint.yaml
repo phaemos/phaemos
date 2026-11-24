@@ -1,0 +1,2 @@
+# settings for actionlint, which the CI `workflows` job runs. No exceptions are set.
+{}

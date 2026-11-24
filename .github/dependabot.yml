@@ -60,6 +60,133 @@ updates:
     commit-message:
       prefix: "chore"
 
+  # Discord server tooling: only the development tools, since the script and the relay use
+  # nothing outside the standard library
+  - package-ecosystem: "pip"
+    directory: "/discord"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "18:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    groups:
+      discord-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    labels:
+      - "chore"
+    commit-message:
+      prefix: "chore"
+
+  # Discord slash command worker (Cloudflare Workers)
+  - package-ecosystem: "npm"
+    directory: "/discord/worker"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "18:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    groups:
+      discord-worker-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    labels:
+      - "chore"
+    commit-message:
+      prefix: "chore"
+
+  # Rust edge gateway dependencies
+  - package-ecosystem: "cargo"
+    directory: "/edge"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "18:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    groups:
+      edge-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    labels:
+      - "chore"
+    commit-message:
+      prefix: "chore"
+
+  # Python SDK and simulator dependencies
+  - package-ecosystem: "pip"
+    directory: "/client/python"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "18:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    groups:
+      client-python-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    labels:
+      - "chore"
+    commit-message:
+      prefix: "chore"
+
+  # Go command line tool dependencies
+  - package-ecosystem: "gomod"
+    directory: "/client/go"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "18:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    groups:
+      client-go-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    labels:
+      - "chore"
+    commit-message:
+      prefix: "chore"
+
+  # Docker images in the deployment stack
+  - package-ecosystem: "docker"
+    directory: "/infra"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "18:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    groups:
+      infra-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    labels:
+      - "chore"
+    commit-message:
+      prefix: "chore"
+
   # GitHub Actions workflow dependencies (pins action versions)
   - package-ecosystem: "github-actions"
     directory: "/"

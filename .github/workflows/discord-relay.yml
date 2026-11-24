@@ -1,0 +1,85 @@
+# posts releases, announcements, new issues, new discussions and merged changes to Discord.
+#
+# the posting script is discord/relay/post.py. it reads the event from the file that
+# GITHUB_EVENT_PATH names, so no title, body, branch name or author name is ever placed in a
+# shell line or a workflow expression. the only expressions below read numbers, the event
+# name, the commit and secrets.
+#
+# there is deliberately no pull_request, pull_request_target or workflow_run trigger: a merged
+# pull request is seen as the commit that reaches main, so code from a fork never runs here and
+# no secret is ever handed to a fork. this file sits at the repository root and not in discord/,
+# so the published copy of discord/ never receives it.
+#
+# anything a stranger writes waits for a maintainer. issues and discussions from a maintainer
+# are posted at once. one from anyone else is posted when a maintainer adds an allow-listed label
+# (issues, checked against the collaborator permission API) or writes the first comment
+# (discussions). the labeled and discussion_comment runs do have the secrets and are started by
+# strangers' activity, which is safe because the script never trusts the event for who someone is:
+# it reads author_association, asks GitHub for the labeller's permission and fails closed.
+# a cap of ten feed posts an hour holds back the rest whatever the source.
+#
+# each webhook address is a secret of the `community` environment. a missing secret is a
+# notice and a clean exit.
+
+name: Discord relay
+
+on:
+  release:
+    types: [released]
+  issues:
+    types: [opened, labeled]
+  discussion:
+    types: [created]
+  discussion_comment:
+    types: [created]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Show the posts without sending anything. Switch off to send one test line to the feed channel.
+        type: boolean
+        default: true
+
+# no permissions by default, the job asks for what it needs.
+permissions: {}
+
+jobs:
+  relay:
+    # a fork does not spend its own minutes on a job that can do nothing
+    if: github.repository == 'phaemos/phaemos'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: community
+
+    permissions:
+      contents: read # check out the poster
+      actions: read # see whether an earlier attempt of this run already posted
+
+    # two runs for the same object never overlap and none is cancelled
+    concurrency:
+      group: discord-relay-${{ github.event_name }}-${{ github.event.release.id || github.event.issue.number || github.event.discussion.number || github.sha }}
+      cancel-in-progress: false
+
+    steps:
+      # the poster always comes from main, also for a release whose tag is older
+      - name: Check out the poster
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: discord
+          fetch-depth: 1
+
+      - name: Post to Discord
+        env:
+          DISCORD_WEBHOOK_ANNOUNCEMENTS: ${{ secrets.DISCORD_WEBHOOK_ANNOUNCEMENTS }}
+          DISCORD_WEBHOOK_RELEASES: ${{ secrets.DISCORD_WEBHOOK_RELEASES }}
+          DISCORD_WEBHOOK_FEED: ${{ secrets.DISCORD_WEBHOOK_FEED }}
+          DISCORD_WEBHOOK_IDEAS: ${{ secrets.DISCORD_WEBHOOK_IDEAS }}
+          DISCORD_WEBHOOK_RESEARCH: ${{ secrets.DISCORD_WEBHOOK_RESEARCH }}
+          # the forums need a tag on every new post
+          DISCORD_TAG_IDEAS: ${{ secrets.DISCORD_TAG_IDEAS }}
+          DISCORD_TAG_RESEARCH: ${{ secrets.DISCORD_TAG_RESEARCH }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 discord/relay/post.py --layout discord/layout/phaemos.toml
