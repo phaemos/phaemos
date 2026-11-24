@@ -1,0 +1,10 @@
+{
+  "exit": 0,
+  "posts": [],
+  "api_calls": [
+    "/repos/example-org/example/collaborators/maintainer-two/permission",
+    "/repos/example-org/example/issues/965/events",
+    "/repos/example-org/example/collaborators/maintainer-one/permission"
+  ],
+  "note": "nothing to post: held until a maintainer acts: an earlier label from a maintainer already released it."
+}

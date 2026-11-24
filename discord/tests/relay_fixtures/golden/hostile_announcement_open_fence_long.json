@@ -1,0 +1,29 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_ANNOUNCEMENTS",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example announcements",
+        "content": "Announcement: Open fence <https://github.com/example-org/example/discussions/921>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 0,
+        "embeds": [
+          {
+            "title": "Open fence",
+            "url": "https://github.com/example-org/example/discussions/921",
+            "description": "Intro.\n\n~~~~text\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n\na line inside\n~~~~\n\n[Read the full post](https://github.com/example-org/example/discussions/921)",
+            "footer": {
+              "text": "Announcement on GitHub"
+            },
+            "color": 2450411,
+            "timestamp": "2026-12-02T09:30:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "community-commands-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Slash command endpoint for the community Discord server, run on Cloudflare Workers.",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "content": "node scripts/build-content.ts",
+    "content:check": "node scripts/build-content.ts --check",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src test scripts",
+    "test": "node --test --test-concurrency=1 --test-timeout=20000 test/*.test.ts",
+    "check:ids": "node scripts/check-identifiers.ts",
+    "build": "node scripts/build.ts",
+    "verify": "npm run content:check && npm run typecheck && npm run lint && npm run check:ids && npm test && npm run build",
+    "predeploy": "npm run verify",
+    "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "26.6.6",
+    "smol-toml": "1.9.1",
+    "typescript": "7.0.2",
+    "wrangler": "4.166.0"
+  }
+}

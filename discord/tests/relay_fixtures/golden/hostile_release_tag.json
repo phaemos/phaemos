@@ -1,0 +1,41 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_RELEASES",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example releases",
+        "content": "New release: Example v1.0.0 \\*\\*beta\\*\\* \\[x\\](\\[link removed\\] @\u200beveryone. <https://github.com/example-org/example/releases/tag/v1.0.0%20%2A%2Abeta%2A%2A%20%5Bx%5D%28http%3A%2F%2Fe.test%29%20%40everyone>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 0,
+        "embeds": [
+          {
+            "title": "Example v1.0.0 \\*\\*beta\\*\\* \\[x\\](\\[link removed\\] @\u200beveryone",
+            "url": "https://github.com/example-org/example/releases/tag/v1.0.0%20%2A%2Abeta%2A%2A%20%5Bx%5D%28http%3A%2F%2Fe.test%29%20%40everyone",
+            "description": "Fine.\n\n[Read the full notes](https://github.com/example-org/example/releases/tag/v1.0.0%20%2A%2Abeta%2A%2A%20%5Bx%5D%28http%3A%2F%2Fe.test%29%20%40everyone)",
+            "fields": [
+              {
+                "name": "Version",
+                "value": "v1.0.0 \\*\\*beta\\*\\* \\[x\\](\\[link removed\\] @\u200beveryone",
+                "inline": true
+              },
+              {
+                "name": "Published",
+                "value": "30 November 2026",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "Release on GitHub"
+            },
+            "color": 2450411,
+            "timestamp": "2026-11-30T10:00:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}

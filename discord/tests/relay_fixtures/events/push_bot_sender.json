@@ -1,0 +1,63 @@
+{
+  "event_name": "push",
+  "payload": {
+    "ref": "refs/heads/main",
+    "before": "231bd031aaf7f85a3216712edcffa4fe7fbea5f6",
+    "after": "b89db1bf9bbf5339c7969d1491d75b81bd880c54",
+    "created": false,
+    "deleted": false,
+    "forced": false,
+    "compare": "https://github.com/example-org/example/compare/x...y",
+    "commits": [
+      {
+        "id": "157c7ab2ba21611f2023ff93b144220f6b1770e7",
+        "message": "feat: merged by an automation (#711)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/157c7ab2ba21611f2023ff93b144220f6b1770e7",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      }
+    ],
+    "head_commit": {
+      "id": "157c7ab2ba21611f2023ff93b144220f6b1770e7",
+      "message": "feat: merged by an automation (#711)",
+      "timestamp": "2026-12-01T10:00:00Z",
+      "url": "https://github.com/example-org/example/commit/157c7ab2ba21611f2023ff93b144220f6b1770e7",
+      "author": {
+        "name": "A Person",
+        "email": "person@example.test",
+        "username": "octo-maintainer"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@example.test",
+        "username": "web-flow"
+      }
+    },
+    "pusher": {
+      "name": "octo-maintainer"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "dependabot[bot]",
+      "id": 22,
+      "type": "Bot",
+      "site_admin": false
+    }
+  }
+}

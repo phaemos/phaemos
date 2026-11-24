@@ -1,0 +1,665 @@
+# The PHAEMOS community server, described once. Edit this file, open a pull request, then run
+# "serverkit plan" and "serverkit apply" (see ../README.md). No id, token or webhook address belongs here.
+schema = 1
+
+[server]
+name = "PHAEMOS"
+description = "The community for PHAEMOS, the open platform for predictive maintenance."
+preferred_locale = "en-GB"
+verification_level = 2
+explicit_content_filter = 2
+default_message_notifications = 1
+system_channel = "welcome"
+# system_channel_flags: 6 = SUPPRESS_PREMIUM_SUBSCRIPTIONS (1 << 1, boost notices off) + SUPPRESS_GUILD_REMINDER_NOTIFICATIONS
+# (1 << 2, setup tips off). Join notices stay on (1 << 0 not set) and the join sticker replies stay allowed (1 << 3 not set)
+system_channel_flags = 6
+rules_channel = "rules"
+public_updates_channel = "moderator-only"
+safety_alerts_channel = "moderator-only"
+# where the script posts a short summary after a run that changed something
+summary_channel = "mod-log"
+
+# the look of the messages the script posts. The accent colour is the brand's primary colour (#2563EB, from
+# assets/brand/README.md in the repository). The two images are copies of brand files kept in assets/ so that this
+# folder stands alone. Colour carries no meaning: every word is in the text of the message
+[brand]
+colour = 2450411
+logo = "assets/logo.png"
+banner = "assets/banner.png"
+tagline = "Reveal before failure"
+logo_alt = "The PHAEMOS mark"
+banner_alt = "The PHAEMOS banner, with the name and the words Reveal before failure"
+
+[permission_sets]
+member = [
+  "view_channel", "send_messages", "send_messages_in_threads", "create_public_threads",
+  "read_message_history", "add_reactions", "embed_links", "attach_files",
+  "use_application_commands", "change_nickname",
+]
+moderator = ["moderate_members", "manage_messages", "manage_nicknames", "pin_messages"]
+maintainer = [
+  "kick_members", "ban_members", "manage_threads", "view_audit_log", "mention_everyone",
+  "bypass_slowmode", "send_polls", "create_events", "manage_events",
+]
+read_only = ["send_messages", "send_messages_in_threads", "create_public_threads"]
+bot_write = ["view_channel", "send_messages", "read_message_history"]
+
+[everyone]
+permissions = ["@member"]
+
+[[roles]]
+name = "Maintainer"
+# made and edited by hand. The script only checks it
+owner = true
+permissions = ["@moderator", "@maintainer"]
+hoist = true
+mentionable = false
+colour = 0
+
+[[roles]]
+name = "Moderator"
+# made and edited by hand. The script only checks it
+owner = true
+permissions = ["@moderator"]
+hoist = true
+mentionable = false
+colour = 0
+
+[[roles]]
+name = "Contributor"
+permissions = []
+hoist = true
+mentionable = false
+colour = 0
+
+[[roles]]
+name = "Operator"
+permissions = []
+hoist = false
+mentionable = false
+colour = 0
+
+[[roles]]
+name = "Hardware builder"
+permissions = []
+hoist = false
+mentionable = false
+colour = 0
+
+[[roles]]
+name = "Developer"
+permissions = []
+hoist = false
+mentionable = false
+colour = 0
+
+# categories
+
+[[categories]]
+name = "Start here"
+  [[categories.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only", "add_reactions"]
+  [[categories.overwrites]]
+  target = "@bot"
+  allow = ["@bot_write"]
+
+[[categories]]
+name = "Resources"
+  [[categories.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only", "add_reactions"]
+  [[categories.overwrites]]
+  target = "@bot"
+  allow = ["@bot_write"]
+
+[[categories]]
+name = "Community"
+
+[[categories]]
+name = "Support"
+
+[[categories]]
+name = "Contributing"
+
+[[categories]]
+name = "Staff"
+# the access check fails the build if anyone but staff and the bot could see a channel here
+staff = true
+  [[categories.overwrites]]
+  target = "@everyone"
+  deny = ["view_channel"]
+  [[categories.overwrites]]
+  target = "Maintainer"
+  allow = ["view_channel"]
+  [[categories.overwrites]]
+  target = "Moderator"
+  allow = ["view_channel"]
+  [[categories.overwrites]]
+  target = "@bot"
+  allow = ["@bot_write"]
+
+# channels
+
+[[channels]]
+name = "welcome"
+category = "Start here"
+type = "text"
+topic = "Discord says hello here each time someone joins PHAEMOS. Nobody writes in this channel, so it stays a plain list of arrivals."
+  [[channels.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only"]
+  allow = ["add_reactions"]
+
+[[channels]]
+name = "rules"
+category = "Start here"
+type = "text"
+style = "plain"
+pin = true
+topic = "The rules everyone here agrees to. Short on purpose."
+messages = ["texts/rules-1.md", "texts/rules-2.md"]
+
+[[channels]]
+name = "start-here"
+category = "Start here"
+type = "text"
+style = "embed"
+banner = true
+pin = true
+topic = "What this server is for, where to ask what and how to reach us."
+messages = ["texts/start-1.md", "texts/start-2.md", "texts/start-3.md"]
+
+[[channels]]
+name = "announcements"
+category = "Start here"
+type = "announcement"
+topic = "Project news from the maintainers. Each post links to the full text on GitHub."
+  [[channels.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only"]
+  [[channels.overwrites]]
+  target = "Maintainer"
+  allow = ["send_messages"]
+
+[[channels]]
+name = "releases"
+category = "Start here"
+type = "announcement"
+topic = "Every new PHAEMOS release with its notes. Set this channel to all messages to hear about each one."
+  [[channels.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only"]
+
+[[channels]]
+name = "service-status"
+category = "Start here"
+type = "announcement"
+topic = "Incidents and planned maintenance for the hosted PHAEMOS service."
+  [[channels.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only"]
+
+[[channels]]
+name = "docs"
+category = "Resources"
+type = "text"
+topic = "Links people look up again and again: the documentation, the FAQ, the roadmap and how to contribute."
+messages = ["texts/docs-1.md"]
+style = "embed"
+pin = true
+
+[[channels]]
+name = "general"
+category = "Community"
+type = "text"
+slow_mode = 5
+topic = "Talk about PHAEMOS and machine monitoring. A question that needs an answer goes in help."
+
+[[channels]]
+name = "bot-commands"
+category = "Community"
+type = "text"
+slow_mode = 5
+style = "plain"
+pin = true
+topic = "Try the PHAEMOS slash commands here. Type / and pick one. The pinned message lists them all."
+messages = ["texts/bot-commands.md"]
+  [[channels.overwrites]]
+  target = "@everyone"
+  allow = ["use_application_commands"]
+
+[[channels]]
+name = "ideas"
+category = "Community"
+type = "forum"
+topic_file = "texts/guidelines-ideas.md"
+read_first = "texts/readfirst-ideas.md"
+  [channels.forum]
+  require_tag = true
+  default_sort = "creation_date"
+  layout = "list"
+  post_slow_mode = 300
+  reply_slow_mode = 0
+  auto_archive_minutes = 10080
+  tags = [
+    { name = "Read first", moderated = true }, { name = "From GitHub" }, { name = "Feature" }, { name = "Improvement" },
+    { name = "Integration" }, { name = "Hardware" }, { name = "Docs" },
+    { name = "Other" }, { name = "Planned", moderated = true }, { name = "Not planned", moderated = true },
+    { name = "Done", moderated = true },
+  ]
+
+[[channels]]
+name = "research"
+category = "Community"
+type = "forum"
+topic_file = "texts/guidelines-research.md"
+read_first = "texts/readfirst-research.md"
+  [channels.forum]
+  require_tag = true
+  default_sort = "creation_date"
+  layout = "list"
+  post_slow_mode = 300
+  reply_slow_mode = 0
+  auto_archive_minutes = 10080
+  tags = [
+    { name = "Read first", moderated = true }, { name = "From GitHub" }, { name = "Anomaly detection" }, { name = "Sensors" },
+    { name = "Data" }, { name = "Standards" }, { name = "Papers" },
+    { name = "Other" },
+  ]
+
+[[channels]]
+name = "introductions"
+category = "Community"
+type = "text"
+topic = "Say hello: what you work on and what you hope to do with PHAEMOS."
+
+[[channels]]
+name = "off-topic"
+category = "Community"
+type = "text"
+slow_mode = 5
+topic = "Everything that is not PHAEMOS. The rules still apply."
+
+[[channels]]
+name = "showcase"
+category = "Community"
+type = "forum"
+topic_file = "texts/guidelines-showcase.md"
+read_first = "texts/readfirst-showcase.md"
+  [channels.forum]
+  require_tag = true
+  default_sort = "creation_date"
+  layout = "list"
+  post_slow_mode = 600
+  reply_slow_mode = 0
+  auto_archive_minutes = 10080
+  tags = [
+    { name = "Read first", moderated = true },
+    { name = "Deployment" }, { name = "Node build" }, { name = "Dashboard" },
+    { name = "Integration" }, { name = "Work in progress" },
+  ]
+
+[[channels]]
+name = "help"
+category = "Support"
+type = "forum"
+topic_file = "texts/guidelines-help.md"
+read_first = "texts/readfirst-help.md"
+  [channels.forum]
+  require_tag = true
+  default_sort = "latest_activity"
+  layout = "list"
+  post_slow_mode = 300
+  reply_slow_mode = 0
+  auto_archive_minutes = 10080
+  tags = [
+    { name = "Read first", moderated = true },
+    { name = "Backend" }, { name = "Dashboard" }, { name = "Firmware" },
+    { name = "Edge gateway" }, { name = "SDK and simulator" }, { name = "Deployment" },
+    { name = "Docs" }, { name = "Not sure" }, { name = "Solved" },
+    { name = "Needs details", moderated = true }, { name = "Known issue", moderated = true },
+    { name = "Moved to GitHub", moderated = true }, { name = "Docs gap", moderated = true },
+  ]
+
+[[channels]]
+name = "hardware"
+category = "Support"
+type = "forum"
+topic_file = "texts/guidelines-hardware.md"
+read_first = "texts/readfirst-hardware.md"
+  [channels.forum]
+  require_tag = true
+  default_sort = "latest_activity"
+  layout = "list"
+  post_slow_mode = 300
+  reply_slow_mode = 0
+  auto_archive_minutes = 10080
+  tags = [
+    { name = "Read first", moderated = true },
+    { name = "ESP32 gateway" }, { name = "STM32 Black Pill" }, { name = "Arduino Nano" },
+    { name = "Pico 2W" }, { name = "Sensors" }, { name = "Wiring" }, { name = "PCB" },
+    { name = "Enclosure" }, { name = "Power" }, { name = "Solved" },
+    { name = "Needs details", moderated = true }, { name = "Known issue", moderated = true }, { name = "Moved to GitHub", moderated = true },
+  ]
+
+[[channels]]
+name = "private-help"
+category = "Support"
+type = "text"
+topic = "For matters that should not be public. Staff open a private thread here for each ticket. Members reply only in a thread they were added to."
+messages = ["texts/private-help.md"]
+style = "plain"
+pin = true
+  [[channels.overwrites]]
+  target = "@everyone"
+  deny = ["send_messages", "create_public_threads", "add_reactions"]
+  [[channels.overwrites]]
+  target = "@bot"
+  allow = ["@bot_write"]
+  [[channels.overwrites]]
+  target = "Maintainer"
+  allow = ["send_messages", "create_private_threads"]
+  [[channels.overwrites]]
+  target = "Moderator"
+  allow = ["send_messages", "create_private_threads"]
+
+[[channels]]
+name = "contributing"
+category = "Contributing"
+type = "text"
+messages = ["texts/roadmap.md"]
+style = "plain"
+pin = true
+topic = "Working on the code, the boards or the documentation: picking an issue, reviews and how the parts fit together."
+
+[[channels]]
+name = "github-feed"
+category = "Contributing"
+type = "text"
+topic = "Issues, merged pull requests and discussions from GitHub, posted automatically. Posts from people outside the project wait until a maintainer has looked at them. Talk about them in contributing."
+  [[channels.overwrites]]
+  target = "@everyone"
+  deny = ["@read_only"]
+
+[[channels]]
+name = "moderator-only"
+category = "Staff"
+type = "text"
+topic = "Staff talk and notices from Discord."
+
+[[channels]]
+name = "mod-log"
+category = "Staff"
+type = "text"
+topic = "Automatic moderation alerts and member reports. Reply in a thread on the entry."
+  [[channels.overwrites]]
+  target = "Maintainer"
+  allow = ["view_channel"]
+  deny = ["send_messages"]
+  [[channels.overwrites]]
+  target = "Moderator"
+  allow = ["view_channel"]
+  deny = ["send_messages", "manage_messages"]
+
+[[channels]]
+name = "tickets"
+category = "Staff"
+type = "forum"
+topic_file = "texts/guidelines-tickets.md"
+  [channels.forum]
+  require_tag = false
+  default_sort = "creation_date"
+  layout = "list"
+  post_slow_mode = 0
+  reply_slow_mode = 0
+  auto_archive_minutes = 10080
+  tags = [
+    { name = "Account" }, { name = "Privacy" }, { name = "Conduct" }, { name = "Other" },
+    { name = "Open" }, { name = "Waiting on member" }, { name = "Closed" },
+  ]
+
+[[channels]]
+name = "staff-voice"
+category = "Staff"
+type = "voice"
+  [[channels.overwrites]]
+  target = "Maintainer"
+  allow = ["view_channel", "connect", "speak", "stream", "use_vad"]
+  [[channels.overwrites]]
+  target = "Moderator"
+  allow = ["view_channel", "connect", "speak", "stream", "use_vad"]
+
+[[channels]]
+name = "ci-alerts"
+category = "Staff"
+type = "text"
+topic = "Failed runs on main, posted by a webhook the owner wires up in the CI settings."
+
+# voice and stage
+
+[[categories]]
+name = "Voice"
+
+[[channels]]
+name = "Workbench"
+category = "Voice"
+type = "voice"
+  [[channels.overwrites]]
+  target = "@everyone"
+  allow = ["connect", "speak", "stream", "use_vad"]
+
+[[channels]]
+name = "Town hall"
+category = "Voice"
+type = "stage"
+  [[channels.overwrites]]
+  target = "@everyone"
+  allow = ["connect", "request_to_speak"]
+  # stage moderators need Manage Channels, Mute Members and Move Members on the stage itself
+  [[channels.overwrites]]
+  target = "Maintainer"
+  allow = ["connect", "manage_channels", "mute_members", "move_members"]
+  [[channels.overwrites]]
+  target = "Moderator"
+  allow = ["connect", "manage_channels", "mute_members", "move_members"]
+
+# auto moderation
+
+[[automod]]
+name = "Spam"
+trigger = "spam"
+actions = [{ type = "block" }, { type = "alert", channel = "mod-log" }]
+
+[[automod]]
+name = "Mention raid"
+trigger = "mention_spam"
+mention_total_limit = 5
+mention_raid_protection = true
+actions = [{ type = "block" }, { type = "alert", channel = "mod-log" }, { type = "timeout", seconds = 600 }]
+exempt_roles = ["Maintainer", "Moderator"]
+
+[[automod]]
+name = "Slurs and sexual content"
+trigger = "keyword_preset"
+presets = ["slurs", "sexual_content"]
+actions = [
+  { type = "block", message = "We blocked this message because it contains words our rules do not allow. Please rephrase it." },
+  { type = "alert", channel = "mod-log" },
+]
+
+[[automod]]
+name = "Invite links"
+trigger = "keyword"
+patterns = ['(?i)discord(?:app)?\.com/invite/[a-z0-9-]+', '(?i)discord\.gg/[a-z0-9-]+']
+actions = [
+  { type = "block", message = "We do not allow invites to other servers here. Ask a maintainer if you think yours belongs." },
+  { type = "alert", channel = "mod-log" },
+]
+exempt_roles = ["Maintainer", "Moderator"]
+
+[[automod]]
+name = "Short and masked links"
+trigger = "keyword"
+keywords = ["*bit.ly/*", "*tinyurl.com/*", "*is.gd/*", "*cutt.ly/*", "*rb.gy/*", "*shorturl.at/*", "*t.ly/*"]
+patterns = ['\[[^\]]*https?://[^\]]*\]\(\s*<?https?://']
+actions = [
+  { type = "block", message = "Please post the full address. We block shortened and disguised links." },
+  { type = "alert", channel = "mod-log" },
+]
+exempt_roles = ["Maintainer", "Moderator", "Contributor"]
+
+[[automod]]
+name = "Scam phrases"
+trigger = "keyword"
+keywords = ["*free nitro*", "*nitro for free*", "*steam gift*", "*crypto giveaway*", "*claim your prize*", "*airdrop*"]
+actions = [{ type = "block" }, { type = "alert", channel = "mod-log" }, { type = "timeout", seconds = 3600 }]
+exempt_roles = ["Maintainer", "Moderator"]
+
+[[automod]]
+name = "Secrets"
+trigger = "keyword"
+patterns_file = "texts/secret-patterns.txt"
+actions = [
+  { type = "block", message = "This looks like a key or a token, so we blocked it. Replace the secret, then post again without it." },
+]
+
+[[automod]]
+name = "Security words"
+trigger = "keyword"
+keywords = [
+  "vulnerability", "vulnerabilities", "exploit*", "0day", "zero-day", "CVE-*", "*sql injection*",
+  "*remote code execution*", "*authentication bypass*", "*privilege escalation*", "proof of concept",
+]
+actions = [{ type = "alert", channel = "mod-log" }]
+exempt_roles = ["Maintainer", "Moderator"]
+
+[[automod]]
+name = "Impersonation"
+trigger = "member_profile"
+keywords = [
+  "moderator", "maintainer", "*phaemos support*", "*phaemos team*", "*phaemos staff*",
+  "*phaemos admin*", "*phaemos official*", "*phaemos help*",
+]
+# alert only: a name that holds "maintainer" or "moderator" is a reason to look and not to block
+actions = [{ type = "alert", channel = "mod-log" }]
+exempt_roles = ["Maintainer", "Moderator"]
+
+# onboarding
+
+[onboarding]
+enabled = true
+mode = "default"
+default_channels = [
+  "rules", "start-here", "docs", "bot-commands", "announcements", "releases", "general", "introductions", "off-topic", "showcase", "help", "hardware", "contributing",
+]
+
+[[onboarding.prompts]]
+title = "What brings you here?"
+type = "multiple_choice"
+single_select = false
+required = false
+in_onboarding = true
+  [[onboarding.prompts.options]]
+  title = "I run or want to run PHAEMOS"
+  description = "Help with installing, running and reading the dashboard"
+  roles = ["Operator"]
+  channels = ["help"]
+  [[onboarding.prompts.options]]
+  title = "I am building the sensor nodes"
+  description = "Boards, wiring, sensors and enclosures"
+  roles = ["Hardware builder"]
+  channels = ["hardware"]
+  [[onboarding.prompts.options]]
+  title = "I want to contribute"
+  description = "Code, boards or documentation"
+  roles = ["Developer"]
+  channels = ["contributing", "ideas", "research", "github-feed"]
+  [[onboarding.prompts.options]]
+  title = "I am just looking around"
+  description = "See what people have built"
+  roles = []
+  channels = ["showcase"]
+
+# webhooks: the address is never written here, only the name of the secret that will hold it
+
+[[webhooks]]
+name = "PHAEMOS announcements"
+channel = "announcements"
+secret = "DISCORD_WEBHOOK_ANNOUNCEMENTS"
+store = "github"
+
+[[webhooks]]
+name = "PHAEMOS releases"
+channel = "releases"
+secret = "DISCORD_WEBHOOK_RELEASES"
+store = "github"
+
+[[webhooks]]
+name = "PHAEMOS on GitHub"
+channel = "github-feed"
+secret = "DISCORD_WEBHOOK_FEED"
+store = "github"
+
+[[webhooks]]
+name = "Reports"
+channel = "mod-log"
+secret = "REPORTS_WEBHOOK_URL"
+store = "cloudflare"
+
+[[webhooks]]
+name = "PHAEMOS ideas"
+channel = "ideas"
+secret = "DISCORD_WEBHOOK_IDEAS"
+store = "github"
+
+[[webhooks]]
+name = "PHAEMOS research"
+channel = "research"
+secret = "DISCORD_WEBHOOK_RESEARCH"
+store = "github"
+
+[[webhooks]]
+name = "Tickets"
+channel = "tickets"
+secret = "TICKETS_WEBHOOK_URL"
+store = "cloudflare"
+
+[[webhooks]]
+name = "PHAEMOS CI alerts"
+channel = "ci-alerts"
+secret = "DISCORD_WEBHOOK_CI_ALERTS"
+store = "github"
+
+# commands and relay
+
+[commands]
+content = "content/commands.toml"
+# commands the tool registered earlier and no longer wants. The next apply removes them. Never a name a person made
+retired = ["bug"]
+
+[status]
+enabled = true
+url = "https://api.phaemos.com/status"
+page = "https://status.phaemos.com"
+
+[relay]
+repository = "phaemos/phaemos"
+project = "PHAEMOS"
+colour = 2450411
+commit_types = ["feat", "fix", "perf", "docs", "revert"]
+skip_labels = ["automated"]
+# hosts that a link in a post body may keep. Every other host is shown as plain text
+link_hosts = ["phaemos.com", "www.phaemos.com", "docs.phaemos.com", "status.phaemos.com"]
+labels = [
+  "bug", "enhancement", "documentation", "good first issue", "help wanted", "accessibility", "security",
+  "performance", "hardware", "firmware", "pcb", "enclosure", "backend", "frontend", "client", "infra", "edge",
+]
+
+[relay.discussions]
+announcements = { webhook = "PHAEMOS announcements", form = "announcement" }
+"q-a" = { webhook = "PHAEMOS on GitHub", lead = "New question in Q&A" }
+ideas = { webhook = "PHAEMOS ideas", lead = "New idea in Ideas", thread = true, tag = "From GitHub", tag_secret = "DISCORD_TAG_IDEAS" }
+"show-and-tell" = { webhook = "PHAEMOS on GitHub", lead = "New build shared in Show and tell" }
+research = { webhook = "PHAEMOS research", lead = "New research note in Research", thread = true, tag = "From GitHub", tag_secret = "DISCORD_TAG_RESEARCH" }
+polls = { webhook = "PHAEMOS on GitHub", lead = "New poll in Polls" }

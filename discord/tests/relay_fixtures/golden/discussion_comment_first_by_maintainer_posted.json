@@ -1,0 +1,21 @@
+{
+  "exit": 0,
+  "posts": [
+    {
+      "secret": "DISCORD_WEBHOOK_FEED",
+      "query": "wait=true",
+      "payload": {
+        "username": "Example on GitHub",
+        "content": "New question: How do I wire a second vibration sensor? <https://github.com/example-org/example/discussions/990>",
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ],
+  "api_calls": [
+    "/repos/example-org/example/collaborators/maintainer-one/permission",
+    "/repos/example-org/example/actions/workflows/discord-relay.yml/runs"
+  ]
+}

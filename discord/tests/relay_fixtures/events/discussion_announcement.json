@@ -1,0 +1,41 @@
+{
+  "event_name": "discussion",
+  "payload": {
+    "action": "created",
+    "discussion": {
+      "number": 441,
+      "title": "The first hardware kits are being tested",
+      "state": "open",
+      "category": {
+        "id": 3,
+        "name": "Announcements",
+        "slug": "announcements",
+        "is_answerable": false
+      },
+      "user": {
+        "login": "octo-maintainer",
+        "id": 21,
+        "type": "User",
+        "site_admin": false
+      },
+      "author_association": "OWNER",
+      "body": "We have three ESP32 gateway boards on the bench this week.\n\n| Sensor | Result |\n| --- | --- |\n| Vibration | readings match the simulator within 2 percent |\n| Temperature | one sensor reads high, under investigation |\n\n> [!NOTE]\n> Kits are not for sale yet. See #431 for the plan.\n\n![Three boards on a bench](https://example.test/boards.png)\n\n<!-- remember to add the photo credit -->\n",
+      "html_url": "https://github.com/example-org/example/discussions/440",
+      "created_at": "2026-12-02T09:30:00Z"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "octo-maintainer",
+      "id": 21,
+      "type": "User",
+      "site_admin": false
+    }
+  }
+}

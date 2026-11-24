@@ -1,0 +1,63 @@
+{
+  "event_name": "push",
+  "payload": {
+    "ref": "refs/heads/main",
+    "before": "231bd031aaf7f85a3216712edcffa4fe7fbea5f6",
+    "after": "b89db1bf9bbf5339c7969d1491d75b81bd880c54",
+    "created": false,
+    "deleted": false,
+    "forced": false,
+    "compare": "https://github.com/example-org/example/compare/x...y",
+    "commits": [
+      {
+        "id": "be04722fc81aefe01ad506593c417c680826c0b7",
+        "message": "chore: update the lockfile (#712)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/be04722fc81aefe01ad506593c417c680826c0b7",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      }
+    ],
+    "head_commit": {
+      "id": "be04722fc81aefe01ad506593c417c680826c0b7",
+      "message": "chore: update the lockfile (#712)",
+      "timestamp": "2026-12-01T10:00:00Z",
+      "url": "https://github.com/example-org/example/commit/be04722fc81aefe01ad506593c417c680826c0b7",
+      "author": {
+        "name": "A Person",
+        "email": "person@example.test",
+        "username": "octo-maintainer"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@example.test",
+        "username": "web-flow"
+      }
+    },
+    "pusher": {
+      "name": "octo-maintainer"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "octo-maintainer",
+      "id": 21,
+      "type": "User",
+      "site_admin": false
+    }
+  }
+}

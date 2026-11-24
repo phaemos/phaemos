@@ -1,0 +1,175 @@
+{
+  "event_name": "push",
+  "payload": {
+    "ref": "refs/heads/main",
+    "before": "231bd031aaf7f85a3216712edcffa4fe7fbea5f6",
+    "after": "b89db1bf9bbf5339c7969d1491d75b81bd880c54",
+    "created": false,
+    "deleted": false,
+    "forced": false,
+    "compare": "https://github.com/example-org/example/compare/x...y",
+    "commits": [
+      {
+        "id": "2c4c6cb67abab6e6cb46d0e94b6b646c8523ebf6",
+        "message": "feat(dashboard): add a maintenance window calendar (#500)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/2c4c6cb67abab6e6cb46d0e94b6b646c8523ebf6",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "b8e6b0e8e13b370f19c601d0bd13cc92ea92183e",
+        "message": "chore: bump ruff from 0.4.4 to 0.4.5 (#501)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/b8e6b0e8e13b370f19c601d0bd13cc92ea92183e",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "dependabot[bot]"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "b394ff936697919b1b07e895dab1b8cfe5d3a836",
+        "message": "docs: explain the wiring for the Pico 2W (#502)\n\nA longer body that is never shown.",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/b394ff936697919b1b07e895dab1b8cfe5d3a836",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "cafb6cb1897898433f7163531ba3071e6a652d8e",
+        "message": "fix: handle an empty reading list",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/cafb6cb1897898433f7163531ba3071e6a652d8e",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "68a325fcf97a8f0272f6b191cdceb83b5c7985ad",
+        "message": "Merge pull request #503 from someone/branch",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/68a325fcf97a8f0272f6b191cdceb83b5c7985ad",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "34292e1d9e91a5440de31c6342cb94b0106cc58e",
+        "message": "refactor: tidy the router (#504)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/34292e1d9e91a5440de31c6342cb94b0106cc58e",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "f5e18af58dbcdc2855962f5ee64aed6f5c5282ad",
+        "message": "perf!: batch writes to the database (#505)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/f5e18af58dbcdc2855962f5ee64aed6f5c5282ad",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      },
+      {
+        "id": "f675bc0e98f1cae3c7110577f17825c47d209096",
+        "message": "revert: undo the retry change (#506)",
+        "timestamp": "2026-12-01T10:00:00Z",
+        "url": "https://github.com/example-org/example/commit/f675bc0e98f1cae3c7110577f17825c47d209096",
+        "author": {
+          "name": "A Person",
+          "email": "person@example.test",
+          "username": "octo-maintainer"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@example.test",
+          "username": "web-flow"
+        }
+      }
+    ],
+    "head_commit": {
+      "id": "f675bc0e98f1cae3c7110577f17825c47d209096",
+      "message": "revert: undo the retry change (#506)",
+      "timestamp": "2026-12-01T10:00:00Z",
+      "url": "https://github.com/example-org/example/commit/f675bc0e98f1cae3c7110577f17825c47d209096",
+      "author": {
+        "name": "A Person",
+        "email": "person@example.test",
+        "username": "octo-maintainer"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@example.test",
+        "username": "web-flow"
+      }
+    },
+    "pusher": {
+      "name": "octo-maintainer"
+    },
+    "repository": {
+      "id": 11,
+      "name": "example",
+      "full_name": "example-org/example",
+      "private": false,
+      "html_url": "https://github.com/example-org/example",
+      "default_branch": "main"
+    },
+    "sender": {
+      "login": "octo-maintainer",
+      "id": 21,
+      "type": "User",
+      "site_admin": false
+    }
+  }
+}
