@@ -3,7 +3,8 @@
 #
 # Prometheus scrapes the backend /metrics endpoint every 15 seconds.
 # Grafana visualises those metrics on port 3001 (3000 is taken by Next.js).
-# default Grafana credentials: admin / admin (change for any shared environment).
+# the Grafana admin password comes from GRAFANA_ADMIN_PASSWORD in the .env file at the
+# repository root (ignored by git) or in the shell. The stack does not start without it.
 
 services:
   prometheus:
@@ -28,7 +29,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
       GF_USERS_ALLOW_SIGN_UP: "false"
     depends_on:
       - prometheus

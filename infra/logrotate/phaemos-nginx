@@ -1,0 +1,19 @@
+# keeps the Nginx access and error logs for 14 days and no longer. This replaces the file the
+# nginx package puts at /etc/logrotate.d/nginx (install.sh copies it there; Section 9 of
+# docs/deployment.md has the step for a droplet that already exists). A daily rotation with
+# 13 kept copies plus the live file is 14 days and maxage removes anything older whatever
+# the count, for example after a missed run. The privacy notice promises 14 days.
+/var/log/nginx/*.log {
+    daily
+    rotate 13
+    maxage 14
+    missingok
+    notifempty
+    compress
+    delaycompress
+    sharedscripts
+    create 0640 www-data adm
+    postrotate
+        if [ -s /run/nginx.pid ]; then kill -USR1 "$(cat /run/nginx.pid)"; fi
+    endscript
+}
