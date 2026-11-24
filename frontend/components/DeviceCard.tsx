@@ -1,18 +1,20 @@
 import type { Device } from '@/types';
+import MachineStatus, { LastPost } from '@/components/machines/MachineStatus';
+import { faultedFields, type AlertLike } from '@/lib/machineState';
+import type { KeyReading } from '@/components/dashboard/keyReadings';
 
 interface Props {
   device: Device;
   active: boolean;
-  onClick: () => void;
+  // left out, the card is a plain block with nothing to press
+  onClick?: () => void;
+  // the machine's active alerts, so its state can say Warning or Fault
+  alerts?: readonly AlertLike[];
+  // the latest two or three headline readings, when the page has them
+  readings?: KeyReading[];
+  // a fixed clock for sample data
+  now?: number;
 }
-
-// a dot and a word for each state, so the colour is never the only signal
-const statusConfig: Record<string, { dot: string; label: string }> = {
-  online: { dot: 'bg-success-500', label: 'Online' },
-  offline: { dot: 'bg-surface-400', label: 'Offline' },
-  warning: { dot: 'bg-warning-500', label: 'Warning' },
-  fault: { dot: 'bg-critical-500', label: 'Fault' },
-};
 
 const NODE_LABELS: Record<string, string> = {
   esp32: 'ESP32 hub',
@@ -21,45 +23,67 @@ const NODE_LABELS: Record<string, string> = {
   pico_w: 'Pico 2 W ambient node',
 };
 
-function lastSeen(iso: string | null): string {
-  if (!iso) return 'Never seen';
-  const secs = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-  if (secs < 60) return 'Seen just now';
-  if (secs < 3600) return `Seen ${Math.round(secs / 60)} min ago`;
-  return `Seen ${new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`;
-}
+// one machine as a panel: name and location, what the machine is and how it is watched (each a shape and a word), node
+// type, last seen and key readings
+export default function DeviceCard({ device, active, onClick, readings, alerts, now }: Props) {
+  // a sensor the node cannot vouch for shows no value: the newest one held would look current
+  const faulted = faultedFields(device);
+  const border = active
+    ? 'border-brand-700 ring-1 ring-brand-700 dark:border-brand-400 dark:ring-brand-400'
+    : 'border-surface-200 dark:border-surface-800';
+  const hover = onClick ? 'hover:border-surface-500 dark:hover:border-surface-500' : '';
+  const classes = `flex w-full flex-col items-stretch justify-start rounded-lg border bg-surface-0 p-4 text-left dark:bg-surface-900 ${border} ${hover}`;
 
-export default function DeviceCard({ device, active, onClick }: Props) {
-  const cfg = statusConfig[device.status] ?? statusConfig.offline;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`w-full rounded-lg border bg-white p-4 text-left transition-colors dark:bg-surface-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
-        active
-          ? 'border-brand-500 ring-1 ring-brand-500'
-          : 'border-surface-200 hover:border-surface-300 dark:border-surface-800 dark:hover:border-surface-700'
-      }`}
-    >
+  const body = (
+    <>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-surface-900 dark:text-surface-50">{device.name}</p>
-          <p className="mt-0.5 truncate text-xs text-surface-500 dark:text-surface-400">{device.location ?? 'No location'}</p>
+          <p className="mt-0.5 truncate text-meta text-surface-600 dark:text-surface-400">{device.location ?? 'No location'}</p>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-surface-700 dark:text-surface-300">
-          <span className={`h-2 w-2 rounded-full ${cfg.dot}`} aria-hidden="true" />
-          {cfg.label}
-        </span>
+        {active && onClick && <p className="label shrink-0 text-brand-800 dark:text-brand-400">On chart</p>}
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-surface-100 pt-3 text-xs text-surface-500 dark:border-surface-800 dark:text-surface-400">
-        <span>{NODE_LABELS[device.type ?? ''] ?? device.type ?? 'Unknown node'}</span>
-        <span>{lastSeen(device.last_seen)}</span>
-      </div>
-      {device.tags && device.tags.length > 0 && (
-        <p className="mt-2 text-xs text-surface-500 dark:text-surface-400">{device.tags.join(' · ')}</p>
+      <div className="mt-2"><MachineStatus device={device} alerts={alerts} now={now} /></div>
+
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t border-surface-200 pt-3 text-meta dark:border-surface-800">
+        <dt className="text-surface-600 dark:text-surface-400">Node</dt>
+        <dd className="text-surface-800 dark:text-surface-200">{NODE_LABELS[device.type ?? ''] ?? device.type ?? 'Unknown node'}</dd>
+        <dt className="text-surface-600 dark:text-surface-400">Last post</dt>
+        <dd className="text-surface-800 dark:text-surface-200">
+          <LastPost device={device} now={now} />
+        </dd>
+      </dl>
+
+      {readings && readings.length > 0 && (
+        <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-2 border-t border-surface-200 pt-3 dark:border-surface-800">
+          {readings.map((r) => (
+            <div key={r.label}>
+              <dt className="text-meta text-surface-600 dark:text-surface-400">{r.label}</dt>
+              <dd className="num text-sm font-semibold text-surface-900 dark:text-surface-50">
+                {faulted.has(r.key) || r.noReading ? (
+                  <span className="font-sans font-normal text-surface-800 dark:text-surface-200" title={r.noReading}>No reading</span>
+                ) : (
+                  <>
+                    {r.value}
+                    <span className="text-meta font-normal text-surface-600 dark:text-surface-400">{r.unit ? (r.unit === '%' ? '%' : `\u00a0${r.unit}`) : ''}</span>
+                  </>
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
       )}
+
+      {device.tags && device.tags.length > 0 && (
+        <p className="mt-3 text-meta text-surface-600 dark:text-surface-400">{device.tags.join(', ')}</p>
+      )}
+    </>
+  );
+
+  if (!onClick) return <div className={classes}>{body}</div>;
+  return (
+    <button type="button" onClick={onClick} aria-pressed={active} className={classes}>
+      {body}
     </button>
   );
 }

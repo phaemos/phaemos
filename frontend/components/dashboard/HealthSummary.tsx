@@ -1,76 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import api from '../../lib/api';
+import { countBySeverity } from '../../lib/alertGroups';
+import { useApiResource } from '@/hooks/useApiResource';
+import type { Alert, Device } from '../../types/index';
+import InlineError from './InlineError';
+import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
+import { countFleet, linkOf } from '@/lib/machineState';
+import { serverNow } from '@/lib/serverClock';
+import StatStrip, { type HealthData } from './StatStrip';
 
-interface HealthData {
-  total_devices: number;
-  online: number;
-  offline: number;
-  active_alerts: number;
-  open_tickets: number;
-  health_score: number;
+interface Props {
+  // the page already polls the active alerts, so the severity split reuses that list
+  alerts: Alert[];
+  // the machines the page holds once they have loaded, so the bar can count each once by its state. Left out while loading.
+  devices?: Device[];
+  // why the alerts read cannot be trusted, in words or null. While it is set no machine counts as healthy.
+  alertsGap?: string | null;
 }
 
-function ScoreBand(score: number): { colour: string; bar: string; label: string } {
-  // the class names are written out in full because Tailwind only generates classes it can see
-  if (score >= 80) return { colour: 'text-success-600 dark:text-success-400', bar: 'bg-success-500', label: 'Good' };
-  if (score >= 50) return { colour: 'text-warning-600 dark:text-warning-400', bar: 'bg-warning-500', label: 'Degraded' };
-  return { colour: 'text-critical-600 dark:text-critical-400', bar: 'bg-critical-500', label: 'Critical' };
+// the machines on the page are the source for how many are online, late and offline when the page holds the whole fleet, because
+// they are judged by one rule (lib/machineState.ts) that also decides every badge. The summary's own counts are used only when the
+// list is cut short. The page's own count of machines then also agrees with the cards.
+function withLinks(data: HealthData, devices?: Device[]): HealthData {
+  if (!devices || devices.length === 0 || devices.length < data.total_devices) return data;
+  const links = { online: 0, late: 0, offline: 0 };
+  const now = serverNow();
+  for (const d of devices) links[linkOf(d, now)] += 1;
+  return { ...data, total_devices: devices.length, online: links.online, offline: links.offline, link_states: links };
 }
 
-interface StatProps {
-  label: string;
-  value: number | string;
-  sub?: string;
-  accent?: string;
-}
+// fetches the fleet summary and hands it to the presentational strip
+export default function HealthSummary({ alerts, devices, alertsGap = null }: Props) {
+  const { data, error, retry } = useApiResource<HealthData>('/fleet/summary', { what: 'The fleet summary', intervalMs: 30_000 });
 
-function Stat({ label, value, sub, accent }: StatProps) {
-  return (
-    <div className="flex flex-col gap-1 p-4">
-      <span className="text-xs font-medium text-surface-500 dark:text-surface-400">{label}</span>
-      <span className={`text-2xl font-semibold tabular-nums ${accent ?? 'text-surface-900 dark:text-surface-100'}`}>
-        {value}
-      </span>
-      {sub && <span className="text-xs text-surface-600 dark:text-surface-500">{sub}</span>}
-    </div>
-  );
-}
-
-export default function HealthSummary() {
-  const [data, setData] = useState<HealthData | null>(null);
-
-  useEffect(() => {
-    const load = () =>
-      api.get<HealthData>('/health/summary').then(({ data }) => setData(data)).catch(() => null);
-
-    load();
-    const id = setInterval(load, 30_000);
-    return () => clearInterval(id);
-  }, []);
+  if (error && !data) return <InlineError message="The fleet summary could not be loaded." onRetry={retry} />;
 
   if (!data) {
-    return <div className="h-[92px] animate-pulse rounded-lg border border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900" />;
+    // the same height as the loaded strip so the page does not jump
+    return (
+      <SkeletonGroup label="Loading the fleet summary" className="min-h-[188px] rounded-lg border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="mt-3 h-7 w-56" />
+        <Skeleton className="mt-3 h-2.5 w-full max-w-sm" />
+      </SkeletonGroup>
+    );
   }
 
-  const { colour, bar, label } = ScoreBand(data.health_score);
-
   return (
-    <section aria-label="Fleet health" className="grid grid-cols-2 overflow-hidden rounded-lg border border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900 sm:grid-cols-5 sm:divide-x divide-surface-200 dark:divide-surface-800">
-      <div className="col-span-2 border-b border-surface-200 p-4 dark:border-surface-800 sm:col-span-1 sm:border-b-0">
-        <span className="text-xs font-medium text-surface-500 dark:text-surface-400">Fleet health</span>
-        <p className={`mt-1 text-2xl font-semibold tabular-nums ${colour}`}>
-          {data.health_score}%<span className="ml-2 text-xs font-medium">{label}</span>
-        </p>
-        <div className="mt-2 h-1.5 rounded-full bg-surface-100 dark:bg-surface-800" aria-hidden="true">
-          <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${data.health_score}%` }} />
-        </div>
-      </div>
-      <Stat label="Online" value={data.online} sub={`of ${data.total_devices} machines`} />
-      <Stat label="Offline" value={data.offline} accent={data.offline > 0 ? 'text-critical-600 dark:text-critical-400' : undefined} />
-      <Stat label="Active alerts" value={data.active_alerts} accent={data.active_alerts > 0 ? 'text-critical-600 dark:text-critical-400' : undefined} />
-      <Stat label="Open tickets" value={data.open_tickets} accent={data.open_tickets > 0 ? 'text-warning-600 dark:text-warning-400' : undefined} />
-    </section>
+    <div className="space-y-3">
+      {error && <InlineError message="The fleet summary could not be refreshed. These numbers may be out of date." onRetry={retry} />}
+      <StatStrip
+        data={withLinks(data, devices)}
+        severity={countBySeverity(alerts)}
+        alertsGap={alertsGap}
+        split={devices ? countFleet(devices, alerts, serverNow(), alertsGap) : undefined}
+      />
+    </div>
   );
 }

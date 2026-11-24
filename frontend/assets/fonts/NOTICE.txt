@@ -1,0 +1,6 @@
+Fonts used to draw the social images (lib/ogImage.tsx). The web pages load the same families through next/font.
+
+Exo 2 SemiBold: Copyright 2013 The Exo 2 Project Authors (https://github.com/NDISCOVER/Exo-2.0).
+Manrope Medium: Copyright 2018 The Manrope Project Authors (https://github.com/sharanda/manrope).
+
+Both are licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).

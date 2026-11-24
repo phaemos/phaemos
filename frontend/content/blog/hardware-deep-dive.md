@@ -1,70 +1,62 @@
 ---
-title: "Hardware Deep Dive: 4 Nodes, 11 Sensors, One Platform"
+title: "The four sensor nodes as they stand"
 date: "2026-05-28"
 slug: "hardware-deep-dive"
-excerpt: "A tour of the four firmware nodes at the core of PHAEMOS - ESP32 telemetry hub, STM32 vibration processor, Pico W power monitor and Arduino Nano legacy bridge."
+excerpt: "What each of the four sensor nodes reads, how they connect and how far the hardware has got."
 ---
 
-# Hardware Deep Dive: 4 Nodes, 11 Sensors, One Platform
+Rewritten in November 2026 to match the product as it is now.
 
-> **Update, October 2026:** the node line-up has changed since this post was written. The Raspberry Pi Pico 2W is now the ambient node (BME280, LDR and an OLED) and the Arduino Nano reads a BME280, an LDR and an FC-28, sending CSV to the ESP32 at 9600 baud. The current design is in the [hardware README](https://github.com/phaemos/phaemos/blob/main/hardware/README.md).
+PHAEMOS has four node types: an ESP32 hub, an STM32 Black Pill, an Arduino Nano and a Raspberry Pi Pico 2W. All four are designed and not yet built. The plan is to prototype on development boards and breakouts. Carrier boards are still being designed. Nothing has been tested on a real machine. Readings so far come from the simulator.
 
-PHAEMOS is built around four microcontroller nodes, each chosen for a specific role. Here is what each one does and why.
+## How they connect
 
-## ESP32 - Wi-Fi telemetry hub
+The STM32 and the Nano send their readings to the ESP32 over serial lines. The ESP32 adds them to its own readings and posts everything to the API over Wi-Fi. The Pico 2W works alone and posts straight to the API. Every node sends its machine's key in the `X-API-Key` header.
 
-The ESP32 is the primary data reporter. It reads temperature, humidity and gas concentration, packages them as JSON and POSTs to `/api/v1/telemetry` over Wi-Fi every 5 seconds. The authentication token is stored in non-volatile storage (NVS) so it survives power cycles.
+## ESP32 hub
 
-**Sensors on this node:**
-- DHT22 - temperature (-40 to 80 C, ±0.5 C) and humidity (0-100%, ±2%)
-- MQ-135 - gas/air quality (ppm CO2 equivalent, needs 24-hour warmup)
+The hub is an ESP32 DevKit V1 programmed in Arduino C++. It reads 11 sensors:
 
-The ESP32's dual-core Xtensa LX6 is more than needed for this workload - the second core handles the Wi-Fi stack while the first handles sensor reads. Battery-backed deployment is practical; deep sleep between reads brings average current below 1 mA.
+- BME280 for temperature, humidity and pressure
+- MPU6050 for acceleration and rotation
+- INA219 for voltage and current
+- MLX90614 for surface temperature
+- VL53L0X for distance
+- AS5600 for shaft angle and speed
+- MQ-2 for gas
+- FC-28 for moisture
+- DS18B20 for contact temperature
+- an LDR for light
+- a MAX4466 microphone for sound
 
-## STM32 BlackPill - vibration FFT processor
+It also drives a buzzer, a 30-pixel LED strip, a four-channel relay, three status LEDs and an OLED. It posts a reading every 5 seconds. The Nano link runs at 9600 baud and the STM32 link at 115200.
 
-The STM32F411CEU6 runs at 100 MHz with hardware FPU. This is the only node where compute matters - running a 128-point real FFT on 3-axis accelerometer data requires floating-point throughput.
+A lost temperature sensor shows as a fault on the display and keeps the cooling relay off. The relay switches on after three critical readings in a row. A post to an unreachable API can hold the loop for about 4 seconds.
 
-**Sensors on this node:**
-- MPU-6050 - 6-DOF IMU: 3-axis accelerometer (±16g) and gyroscope
+## STM32 Black Pill
 
-The FFT is implemented using `arm_rfft_fast_f32` from CMSIS-DSP, ARM's optimised signal processing library. The algorithm:
+The Black Pill samples an MPU6050 at 100 Hz and runs a 128-point FFT over each 1.28-second window. It sends one line per window:
 
-1. Reads 128 samples from the accelerometer Z axis at a fixed sample rate
-2. Applies `arm_rfft_fast_f32` to transform to the frequency domain
-3. Skips bin 0 (DC component - dominated by gravity) and finds the peak magnitude bin
-4. Returns `peak_bin * sample_rate / sample_count` as the peak frequency in Hz
+```text
+VIB:0.02,-0.01,1.01,MAG:1.01,FFT_PEAK:12.5Hz
+```
 
-The peak frequency is a compact, meaningful feature for bearing fault detection. A healthy bearing running at 1,500 RPM shows a clean peak at 25 Hz. A bearing with outer-race fault shows sidebands and sub-harmonics. The Isolation Forest learns these patterns.
+The build uses a plain built-in FFT by default. The firmware compiles and the FFT passes a host test on a computer. We have not yet run it on a board, so the clock set-up, the I2C recovery and the sensor timing are unproven on hardware.
 
-The node communicates upstream via UART to the ESP32 which relays the FFT result alongside its own sensor data.
+## Arduino Nano
 
-## Raspberry Pi Pico W - power monitor
+The Nano reads a BME280 or a BMP280, an LDR and an FC-28 moisture sensor. A BMP280 has no humidity element and always sends `HUM:-1`. Every 2 seconds it sends one line:
 
-The Pico W handles power quality monitoring and precise temperature measurement. The RP2040 dual-core Cortex-M0+ is well-suited to simultaneous ADC sampling and Wi-Fi.
+```text
+TEMP:28.5,HUM:55.2,PRES:1013.2,LIGHT:340,MOIST:210,WATER:0
+```
 
-**Sensors on this node:**
-- INA219 - current and voltage (I2C, 26V max, 3.2A max, 1% accuracy)
-- ACS712 - AC/DC current (30A model, analogue output, ±5% accuracy)
-- BMP280 - barometric pressure (300-1100 hPa, ±1 hPa) and temperature (±1 C)
+A value of -1 means the reading is absent. The Nano uses 5 V logic and the ESP32 uses 3.3 V. The Nano's transmit line must go through a level shifter or a resistor divider, because wiring it straight across can damage the ESP32's receive pin.
 
-Power monitoring gives the ML model an additional input. Motors drawing more current than usual under a given load profile often indicate mechanical wear. The INA219 communicates via I2C; the ACS712 produces an analogue voltage proportional to current, read via the Pico's 12-bit ADC.
+## Raspberry Pi Pico 2W
 
-## Arduino Nano - legacy sensor bridge
+The Pico 2W runs MicroPython. It reads a BME280 or BMP280 and an LDR and shows the values on an OLED. It posts every 5 seconds. It needs the Pico 2W build of MicroPython, because its RP2350 chip does not run the original Pico W image.
 
-The Nano bridges sensors with 5V-only interfaces that would damage a 3.3V MCU directly. It reads them via its 5V ADC, converts the readings and sends JSON over UART at 115200 baud to the ESP32.
+## Where the hardware stands
 
-**Sensors on this node:**
-- HC-SR04 - ultrasonic distance (2-400 cm, ±3 mm) for level or proximity monitoring
-- LM35 - linear temperature (10 mV/C, 0-100 C, no calibration required)
-- IR sensor - presence/motion detection (digital output)
-
-The Nano uses no RTOS - a simple `loop()` with a 1-second blocking delay is sufficient for sensors that change slowly.
-
-## Wiring it together
-
-All four nodes plus the Raspberry Pi 4 backend server share a 12V/5A rail. The Pico W and ESP32 each have their own 5V regulators. The STM32 runs from a 3.3V LDO.
-
-Full pinouts and wiring diagrams are in `hardware/wiring/`. The schematic for the custom ESP32 carrier board is in `hardware/schematics/`.
-
-Hardware questions: [dev@phaemos.com](mailto:dev@phaemos.com)
+The plan has four phases. Phase 1 is breadboard prototyping and checking every sensor. We are in it. Phase 2 simulates each circuit in Proteus and draws the schematics in KiCad. Phase 3 is PCB layout and ordering boards. Phase 4 is enclosures. The PCB notes are placeholders until phase 1 is done. The wiring tables for each node are in `hardware/wiring`.

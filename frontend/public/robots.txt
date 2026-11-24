@@ -1,6 +1,0 @@
-User-agent: *
-Disallow: /api/
-Disallow: /admin
-Allow: /
-
-Sitemap: https://phaemos.com/sitemap.xml

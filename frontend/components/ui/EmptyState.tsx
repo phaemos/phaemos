@@ -1,32 +1,30 @@
+import Button from './Button';
+
 interface EmptyStateProps {
-  icon?: string;
   heading: string;
   subMessage?: string;
   action?: {
     label: string;
-    onClick: () => void;
+    onClick?: () => void;
+    href?: string;
   };
 }
 
-export default function EmptyState({ icon, heading, subMessage, action }: EmptyStateProps) {
+// says what is missing and what to do next, so an empty panel is never a dead end. Left-aligned so it sits
+// naturally inside a table panel. It means "the request worked and there is nothing": a failed request uses ErrorNotice.
+export default function EmptyState({ heading, subMessage, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      {icon && <span className="text-3xl mb-3" aria-hidden="true">{icon}</span>}
-      <h3 className="text-sm font-semibold text-surface-900 dark:text-surface-50 mb-1">
-        {heading}
-      </h3>
-      {subMessage && (
-        <p className="text-sm text-surface-500 dark:text-surface-400 max-w-sm">
-          {subMessage}
-        </p>
-      )}
+    <div className="px-4 py-8">
+      <h3 className="text-base font-semibold text-surface-900 dark:text-surface-50">{heading}</h3>
+      {subMessage && <p className="mt-1 max-w-prose text-base text-surface-600 dark:text-surface-400">{subMessage}</p>}
       {action && (
-        <button
-          onClick={action.onClick}
-          className="mt-4 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-        >
-          {action.label}
-        </button>
+        <div className="mt-4">
+          {action.href ? (
+            <Button href={action.href}>{action.label}</Button>
+          ) : (
+            <Button onClick={action.onClick}>{action.label}</Button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -1,103 +1,85 @@
 'use client';
 
-// use exponential backoff rather than a fixed retry interval because the
-// server may be temporarily overloaded - hammering it every second makes that worse.
-// skip all retries on close code 1008 (auth failure) to avoid an infinite
-// loop where an expired or invalid token triggers endless reconnect attempts.
+// live readings for one machine over the API's socket. The reconnect and expiry rules live in lib/liveSocket.ts, which a test drives
+// with a stand-in socket. This hook gives it the real socket, token and timers and closes the socket when the page or the machine
+// changes (an account may hold only 5 sockets).
+//
+// it returns a LiveStatus for the page to show: { state: 'live' | 'reconnecting' | 'stopped', reason }. 'stopped' carries a sentence
+// that says why and it is true: the session ended, the API refused the socket or the retries were used up after MAX_TRIES.
+// onStatusChange still gets the finer WsStatus.
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Telemetry } from '../types/index';
-import { buildTelemetryWsUrl } from '../lib/wsUrl';
-
-const BACKOFF_DELAYS_MS = [1000, 2000, 4000, 8000, 16000];
+import { buildTelemetryWsUrl, authFrame } from '../lib/wsUrl';
+import { refreshAccessToken, tokenIsFresh } from '../lib/session';
+import { MAX_TRIES, createLiveSocket, type LiveState, type StopReason } from '../lib/liveSocket';
 
 export type WsStatus = 'connecting' | 'open' | 'closed' | 'auth_failed' | 'unavailable';
+
+export type LiveStatus =
+  | { state: 'live'; reason: null }
+  | { state: 'reconnecting'; reason: null }
+  | { state: 'stopped'; reason: string };
+
+export const STOPPED_REASONS: Record<StopReason, string> = {
+  session: 'Your session has ended, so live updates stopped. Sign in again to get them back.',
+  refused: 'The API refused live updates for this machine. The page still refreshes its readings on its own.',
+  retries: `Live updates stopped after ${MAX_TRIES} tries to reconnect. The page still refreshes its readings on its own.`,
+  frame: 'Live updates could not start. The page still refreshes its readings on its own.',
+};
+
+export function liveStatusOf(state: LiveState): LiveStatus {
+  if (state.state === 'live') return { state: 'live', reason: null };
+  if (state.state === 'reconnecting') return { state: 'reconnecting', reason: null };
+  return { state: 'stopped', reason: STOPPED_REASONS[state.why] };
+}
+
+function wsStatusOf(state: LiveState): WsStatus {
+  if (state.state === 'live') return 'open';
+  if (state.state === 'reconnecting') return 'connecting';
+  return state.why === 'retries' ? 'unavailable' : 'auth_failed';
+}
 
 interface Options {
   onMessage: (reading: Telemetry) => void;
   onStatusChange?: (status: WsStatus) => void;
 }
 
-export function useWebSocketTelemetry(deviceId: string, { onMessage, onStatusChange }: Options): void {
-  // hold refs instead of state so reconnect logic can read current values
-  // without triggering re-renders and without going stale in closure scope.
-  const wsRef = useRef<WebSocket | null>(null);
-  const attemptRef = useRef(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const destroyedRef = useRef(false);
-
+export function useWebSocketTelemetry(deviceId: string, { onMessage, onStatusChange }: Options): LiveStatus {
+  const [live, setLive] = useState<LiveStatus>({ state: 'reconnecting', reason: null });
+  // refs so the callbacks the caller passes can change without restarting the socket
   const onMessageRef = useRef(onMessage);
   const onStatusRef = useRef(onStatusChange);
   useEffect(() => { onMessageRef.current = onMessage; }, [onMessage]);
   useEffect(() => { onStatusRef.current = onStatusChange; }, [onStatusChange]);
 
-  const connect = useCallback(() => {
-    if (destroyedRef.current) return;
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (!token) return;
-
-    onStatusRef.current?.('connecting');
-
-    const ws = new WebSocket(buildTelemetryWsUrl(deviceId, token));
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      attemptRef.current = 0;
-      onStatusRef.current?.('open');
-    };
-
-    ws.onmessage = (event: MessageEvent) => {
-      try {
-        const reading = JSON.parse(event.data as string) as Telemetry;
-        onMessageRef.current(reading);
-      } catch {
-        // malformed frame - ignore and keep connection open
-      }
-    };
-
-    ws.onclose = (event: CloseEvent) => {
-      wsRef.current = null;
-      if (destroyedRef.current) return;
-
-      // 1008 = Policy Violation (JWT auth failure) - retrying is pointless.
-      if (event.code === 1008) {
-        onStatusRef.current?.('auth_failed');
-        return;
-      }
-
-      const attempt = attemptRef.current;
-      if (attempt >= BACKOFF_DELAYS_MS.length) {
-        onStatusRef.current?.('unavailable');
-        return;
-      }
-
-      onStatusRef.current?.('closed');
-      const delay = BACKOFF_DELAYS_MS[attempt];
-      attemptRef.current = attempt + 1;
-      // connect is referenced before its own const finishes initializing here,
-      // but this callback only runs once the WebSocket actually closes, long
-      // after connect's declaration has completed, so the closure always sees
-      // the fully assigned function. Standard recursive-reconnect pattern.
-      // eslint-disable-next-line react-hooks/immutability
-      timerRef.current = setTimeout(connect, delay);
-    };
-
-    ws.onerror = () => {
-      // onerror always fires before onclose; let onclose handle the retry logic.
-    };
+  useEffect(() => {
+    const socket = createLiveSocket({
+      openSocket: () => new WebSocket(buildTelemetryWsUrl(deviceId)) as unknown as ReturnType<Parameters<typeof createLiveSocket>[0]['openSocket']>,
+      getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('token')),
+      isFresh: (token) => tokenIsFresh(token),
+      refresh: (failed) => refreshAccessToken(failed),
+      frameFor: authFrame,
+      onMessage: (data) => {
+        try {
+          onMessageRef.current(JSON.parse(data) as Telemetry);
+        } catch {
+          // malformed frame - ignore and keep the connection open
+        }
+      },
+      onState: (state) => {
+        onStatusRef.current?.(wsStatusOf(state));
+        setLive(liveStatusOf(state));
+      },
+      setTimer: (fn, ms) => setTimeout(fn, ms),
+      clearTimer: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+      now: () => Date.now(),
+      random: () => Math.random(),
+    });
+    socket.start();
+    // close the socket on a page or machine change so it does not count against the account's 5
+    return () => socket.close();
   }, [deviceId]);
 
-  useEffect(() => {
-    destroyedRef.current = false;
-    attemptRef.current = 0;
-    connect();
-
-    return () => {
-      destroyedRef.current = true;
-      if (timerRef.current) clearTimeout(timerRef.current);
-      wsRef.current?.close();
-      wsRef.current = null;
-    };
-  }, [connect]);
+  return live;
 }
