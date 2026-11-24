@@ -1,0 +1,6 @@
+# the compiler for the edge gateway, here and in CI and in the release build. A release is built
+# with exactly this version, so the same tag always meets the same compiler. Change it on purpose.
+[toolchain]
+channel = "1.99.1"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

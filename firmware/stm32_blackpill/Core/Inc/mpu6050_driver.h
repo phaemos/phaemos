@@ -11,6 +11,7 @@
 #define MPU6050_DRIVER_H
 
 #include "stm32f4xx_hal.h"
+#include "imu_config.h"
 
 /* ---------------------------------------------------------------------
  * I2C address
@@ -62,10 +63,36 @@ HAL_StatusTypeDef MPU6050_Init(I2C_HandleTypeDef *hi2c);
  * @hi2c:  pointer to HAL I2C handle
  * @data:  output struct (only accel_x/y/z are written; gyro fields untouched)
  * Returns HAL_OK on success.
- * provide this lighter function for the vibration node's 100Hz ISR where
- * reading only 6 bytes instead of 14 reduces the I2C bus time per interrupt.
+ * provide this lighter function for the vibration node's 100 Hz sampling
+ * loop where reading only 6 bytes instead of 14 reduces the I2C bus time
+ * per sample.
  */
 HAL_StatusTypeDef MPU6050_ReadAccel(I2C_HandleTypeDef *hi2c, MPU6050_Data *data);
+
+/**
+ * MPU6050_ReadAccelRaw - Read the three accelerometer axes as raw counts.
+ * @hi2c: pointer to HAL I2C handle
+ * @raw:  output array of three signed counts, X then Y then Z
+ * Returns HAL_OK on success.
+ * the window statistics work on the raw counts, so the stuck and clipping
+ * tests compare exact values and the full-scale limit.
+ */
+HAL_StatusTypeDef MPU6050_ReadAccelRaw(I2C_HandleTypeDef *hi2c, int16_t raw[3]);
+
+/* the same with the caller's timeout in ms, for the short retry */
+HAL_StatusTypeDef MPU6050_ReadAccelRawTimeout(I2C_HandleTypeDef *hi2c, int16_t raw[3], uint32_t timeout_ms);
+
+/**
+ * MPU6050_ReadWhoAmI - Read the WHO_AM_I register (0x68 on a genuine part).
+ * Returns HAL_OK on success.
+ */
+HAL_StatusTypeDef MPU6050_ReadWhoAmI(I2C_HandleTypeDef *hi2c, uint8_t *id);
+
+/**
+ * MPU6050_ReadPwrMgmt1 - Read PWR_MGMT_1, whose bit 6 is set when the part
+ * has gone back to sleep.  Returns HAL_OK on success.
+ */
+HAL_StatusTypeDef MPU6050_ReadPwrMgmt1(I2C_HandleTypeDef *hi2c, uint8_t *value);
 
 /**
  * MPU6050_ReadAll - Read all six axes (accel + gyro) in one transaction.

@@ -1,0 +1,14 @@
+id	a1000000-0000-4000-8000-000000000001
+machine	press-01 (11111111-1111-4111-8111-111111111111)
+severity	critical
+state	open
+category	machine
+kind	rule
+sensor	-
+message	press-01: temperature above 80 for 30 s
+triggered	2026-11-22 12:50:00 BST
+first seen	2026-11-22 12:49:30 BST
+last seen	2026-11-22 12:59:50 BST
+occurrences	14
+last value	83.5
+peak value	86

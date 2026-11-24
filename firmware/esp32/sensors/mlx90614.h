@@ -2,7 +2,8 @@
 #pragma once
 
 // initMLX90614 must be called once in setup() before any readMLX90614() call.
-void initMLX90614();
+// returns true when the sensor answered, false when it is missing so the caller can skip it.
+bool initMLX90614();
 
 // readMLX90614 returns the object (target) temperature in degrees Celsius.
 // return a float directly rather than a struct because this sensor has

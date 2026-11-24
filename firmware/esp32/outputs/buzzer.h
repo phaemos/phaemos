@@ -13,9 +13,18 @@ enum BuzzerPattern {
 // initBuzzer - call once in setup() to configure BUZZER_PIN as an output.
 void initBuzzer();
 
+#include <stdint.h>
+
 // beep - emits a single tone on BUZZER_PIN for the given duration in milliseconds.
+// this blocks, so only use it during boot.
 // expose this as a primitive so other modules can build custom sequences.
 void beep(uint16_t ms);
 
-// beepPattern - plays one of the three predefined alert patterns.
-void beepPattern(BuzzerPattern p);
+// beepPattern - starts one of the three predefined alert patterns without
+// blocking. returns true when the pattern started and false when it was dropped.
+// a request made while a pattern is playing is dropped, except that CRITICAL
+// pre-empts a lesser pattern.
+bool beepPattern(BuzzerPattern p);
+
+// buzzerUpdate - call on every loop() pass to advance the running pattern.
+void buzzerUpdate();

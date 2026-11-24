@@ -9,14 +9,15 @@
 // the hardware address only requires editing one file.
 static Adafruit_INA219 ina219(INA219_ADDR);
 
-void initINA219() {
+bool initINA219() {
     if (!ina219.begin()) {
         Serial.println("[INA219] ERROR: sensor not found");
-        return;
+        return false;
     }
     // leave calibration at the Adafruit default (32V / 2A) because the
     // Phaemos power rail never exceeds those limits.
     Serial.println("[INA219] init OK");
+    return true;
 }
 
 void readINA219(INA219Reading* r) {

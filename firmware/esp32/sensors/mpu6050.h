@@ -13,5 +13,6 @@ struct MPU6050Reading {
     float gyro_z;  // rad/s
 };
 
-void initMPU6050();
+// returns true when the sensor answered, false when it is missing so the caller can skip it.
+bool initMPU6050();
 void readMPU6050(MPU6050Reading* r);

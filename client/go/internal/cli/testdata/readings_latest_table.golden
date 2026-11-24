@@ -1,0 +1,7 @@
+machine	press-01
+recorded	2026-11-22 12:59:55 BST
+node type	esp32
+humidity	48
+is_anomaly	false
+temperature	24.5
+vibration_x	0.02
