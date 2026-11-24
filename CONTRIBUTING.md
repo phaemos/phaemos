@@ -62,6 +62,10 @@ Pages and templates that show a contact address use the right phaemos.com addres
 
 Never put a personal email address anywhere in this repository.
 
+## Talking to us
+
+Chat happens on the [PHAEMOS Discord server](https://discord.gg/C6WRDzSrG). Bugs and decisions are tracked on GitHub so we may ask you to open an issue. Please read the [Code of Conduct](CODE_OF_CONDUCT.md) before taking part. It covers the server too.
+
 ## Using AI
 
 AI tools are welcome within the [AI policy](https://github.com/phaemos/.github/blob/main/AI_POLICY.md). **Every pull request must say how AI was used, even when the answer is None.** Write your own issue and pull request titles and descriptions, understand everything you submit and test it before you open it.

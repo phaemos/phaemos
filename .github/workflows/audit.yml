@@ -1,0 +1,163 @@
+# dependency audits for every language in the repository.
+#
+# it runs in two ways: CI calls it with the areas a change touched. A weekly schedule runs
+# every area, so a new advisory in a dependency that nobody has changed still shows up. A
+# scheduled failure is a red run on main and an email to the people who watch the repository.
+# it is a separate workflow so that its schedule does not start deploy.yml, which runs after every
+# completed CI run on main.
+#
+# the README next to this file says what fails the build and why. Third-party actions are pinned
+# to a full commit: see README.md.
+
+name: Audit
+
+on:
+  workflow_call:
+    inputs:
+      python:
+        type: boolean
+        default: true
+      frontend:
+        type: boolean
+        default: true
+      discord:
+        type: boolean
+        default: true
+      rust:
+        type: boolean
+        default: true
+      go:
+        type: boolean
+        default: true
+  schedule:
+    # Monday 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+# default: no permissions - each job declares only what it needs.
+permissions: {}
+
+jobs:
+  audit-python:
+    name: Audit Python (pip-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.python }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit==2.10.1
+
+      # the lock file names every package the production image installs. pip-audit has no
+      # severity filter, so any known vulnerability in it fails the job
+      - name: Audit the backend lock
+        run: pip-audit -r backend/requirements.lock --require-hashes --disable-pip
+
+  audit-node:
+    name: Audit Node (npm audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.frontend || inputs.discord }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      # high and critical advisories in the packages that ship fail the job. Packages that only
+      # build or test the code are left out of the gate. --package-lock-only reads the lock file
+      # and needs no install
+      - name: Audit the dashboard
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.frontend }}
+        working-directory: frontend
+        run: npm audit --package-lock-only --omit=dev --audit-level=high
+
+      - name: Audit the Discord worker
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.discord }}
+        working-directory: discord/worker
+        run: npm audit --package-lock-only --omit=dev --audit-level=high
+
+  audit-rust:
+    name: Audit Rust (cargo-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.rust }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Cache cargo-audit
+        id: cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo-tools
+          key: cargo-audit-${{ runner.os }}-0.23.0
+
+      - name: Install cargo-audit
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo install cargo-audit --version 0.23.0 --locked --root ~/.cargo-tools
+
+      # fails on any advisory that names a vulnerability in Cargo.lock. Warnings (unmaintained
+      # or yanked crates) are printed and do not fail the job
+      - name: Audit the edge gateway
+        working-directory: edge
+        run: ~/.cargo-tools/bin/cargo-audit audit
+
+  audit-go:
+    name: Audit Go (govulncheck)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.go }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          # the same patched toolchain as the release. go.mod's own version (1.24) is the oldest
+          # that may build the code and its standard library has known vulnerabilities
+          go-version: "1.27.4"
+          cache: false
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.10.0
+
+      # fails only when the code can reach a vulnerable function, which is what govulncheck reports
+      - name: Audit phaemosctl
+        working-directory: client/go
+        run: govulncheck ./...

@@ -1,21 +1,24 @@
-# gitleaks secret scanning - runs on every push to main and every pull request.
+# gitleaks secret scanning.
 #
-# scans the working tree for hard-coded credentials, API keys and secrets.
-# exits with code 1 if any leak is found, failing the workflow.
+# ci.yml calls it, so the result is part of the one required check `CI passed`. It also runs by
+# itself every Monday and on demand, over the whole history.
 #
-# the gitleaks binary is installed directly rather than via the action wrapper
-# to avoid requiring a paid licence for SARIF upload on private repositories.
+# it scans the commits of the change and not only the final files, so a secret that was added in
+# one commit and removed in the next is still found. It then scans the working tree.
 #
-# the action used for checkout is pinned to a full commit SHA to prevent
-# supply-chain attacks via mutable tags.
+# the gitleaks binary is installed directly rather than through the action wrapper to avoid a
+# paid licence for SARIF upload on private repositories. It is pinned to a version and to the
+# SHA-256 in that release's own checksums file. The job stops when they do not match. To
+# update, change the version and the checksum together (the checksum is in
+# gitleaks_<version>_checksums.txt on the release page).
 
 name: Gitleaks Scan
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
 
 # least-privilege token - read-only access to repository contents
 permissions:
@@ -25,24 +28,36 @@ jobs:
   gitleaks:
     name: Gitleaks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      # checkout the repository content for scanning
+      # the whole history, so every commit of a change can be scanned
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-      # download a pinned gitleaks binary from the official releases page.
-      # extracting to /tmp first then moving to /usr/local/bin avoids
-      # writing directly to a privileged directory from a pipe.
       - name: Install Gitleaks
+        env:
+          GITLEAKS_VERSION: "8.30.1"
+          GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
         run: |
           curl -sSfL --retry 6 --retry-all-errors --retry-delay 10 --max-time 120 \
             -o /tmp/gitleaks.tar.gz \
-            "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz"
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c - || {
+            echo "the gitleaks download does not match its published checksum: stopping" >&2
+            exit 1
+          }
           tar -xz -C /tmp -f /tmp/gitleaks.tar.gz gitleaks
           sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
 
-      # scan working tree files only (--no-git) for hard-coded credentials.
-      # --redact masks the actual secret value in output to avoid logging it.
       - name: Run Gitleaks
-        run: gitleaks detect --no-git --redact --exit-code=1
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: bash infra/scripts/run-gitleaks.sh

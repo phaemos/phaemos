@@ -7,6 +7,9 @@ contact_links:
   - name: Questions and discussion
     url: https://github.com/phaemos/phaemos/discussions
     about: Setup questions, usage questions and feature ideas.
+  - name: Community chat
+    url: https://discord.gg/C6WRDzSrG
+    about: Quick questions and show and tell on the Discord server. Use /ticket there for anything private.
   - name: Security vulnerability
     url: https://github.com/phaemos/phaemos/security/policy
     about: Report privately following SECURITY.md, never a public issue.

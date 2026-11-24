@@ -24,11 +24,24 @@ Behaviour that is not acceptable includes:
 - Any conduct that would reasonably be considered inappropriate in a
   professional setting.
 
+## Scope
+
+This code applies to every PHAEMOS repository and issue and pull request and discussion and to the PHAEMOS community Discord server. It also applies when someone represents PHAEMOS in public.
+
+## Reporting
+
+- **On GitHub:** email [contact@phaemos.com](mailto:contact@phaemos.com) with links to what happened.
+- **On the Discord server:** use the report option on a message or type `/report`. For an account matter or a privacy matter or a conversation you would rather keep private, type `/ticket`. Only you and the moderators can read it.
+- **About a moderator or maintainer:** write to [contact@phaemos.com](mailto:contact@phaemos.com) instead of using `/report` or `/ticket`.
+- **Security problems:** never use a report or a ticket. Follow [SECURITY.md](SECURITY.md).
+
 ## Enforcement
 
-Instances of unacceptable behaviour may be reported by emailing
-[contact@phaemos.com](mailto:contact@phaemos.com). All reports will be reviewed and
-investigated promptly and fairly.
+We aim to look at every report within two days. Nobody is on call so a weekend can take longer. Reports are handled in confidence and only the people who need to know see them.
+
+We start with a reminder. After that we may remove content or pause someone's ability to post or block them from a repository or remove them from the server. Serious harm skips the first steps.
+
+To question a decision write to [contact@phaemos.com](mailto:contact@phaemos.com). A different person looks at it where that is possible.
 
 ## Attribution
 

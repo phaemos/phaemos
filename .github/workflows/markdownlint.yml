@@ -1,7 +1,13 @@
 name: Markdown Lint
 
+# default: read-only access to the repository contents
 permissions:
   contents: read
+
+# a newer push to the same pull request replaces the run in progress
+concurrency:
+  group: markdownlint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 on:
   push:
@@ -16,14 +22,19 @@ jobs:
   markdownlint:
     name: Lint markdown files
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Run markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v25.0.0
+        uses: DavidAnson/markdownlint-cli2-action@696eb3f2509270d7b882d2aa68347bc676e7af34 # v25.0.0
         with:
           globs: |
             **/*.md
+            !**/node_modules/**
+            !frontend/content/legal/**
           config: '.markdownlint.json'

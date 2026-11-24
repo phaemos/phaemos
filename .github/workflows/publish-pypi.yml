@@ -1,0 +1,107 @@
+# publishes the Python client to PyPI after a person has published a release.
+#
+# release.yml only creates a DRAFT, so the files have been looked at by the time this runs. It
+# takes the release's own files, checks their checksums and their build provenance and uploads
+# exactly those. Nothing is rebuilt here.
+#
+# off unless the repository variable PUBLISH_PYPI is "true". It uses trusted publishing, so no
+# token exists anywhere. The environment `pypi` must exist with required reviewers and a
+# deployment rule limited to v* tags before the variable is turned on: see
+# .github/workflows/README.md. A PyPI version can be uploaded once and never replaced.
+#
+# this workflow has never run on a hosted runner.
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+# default: no permissions - each job declares only what it needs.
+permissions: {}
+
+concurrency:
+  group: publish-pypi-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  verify-files:
+    name: Verify the release files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # a pre-release is never uploaded. PUBLISH_PYPI must be "true"
+    if: ${{ vars.PUBLISH_PYPI == 'true' && !github.event.repository.fork && !github.event.release.prerelease }}
+
+    permissions:
+      contents: read # downloads the release's files
+      attestations: read # reads their build provenance
+
+    steps:
+      - name: Download and verify
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_REF: ${{ github.ref }}
+          EVENT_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "the release tag '${TAG}' is not a final release tag (vX.Y.Z): nothing is published" >&2
+            exit 1
+          fi
+          # the commit is the one the event carries (the last commit of the tagged release) and the
+          # ref must be this tag, so nothing is re-read from a tag that could have moved
+          if [ "${EVENT_REF}" != "refs/tags/${TAG}" ]; then
+            echo "the event ref ${EVENT_REF} is not the release tag: nothing is published" >&2
+            exit 1
+          fi
+          mkdir files
+          cd files
+          gh release download "${TAG}" --repo "${REPOSITORY}" --pattern 'phaemos_client-*' --pattern SHA256SUMS
+
+          # the checksums file must name both Python files and they must match it
+          grep -c ' phaemos_client-' SHA256SUMS | grep -qx 2 || { echo "SHA256SUMS does not list exactly the sdist and the wheel" >&2; exit 1; }
+          grep ' phaemos_client-' SHA256SUMS | sha256sum -c -
+
+          # the provenance must say that release.yml built them from this tag and this commit
+          for file in phaemos_client-*; do
+            gh attestation verify "${file}" \
+              --repo "${REPOSITORY}" \
+              --signer-workflow "${REPOSITORY}/.github/workflows/release.yml" \
+              --source-ref "refs/tags/${TAG}" \
+              --source-digest "${EVENT_SHA}"
+          done
+          mkdir ../dist
+          cp phaemos_client-* ../dist/
+
+      - name: Keep the verified files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: verified-python-files
+          path: dist/
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: verify-files
+    environment:
+      name: pypi
+      url: https://pypi.org/p/phaemos-client
+
+    permissions:
+      id-token: write # trusted publishing exchanges this for a short-lived upload token
+
+    steps:
+      - name: Download the verified files
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: verified-python-files
+          path: dist
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          packages-dir: dist/

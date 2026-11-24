@@ -9,7 +9,7 @@ PHAEMOS mixes software and hardware designs, so it carries two licences. This fi
 
 Each published component repository carries the licence file for its own folder, so a copy of `phaemos/hardware` is covered by CERN-OHL-S-2.0 and every other component repository by AGPL-3.0-or-later.
 
-Copyright (C) 2024-2026 Isaac Adjei <https://isaacadjei.me/> & <https://phaemos.com/>
+Copyright (c) 2026 Isaac Adjei <https://isaacadjei.me> & <https://phaemos.com>
 
 ## What the two licences mean in practice
 
@@ -25,7 +25,7 @@ PHAEMOS depends on third-party open-source packages that are pulled in at build 
 - `client/python/pyproject.toml` (Python packages for the SDK and simulator)
 - `client/go/go.mod` (Go modules for `phaemosctl`)
 - `edge/Cargo.toml` (Rust crates for the edge gateway)
-- `discord/requirements.txt` (Python packages for the Discord server setup script)
+- `discord/requirements-dev.txt` (Python packages for the Discord tooling tests and linting)
 - the firmware sources, which name their Arduino, STM32 HAL and MicroPython libraries in each node's README
 
 Each package is distributed under its own licence by its own authors.

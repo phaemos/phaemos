@@ -2,6 +2,9 @@
 
 The hardware behind PHAEMOS: wiring, schematics, PCB layouts and the parts inventory for the four sensor nodes.
 
+> [!IMPORTANT]
+> The boards are still in the works. We publish the finished designs here once the boards have been made and tested.
+
 > [!NOTE]
 > This folder is published to [phaemos/hardware](https://github.com/phaemos/hardware) as a read-only copy. Open issues and pull requests on [phaemos/phaemos](https://github.com/phaemos/phaemos).
 
