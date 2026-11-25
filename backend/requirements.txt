@@ -20,7 +20,7 @@ httpx==0.28.1
 authlib==1.9.9
 # two-step secrets are encrypted with Fernet. authlib already installs it. Declared here because the app imports it directly.
 # This is a lower bound for now. Pin an exact version after the first install as the other lines are. Check the advisories then.
-cryptography>=43.0.1
+cryptography>=50.0.2
 pyotp==2.12.1
 qrcode[pil]==8.2
 prometheus-fastapi-instrumentator==8.1.0
