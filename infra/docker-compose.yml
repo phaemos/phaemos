@@ -50,6 +50,8 @@ services:
         fi
         exec "$$@"
       - --
+    # an entrypoint set here clears the image's own CMD, so the command is given again. It matches backend/Dockerfile
+    command: ['uvicorn', 'app.main:app', '--host', '0.0.0.0', '--port', '8000', '--no-access-log', '--no-server-header', '--ws-max-size', '8192', '--ws-per-message-deflate', 'false', '--limit-concurrency', '150', '--no-proxy-headers']
     restart: unless-stopped
     ports:
       - '127.0.0.1:8000:8000'
