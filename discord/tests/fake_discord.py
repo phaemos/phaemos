@@ -75,12 +75,29 @@ ALL = sum(BITS.values())
 # what a new server gives to @everyone: wide, so tightening it is a real change
 DEFAULT_EVERYONE = sum(
     BITS[n]
-    for n in (
-        "create_instant_invite add_reactions view_channel send_messages embed_links attach_files "
-        "read_message_history mention_everyone use_external_emojis connect speak use_vad change_nickname "
-        "use_application_commands create_public_threads create_private_threads use_external_stickers "
-        "send_messages_in_threads use_embedded_activities send_tts_messages use_external_apps"
-    ).split()
+    for n in [
+        "create_instant_invite",
+        "add_reactions",
+        "view_channel",
+        "send_messages",
+        "embed_links",
+        "attach_files",
+        "read_message_history",
+        "mention_everyone",
+        "use_external_emojis",
+        "connect",
+        "speak",
+        "use_vad",
+        "change_nickname",
+        "use_application_commands",
+        "create_public_threads",
+        "create_private_threads",
+        "use_external_stickers",
+        "send_messages_in_threads",
+        "use_embedded_activities",
+        "send_tts_messages",
+        "use_external_apps",
+    ]
 )
 
 TEXT, VOICE, CATEGORY, ANNOUNCEMENT, STAGE, FORUM = 0, 2, 4, 5, 13, 15
