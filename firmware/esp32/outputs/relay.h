@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include "relay_proof.h"
+
 // use a named enum for relay channels so call sites cannot accidentally pass
 // a raw GPIO number to triggerRelay - the type system catches the mistake.
 enum RelayChannel {
@@ -33,3 +35,13 @@ uint8_t relayStateMask();
 
 // relayRestore drives the relays to a saved state straight after initRelay() on a warm reset.
 void relayRestore(uint8_t mask);
+
+// a command is never taken as proof that a relay switched (see relay_proof.h). relaySetRailReader
+// gives the driver the relay rail's current meter. it returns false when it has no reading. with
+// none set, which is every board today, each relay switched on is reported unconfirmed.
+void relaySetRailReader(bool (*read)(int32_t *ma));
+
+// relayProof says whether relay ch was shown to pull in. relayUnconfirmedMask has bit n set for
+// relay n+1 commanded on and not confirmed.
+RelayProof relayProof(RelayChannel ch);
+uint8_t relayUnconfirmedMask();
