@@ -162,6 +162,26 @@ def test_create_admin_applies_the_same_password_rules_as_the_api(db, password):
     assert db.query(User).filter(User.email == "weak@example.com").first() is None
 
 
+def test_the_script_reports_the_new_admin_after_closing_its_session(db, monkeypatch, capsys):
+    from app.scripts import create_admin as script
+
+    class ClosingSession:
+        # the real session's close detaches what it loaded, which is what made the closing message fail
+        def __getattr__(self, name):
+            return getattr(db, name)
+
+        def close(self):
+            db.expire_all()
+            db.expunge_all()
+
+    answers = iter(["script@example.com"])
+    monkeypatch.setattr("builtins.input", lambda _prompt="": next(answers))
+    monkeypatch.setattr(script.getpass, "getpass", lambda _prompt="": "Passw0rd!x")
+    monkeypatch.setattr(script, "SessionLocal", ClosingSession)
+    assert script.main() == 0
+    assert "Created admin script@example.com." in capsys.readouterr().out
+
+
 def test_create_admin_refuses_a_bad_email(db):
     with pytest.raises(AdminNotCreated):
         create_admin(db, "not-an-email", "Passw0rd!x")
