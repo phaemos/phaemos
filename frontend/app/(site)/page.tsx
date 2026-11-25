@@ -128,7 +128,7 @@ export default function HomePage() {
           </p>
           <SensorTable />
           <p className="mt-4 max-w-[72ch] text-base text-surface-600 dark:text-surface-400">
-            The Nano and the Pico 2W also accept a BMP280, which has no humidity element. The nodes are designed and not yet built. They are planned on development boards and breakouts first and the boards that would carry them are still being designed.
+            The Nano and the Pico 2W also accept a BMP280, which has no humidity element. The nodes are designed and not yet built. The carrier board for each node is fully designed and checked and waits to be manufactured.
           </p>
         </div>
       </section>
