@@ -34,7 +34,7 @@ export default function AboutPage() {
             The software runs end to end today: ingest, storage, scoring, alerts, tickets and the dashboard. It runs on simulated readings, because the sensor nodes are not yet wired to machines.
           </p>
           <p>
-            The firmware for all four node types is in the repository. The nodes are designed and not yet built. The plan is to prototype on development boards and breakouts. The boards that would carry them are still being designed. The model has not yet been trained on readings from a real machine.
+            The firmware for all four node types is in the repository. The nodes are designed and not yet built. The carrier board for each node is fully designed and checked and waits to be manufactured. The model has not yet been trained on readings from a real machine.
           </p>
         </Prose>
       </Section>
