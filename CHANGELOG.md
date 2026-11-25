@@ -7,8 +7,6 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased]
-
 ## [2.6.0] - 2026-11-25
 
 Adds production deployment files plus email and text alerts through Resend and Brevo, with limits on how often an alert repeats.
