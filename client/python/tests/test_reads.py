@@ -3,7 +3,7 @@ import json
 import httpx
 import pytest
 
-from phaemos_client import api
+from phaemos_client import __version__, api
 from phaemos_client.api import ApiError, PhaemosClient, exit_code
 from phaemos_client.simulator import main
 
@@ -310,7 +310,7 @@ def test_the_simulator_reports_an_unreachable_server_in_one_line(monkeypatch, ca
 def test_version_and_the_new_names(capsys, monkeypatch):
     with pytest.raises(SystemExit) as caught:
         main(["--version"])
-    assert caught.value.code == 0 and "phaemos-sim 0.1.0" in capsys.readouterr().out
+    assert caught.value.code == 0 and f"phaemos-sim {__version__}" in capsys.readouterr().out
     monkeypatch.setenv("PHAEMOS_URL", "http://127.0.0.1:1")
     monkeypatch.setenv("PHAEMOS_DEVICE_KEY", KEY)
     monkeypatch.delenv("PHAEMOS_API_KEY", raising=False)
