@@ -17,7 +17,7 @@ numpy==2.5.5
 joblib==1.6.0
 httpx==0.28.1
 # authlib 1.9.1 is the first release with every published authlib advisory fixed, so keep it at or above
-authlib==1.9.9
+authlib==1.9.10
 # two-step secrets are encrypted with Fernet. authlib already installs it. Declared here because the app imports it directly.
 # This is a lower bound for now. Pin an exact version after the first install as the other lines are. Check the advisories then.
 cryptography>=50.0.2
