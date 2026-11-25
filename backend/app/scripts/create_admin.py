@@ -65,13 +65,14 @@ def main() -> int:
         return 1
     db = SessionLocal()
     try:
-        user = create_admin(db, email, password)
+        # the address is read while the session is open: once it closes the saved user can no longer load it
+        created = create_admin(db, email, password).email
     except AdminNotCreated as exc:
         print(f"Not created: {exc}", file=sys.stderr)
         return 1
     finally:
         db.close()
-    print(f"Created admin {user.email}.")
+    print(f"Created admin {created}.")
     return 0
 
 
