@@ -26,9 +26,9 @@ apscheduler==3.11.3 \
     --hash=sha256:bbeb2ec02d23d3c06a6c07ed7f0f3939ada6680eb121fae809a69bb42c537a30 \
     --hash=sha256:cd2fcc9330039a81a5893472ad49facf23a6d5604cbe1d918c835c6de7834d5a
     # via -r requirements.txt
-authlib==1.9.9 \
-    --hash=sha256:0199649865fefb4304fc57683eaebb15614523073e41e09d98c72f3268ce5cbc \
-    --hash=sha256:cca3dffa51c8d80d6df19aee2279e47219dc996f5a527c06ac2e39d0757c99ef
+authlib==1.9.10 \
+    --hash=sha256:c62d10e1b23945c6d4c578a16170bfefe4879bd23d4be62edea494993dce70aa \
+    --hash=sha256:f7453c4a3f5975f94cc55223c4d48ff9c7d8d3b4e3d727ed2549edaeb9b85d50
     # via -r requirements.txt
 bcrypt==5.0.0 \
     --hash=sha256:046ad6db88edb3c5ece4369af997938fb1c19d6a699b9c1b27b0db432faae4c4 \

@@ -8,4 +8,4 @@ pytest-cov==7.1.0
 # pytest-asyncio needed for async FastAPI endpoint tests
 pytest-asyncio==1.5.0
 # the deploy guard test reads the compose file without Docker
-PyYAML==6.0.2
+PyYAML==6.0.4
