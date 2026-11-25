@@ -2,8 +2,10 @@
 
 The hardware behind PHAEMOS: wiring, schematics, PCB layouts and the parts inventory for the four sensor nodes.
 
+![The ESP32 primary node board, rev A, rendered at an angle](images/esp32-node-rev-a-angle.png)
+
 > [!IMPORTANT]
-> The boards are still in the works. We publish the finished designs here once the boards have been made and tested.
+> All four node boards are fully designed and waiting to be manufactured. None has been built or tested yet. The pictures here are renders of the finished designs. We publish the KiCad files, the Gerbers and the full bill of materials once the boards have been made and tested.
 
 > [!NOTE]
 > This folder is published to [phaemos/hardware](https://github.com/phaemos/hardware) as a read-only copy. Open issues and pull requests on [phaemos/phaemos](https://github.com/phaemos/phaemos).
@@ -14,6 +16,7 @@ The hardware behind PHAEMOS: wiring, schematics, PCB layouts and the parts inven
 | [`schematics/`](schematics/) | Proteus simulation projects for each node, with the KiCad schematics alongside once they are drawn |
 | [`pcb/`](pcb/) | PCB layout notes and Gerber export guidance per node |
 | [`inventory/`](inventory/) | Parts owned and parts still to buy |
+| [`images/`](images/) | Renders of the four boards and the three printed cases |
 
 ## The four nodes
 
@@ -29,14 +32,25 @@ Every sensor with its interface, address and expected range is in the [sensor re
 > [!WARNING]
 > The Arduino Nano uses 5 V logic and the ESP32 uses 3.3 V. The Nano's TX line must reach the ESP32 through a level shifter or a resistor divider, as shown in the [Nano firmware guide](https://github.com/phaemos/phaemos/tree/main/firmware/arduino_nano). Wiring it straight across can damage the ESP32's RX pin.
 
-## Phase plan
+## Where the design stands
 
-- **Phase 1 (current):** breadboard prototyping, getting all four nodes posting data and verifying every sensor
-- **Phase 2:** circuit simulation in Proteus for all four nodes, then schematic capture in KiCad
-- **Phase 3:** PCB layout in KiCad, with boards ordered from JLCPCB or PCBWay
-- **Phase 4:** enclosures, 3D printed, laser cut or CNC machined depending on the node
+- **Designed:** each node has its own carrier board, drawn and laid out in KiCad 10. Every schematic passes the electrical rules check and every board passes the design rules check.
+- **Simulated:** the power input, reverse protection, level shifters, drivers and sensor supplies of all four boards were simulated in LTspice before ordering. The simulations found one real fault on the ESP32 board that the rule checks had passed. It was fixed and checked again.
+- **Cases:** printed cases for the Nano, Pico and Black Pill nodes are designed and not yet printed.
+- **Next:** the boards are made, then each node is brought up on the bench and its sensors are checked on a running machine.
 
-The tasks for each phase are in the [Hardware milestone](https://github.com/phaemos/phaemos/milestone/4).
+The tasks are in the [Hardware milestone](https://github.com/phaemos/phaemos/milestone/4).
+
+## Pictures
+
+| | |
+| --- | --- |
+| ![The ESP32 primary node board from above](images/esp32-node-rev-a-top.png) | ![The Black Pill node board at an angle](images/stm32-node-rev-a-angle.png) |
+| ESP32 primary node | Black Pill vibration node |
+| ![The Arduino Nano node board at an angle](images/nano-node-rev-a-angle.png) | ![The Pico 2 W node board at an angle](images/pico-w-node-rev-a-angle.png) |
+| Nano auxiliary node | Pico 2 W ambient node |
+
+More views of each board and case are on the node pages in [`pcb/`](pcb/).
 
 ## Licence
 

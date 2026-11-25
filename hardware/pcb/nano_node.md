@@ -1,6 +1,24 @@
-# PCB Layout - nano_node
+# Arduino Nano node carrier board
 
-**Status: Placeholder** - PCB design is Phase 3. Complete breadboard testing and schematic capture first.
+The carrier board for the auxiliary sensor node, an Arduino Nano.
 
-When ready, refer to `../README.md` for the full layout workflow and Gerber export guide.
-Wiring reference: `../wiring/nano_pinout.md` (or `pico_pinout.md` for pico_w).
+![The Arduino Nano node board, rev A, rendered at an angle](../images/nano-node-rev-a-angle.png)
+
+> [!IMPORTANT]
+> Rev A is fully designed and waiting to be manufactured. It has not been built or tested. We publish its KiCad files and Gerbers once boards have been made and tested.
+
+## Rev A
+
+- 81.28 mm by 63.5 mm on two layers, 1.6 mm board
+- Schematic passes the electrical rules check and the board passes the design rules check
+- Every pin compared with the firmware and the [wiring guide](../wiring/nano_pinout.md)
+- Power input and protection simulated in LTspice
+
+## Pictures
+
+| | |
+| --- | --- |
+| ![The board from above](../images/nano-node-rev-a-top.png) | ![The underside of the board](../images/nano-node-rev-a-bottom.png) |
+| Top | Underside |
+| ![The printed case](../images/nano-node-case-rev-a.png) | ![The printed case from above](../images/nano-node-case-rev-a-top.png) |
+| Case, designed and not yet printed | Case, top |
