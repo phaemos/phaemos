@@ -1,6 +1,6 @@
 [project]
 name = "phaemos-client"
-version = "0.1.0"
+version = "2.6.0"
 description = "Python client for the PHAEMOS API and a telemetry simulator for the four sensor nodes"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
