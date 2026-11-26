@@ -55,7 +55,7 @@ Check the BOJACK 37-values kit and ELEGOO Mega Starter Kit first - they likely c
 
 | Component | Qty | Approx cost | Notes |
 |---|---|---|---|
-| Logic level shifter 3.3V to 5V | 2 | ~£3 | Nano UART (5V) to ESP32 UART (3.3V) - required for inter-board comms |
+| BSS138 logic level shifter, 3.3V to 5V (non-inverting, 100 ohm in series and 10 kohm to 5V) | 1 | ~£3 | Into the Nano's D0 from the ESP32. Out of the Nano's D1 the link needs only a 10 kohm over 20 kohm resistor divider (3.33V at the ESP32), not a shifter. Required for inter-board comms |
 | AS5600 diametrically magnetised magnet | 1 | ~£2-5 | **Must be diametric, not axial** - shaft angle sensing will not work without the correct magnet type |
 
 ---
