@@ -1,72 +1,83 @@
 # Arduino Nano Secondary Node - Pin Assignment and Wiring Guide
 
-This document covers all wiring for the Arduino Nano acting as a secondary environmental sensor node in Phaemos. The Nano runs at 5V logic and 16 MHz.
+This guide covers the wiring of the Arduino Nano that acts as a secondary environmental node. The Nano runs at 5 V
+logic and 16 MHz. What the firmware does with each pin is in `firmware/arduino_nano/README.md` and that file is the
+authority where the two differ.
 
----
+The numbers below describe the carrier board. A build with jumper wires and no carrier board needs the same circuits
+(the level shifting, the pull-ups and the dividers) built by hand.
 
-## Section 1: BME280 - I2C Connection
+## Pin summary
 
-The Nano uses A4 for SDA and A5 for SCL on the hardware I2C bus (Wire library). Most BME280 breakouts include an onboard AMS1117-3.3 regulator so you can power them from the Nano's 3.3V pin or from 5V if the breakout has its own regulator.
-
-| BME280 Pin | Nano Pin | Notes |
+| Nano pin | Used for | Notes |
 |---|---|---|
-| VCC | 3.3V (pin 17) | Use the Nano's regulated 3.3V output; do not exceed 3.6V |
+| A0 | LDR divider | 5 V, LDR, A0, 10 kohm, GND |
+| A1 | FC-28 analogue output | Read only while the probe is powered |
+| A4 | I2C data (SDA) | Through the board's level shifter to the air sensor |
+| A5 | I2C clock (SCL) | Through the board's level shifter to the air sensor |
+| D7 | Probe power | Drives the FC-28 supply when jumper JP1 is set to 2-3 |
+| D0 (RX) | Serial in from the hub | Through the board's transistor level shifter |
+| D1 (TX) | Serial out to the hub | Through the board's resistor divider |
+
+## Section 1: BME280 or BMP280 - I2C connection
+
+The air sensor sits on the 3.3 V side of the board. A4 and A5 run at 5 V on the Nano side and go through the board's
+own level shifters and the pull-ups on the sensor side are on the board. Do not add pull-ups of your own on a carrier
+board. The Wire library also switches on the Nano's internal pull-ups to 5 V on A4 and A5, so the breakout must not be
+wired straight to the Nano pins.
+
+| Breakout pin | Connection | Notes |
+|---|---|---|
+| VCC | 3.3 V | The breakout is a 3.3 V part. Do not power it from 5 V |
 | GND | GND | Common ground |
-| SDA | A4 | Hardware I2C SDA; place 4.7k pull-up to 3.3V |
-| SCL | A5 | Hardware I2C SCL; place 4.7k pull-up to 3.3V |
-| SDO (addr) | GND | Sets I2C address to 0x76; tie to 3.3V for 0x77 |
-| CSB | 3.3V | Forces I2C mode (active HIGH) |
+| SDA | A4 through the level shifter | Pull-up to 3.3 V on the sensor side |
+| SCL | A5 through the level shifter | Pull-up to 3.3 V on the sensor side |
+| SDO | GND | Address 0x76. Tie to 3.3 V for 0x77 |
+| CSB | 3.3 V | Selects I2C mode |
 
----
+The firmware tries 0x76 first and then 0x77. The chip ID tells the parts apart (0x60 for a BME280 and 0x58 for a
+BMP280). A bare jumper-wire build without the carrier board needs the same two level shifters and 3.3 V pull-ups.
 
-## Section 2: LDR - Analog Light Sensor (A0)
+## Section 2: LDR - analogue light sensor (A0)
 
-A simple voltage divider using the LDR and a 10k fixed resistor.
+A voltage divider of the LDR and a 10 kohm fixed resistor.
 
 | Connection | Details |
 |---|---|
-| Top of divider | 5V (Nano Vcc) |
-| LDR | From 5V to A0 |
-| 10k resistor | From A0 to GND |
-| Signal pin | A0 |
+| Top of divider | 5 V |
+| LDR | From 5 V to A0 |
+| 10 kohm resistor | From A0 to GND |
 
-Higher ambient light = lower LDR resistance = higher voltage at A0 = higher ADC reading (out of 1023 at 5V reference).
-Darker conditions = higher LDR resistance = lower voltage = lower ADC reading.
+Brighter light means lower LDR resistance, a higher voltage at A0 and a higher reading (0 to 1023 against the 5 V
+supply).
 
-The Nano ADC is referenced to 5V by default. analogRead(A0) returns 0-1023 mapping to 0-5V.
+## Section 3: FC-28 soil moisture sensor (A1)
 
----
-
-## Section 3: FC-28 Soil Moisture Sensor (A1)
-
-| FC-28 Pin | Nano Pin | Notes |
+| FC-28 pin | Connection | Notes |
 |---|---|---|
-| VCC | 5V or 3.3V | 5V gives better signal range; 3.3V reduces corrosion on probes |
+| VCC | 5 V or D7 | Chosen by solder jumper JP1: 1-2 is 5 V all the time (as made) and 2-3 is D7 |
 | GND | GND | Common ground |
-| AO (analog out) | A1 | Reads as 0-1023; lower reading = more moisture |
-| DO (digital out) | Not connected | Threshold comparator output; not needed for analog mode |
+| AO | A1 | A lower reading means wetter soil. The firmware reports `WATER:1` below 500 |
+| DO | Not connected | The comparator output is not used |
 
-Calibrate by taking a reading in dry air (maximum value, around 1023) and submerged in water (minimum value, around 300-400). Map the range in firmware.
+With JP1 on 2-3 the firmware drives D7 high for 50 ms before each read and low afterwards. A Nano pin is limited to
+20 mA, so measure the module's current before moving the jumper. A 100 kohm pull-up on the board means an unplugged
+probe reads high, which is the same as dry soil, so an unplugged probe cannot be told from a dry one and never
+reports water. Calibrate on the finished board with the probe in dry air and in a glass of water.
 
----
+## Section 4: Serial connection to the hub
 
-## Section 4: Serial Connection to ESP32
+The Nano uses its hardware UART (D1 to send and D0 to receive) at 9600 baud. It sends one checksummed line every 2
+seconds and answers the hub's `PING:<n>` with `PONG:<n>`, so both directions are used.
 
-The Nano uses its hardware UART (TX=D1, RX=D0) to send data to the ESP32 UART1 (RX=GPIO16, TX=GPIO17) at 9600 baud.
+| Nano pin | Direction | Circuit on the carrier board | Level at the far end |
+|---|---|---|---|
+| D1 (TX) | Nano to hub | Resistor divider: 10 kohm from D1 to the hub's receive pin and 20 kohm from there to GND | 3.33 V for a high. Source resistance about 6.7 kohm |
+| D0 (RX) | Hub to Nano | Transistor level shifter: a BSS138 with 100 ohm in series and 10 kohm to 5 V. It does not invert | D0 sees 5.0 V for a high and about 0.5 V for a low |
+| GND | Both | Common ground | Required |
 
-| Nano Pin | Level Shifter | ESP32 Pin | Direction | Notes |
-|---|---|---|---|---|
-| D1 (TX) | 5V side IN -> 3.3V side OUT | GPIO16 (UART1 RX) | Nano -> ESP32 | See voltage divider details below |
-| D0 (RX) | 3.3V side IN -> 5V side OUT | GPIO17 (UART1 TX) | ESP32 -> Nano | ESP32 outputs 3.3V which Nano reads as HIGH correctly |
-| GND | GND | GND | - | Common ground required |
-
-**Voltage divider warning:** The Arduino Nano TX pin (D1) outputs 5V logic. The ESP32 GPIO16 input is 3.3V tolerant with a maximum of 3.6V. Connecting 5V directly will damage the ESP32 over time.
-
-Use a simple resistor voltage divider on the Nano TX line:
-- 10k ohm resistor from Nano D1 to the junction point
-- 20k ohm resistor from the junction point to GND
-- Junction point connects to ESP32 GPIO16
-
-This divides 5V to: 5V x 20k / (10k + 20k) = 3.33V, which is within the ESP32 safe input range.
-
-The return path (ESP32 TX to Nano RX) does not need a level shifter because the Nano recognises 3.3V as a valid HIGH on a 5V TTL input.
+The divider keeps the Nano's 5 V output below the 3.6 V the hub's input tolerates. The low level on D0 is about 0.5 V and
+not 0 V, which is well under the 1.5 V the Nano needs to read a low. A bare jumper-wire build without the carrier board
+needs the same two circuits. D0 is also driven by the Nano's USB-to-serial chip through 1 kohm and D1 feeds its input, so a ping arriving
+during an upload could corrupt the upload. Whether the link can stay attached while uploading over USB is a bench check and
+not a known fact: unplug it to upload.
