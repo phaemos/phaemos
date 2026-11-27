@@ -48,7 +48,7 @@ Every file has build provenance attached by GitHub. The backend and the dashboar
 8. **Publish it.** Open the draft under Releases, read the notes and the file list and press Publish. Publishing posts the release to the community channel.
 
 > [!IMPORTANT]
-> The `Release` workflow never publishes. A tag creates a draft and a person decides. The only automatic step after publishing is the optional PyPI upload, which runs after you publish and checks the files again first.
+> The `Release` workflow never publishes. A tag creates a draft and a person decides. The automatic steps after publishing are the backend image on GitHub Container Registry and the optional PyPI upload, which checks the files again first.
 
 ## Checking the draft
 
@@ -75,6 +75,19 @@ The same tag built twice gives the same `phaemosctl` binary and the same Python 
 
 Off by default and separate from the release workflow. `publish-pypi.yml` runs when you publish the draft and only when the repository variable `PUBLISH_PYPI` is `true`. It downloads the release's own `phaemos_client` files, checks them against `SHA256SUMS` and against their build provenance for that tag and commit and then waits for a reviewer to approve the `pypi` environment before it uploads through trusted publishing. No token is stored. The one-off set-up is in [the workflows README](https://github.com/phaemos/phaemos/blob/main/.github/workflows/README.md#publishing-to-pypi).
 
+## The backend image
+
+Publishing the draft also starts `publish-image.yml`. It builds the backend at the release's commit for amd64 and arm64 and pushes `ghcr.io/phaemos/phaemos-backend:X.Y.Z` (plus `X.Y` and `latest`) with an SBOM and a signed build provenance attestation. Before running a pulled image, check it:
+
+```bash
+gh attestation verify oci://ghcr.io/phaemos/phaemos-backend:X.Y.Z \
+  --repo phaemos/phaemos \
+  --signer-workflow phaemos/phaemos/.github/workflows/publish-image.yml \
+  --source-ref refs/tags/vX.Y.Z
+```
+
+The deployment guide still builds the image on the server from a verified signed tag. The published image is an optional shortcut for anyone who prefers to pull.
+
 ## Rolling back
 
 Work from the least permanent step to the most.
@@ -82,6 +95,7 @@ Work from the least permanent step to the most.
 - **The workflow failed or the draft is wrong and nothing is public.** Delete the draft release. The tag stays. The workflow refuses to create a second release for a tag that already has one, so delete the draft before a rerun. Fix the cause on `main` and release the next patch version. Do not move a tag that has been pushed: people and caches may already hold it.
 - **The release is published and a file is wrong.** Switch the release back to a draft (Edit then Save draft) so it stops being offered. Release the next patch version with the fix and say so in its notes.
 - **The release is published and unsafe.** Switch it to a draft and release a fixed patch version as soon as it is ready. If a secret was in a file, rotate the secret first.
+- **The backend image is wrong.** Delete that version under the repository's Packages, move `latest` back by publishing the fixed patch version and say so in its notes.
 - **The Python client reached PyPI.** A PyPI version cannot be replaced. Yank it on PyPI (it stays installable for people who pinned it and is no longer chosen) and publish the next version.
 - **A deploy of the release went wrong.** Releasing and deploying are separate, so this is a deploy rollback and not a release rollback. Follow [deployment.md](deployment.md).
 

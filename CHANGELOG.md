@@ -9,7 +9,11 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Keeps the parts inventory to one public list and trims the docs to what a user or a self-hoster needs.
+Publishes a signed backend image on each release, keeps the parts inventory to one public list and trims the docs to what a user or a self-hoster needs.
+
+### Added
+
+- Publishing a release pushes the backend image to GitHub Container Registry as `ghcr.io/phaemos/phaemos-backend` for amd64 and arm64, with an SBOM and a signed build provenance attestation. `docs/releases.md` shows how to verify it.
 
 ### Changed
 
