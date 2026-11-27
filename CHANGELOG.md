@@ -7,7 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased]
+## [2.7.0] - 2026-11-27
 
 Publishes a signed backend image on each release, halves the CI time, keeps the parts inventory to one public list and trims the docs to what a user or a self-hoster needs.
 
