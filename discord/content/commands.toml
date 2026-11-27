@@ -343,25 +343,25 @@ links = [{ label = "Support page", url = "https://github.com/phaemos/phaemos/blo
 key = "esp32-gateway"
 title = "ESP32 gateway"
 lines = ["The primary node. It reads the main sensors and sends the readings to the backend.", "Wire it from the pinout table and check the parts list before you order."]
-links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/esp32_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/esp32_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md" }]
 
 [[hardware]]
 key = "black-pill"
 title = "STM32 Black Pill"
 lines = ["The vibration node, built around the STM32 Black Pill board.", "Check the pinout before you connect a sensor."]
-links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/stm32_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/stm32_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md" }]
 
 [[hardware]]
 key = "arduino-nano"
 title = "Arduino Nano"
 lines = ["The secondary node, built around the Arduino Nano board.", "Check the voltage of every sensor against the board before you connect it."]
-links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/nano_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/nano_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md" }]
 
 [[hardware]]
 key = "pico-2w"
 title = "Pico 2W"
 lines = ["The ambient node, built around the Raspberry Pi Pico 2W board.", "Check the voltage of every sensor against the board before you connect it."]
-links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/pico_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }]
+links = [{ label = "Wiring table", url = "https://github.com/phaemos/phaemos/blob/main/hardware/wiring/pico_pinout.md" }, { label = "Schematic", url = "https://github.com/phaemos/phaemos/tree/main/hardware/schematics" }, { label = "Parts list", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md" }]
 
 [[hardware]]
 key = "wiring"
@@ -372,8 +372,8 @@ links = [{ label = "Wiring tables", url = "https://github.com/phaemos/phaemos/tr
 [[hardware]]
 key = "parts"
 title = "Parts"
-lines = ["What each build needs and what the project already owns.", "Ask in the hardware forum before you substitute a part."]
-links = [{ label = "Parts needed", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md" }, { label = "Hardware overview", url = "https://github.com/phaemos/phaemos/blob/main/hardware/README.md" }]
+lines = ["The parts we hold and the parts we still need, in one list.", "Ask in the hardware forum before you substitute a part."]
+links = [{ label = "Parts still to source", url = "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md#still-to-source" }, { label = "Hardware overview", url = "https://github.com/phaemos/phaemos/blob/main/hardware/README.md" }]
 
 [[hardware]]
 key = "pcb"

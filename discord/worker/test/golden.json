@@ -64,15 +64,15 @@
     "ephemeral": true
   },
   "hardware.arduino-nano": {
-    "content": "Arduino Nano\nThe secondary node, built around the Arduino Nano board.\nCheck the voltage of every sensor against the board before you connect it.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/nano_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "content": "Arduino Nano\nThe secondary node, built around the Arduino Nano board.\nCheck the voltage of every sensor against the board before you connect it.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/nano_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md>",
     "ephemeral": false
   },
   "hardware.esp32-gateway": {
-    "content": "ESP32 gateway\nThe primary node. It reads the main sensors and sends the readings to the backend.\nWire it from the pinout table and check the parts list before you order.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/esp32_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "content": "ESP32 gateway\nThe primary node. It reads the main sensors and sends the readings to the backend.\nWire it from the pinout table and check the parts list before you order.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/esp32_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md>",
     "ephemeral": false
   },
   "hardware.parts": {
-    "content": "Parts\nWhat each build needs and what the project already owns.\nAsk in the hardware forum before you substitute a part.\nParts needed: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>\nHardware overview: <https://github.com/phaemos/phaemos/blob/main/hardware/README.md>",
+    "content": "Parts\nThe parts we hold and the parts we still need, in one list.\nAsk in the hardware forum before you substitute a part.\nParts still to source: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md#still-to-source>\nHardware overview: <https://github.com/phaemos/phaemos/blob/main/hardware/README.md>",
     "ephemeral": false
   },
   "hardware.pcb": {
@@ -80,11 +80,11 @@
     "ephemeral": false
   },
   "hardware.pico-2w": {
-    "content": "Pico 2W\nThe ambient node, built around the Raspberry Pi Pico 2W board.\nCheck the voltage of every sensor against the board before you connect it.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/pico_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "content": "Pico 2W\nThe ambient node, built around the Raspberry Pi Pico 2W board.\nCheck the voltage of every sensor against the board before you connect it.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/pico_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md>",
     "ephemeral": false
   },
   "hardware.black-pill": {
-    "content": "STM32 Black Pill\nThe vibration node, built around the STM32 Black Pill board.\nCheck the pinout before you connect a sensor.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/stm32_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md>",
+    "content": "STM32 Black Pill\nThe vibration node, built around the STM32 Black Pill board.\nCheck the pinout before you connect a sensor.\nWiring table: <https://github.com/phaemos/phaemos/blob/main/hardware/wiring/stm32_pinout.md>\nSchematic: <https://github.com/phaemos/phaemos/tree/main/hardware/schematics>\nParts list: <https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md>",
     "ephemeral": false
   },
   "hardware.unknown": {
