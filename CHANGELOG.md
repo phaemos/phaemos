@@ -9,7 +9,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Publishes a signed backend image on each release, keeps the parts inventory to one public list and trims the docs to what a user or a self-hoster needs.
+Publishes a signed backend image on each release, halves the CI time, keeps the parts inventory to one public list and trims the docs to what a user or a self-hoster needs.
 
 ### Added
 
@@ -17,6 +17,7 @@ Publishes a signed backend image on each release, keeps the parts inventory to o
 
 ### Changed
 
+- CI takes about half as long. The anomaly model tests run in their own job beside the rest of the backend suite. A push to `main` runs only the parts it touched, like a pull request. A full run of every part happens weekly and on demand. A change to a publishing workflow or `CODEOWNERS` no longer starts every job. Python jobs reuse pip's download cache and the edge job reuses its cargo build.
 - CI runs the frontend job when `CHANGELOG.md` or one of the two backend files the frontend tests read changes. A changelog edit broke the site build on `main` because that job was skipped.
 - Routine tidy-up: the docs keep what a user or a self-hoster needs. The decision log, the development timeline, the feature checklist, the production checklist and the status page set-up leave the repository. So does the disabled Render deploy workflow. The deployment guide keeps a short status page section and a plain cost note. `split.yml` reads the two commit addresses from repository variables.
 - Routine tidy-up: the parts inventory is one list, `hardware/inventory/README.md`, with the parts in stock and the parts still to source grouped by type. It replaces `owned.md` and `needed.md`. The wiring guide and the Discord bot's hardware cards link to it.

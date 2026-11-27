@@ -7,7 +7,9 @@
 #
 # a skipped job reports as skipped and not as failed, so a wrong guess here hides a failure. The
 # script therefore decides to run too much and not too little:
-#   - anything that is not a pull request (a push to main or a manual run) runs every area
+#   - a push to main compares the push's first and last commits the same way. A push that
+#     cannot be compared (a new branch, a force push) runs every area
+#   - anything else (the weekly run, a manual run) runs every area
 #   - a path that matches no rule below runs every area. Only the paths listed as harmless run
 #     nothing
 #   - if the commits cannot be compared every area runs
@@ -34,11 +36,22 @@ emit() {
     done
 }
 
-if [ "${EVENT_NAME:-}" != "pull_request" ]; then
-    all
-    emit
-    exit 0
-fi
+case "${EVENT_NAME:-}" in
+    pull_request) ;;
+    push)
+        # a new branch or a force push has no usable first commit
+        if [ -z "${BASE_SHA:-}" ] || [[ "${BASE_SHA}" =~ ^0+$ ]]; then
+            all
+            emit
+            exit 0
+        fi
+        ;;
+    *)
+        all
+        emit
+        exit 0
+        ;;
+esac
 
 # bash cannot hold a null byte in a variable, so the list goes to a file
 list="$(mktemp)"
@@ -53,6 +66,19 @@ while IFS= read -r -d '' file; do
     matched=false
     case "${file}" in
         .github/ISSUE_TEMPLATE/* | .github/DISCUSSION_TEMPLATE/* | .github/PULL_REQUEST_TEMPLATE.md | .github/FUNDING.yml | .github/dependabot.yml) matched=true ;;
+        # the workflows job lints every workflow on every change and the secret scan always runs, so
+        # these need nothing more
+        .github/CODEOWNERS | .github/actionlint.yaml | .github/gitleaks.toml | .github/workflows/README.md \
+            | .github/workflows/codeql.yml | .github/workflows/markdownlint.yml | .github/workflows/split.yml \
+            | .github/workflows/publish-pypi.yml | .github/workflows/publish-image.yml \
+            | .github/workflows/biweekly-security-issue.yml) matched=true ;;
+        # the Discord tests read these two workflows
+        .github/workflows/discord-relay.yml | .github/workflows/release.yml)
+            hit[discord]=true
+            hit[scripts]=true
+            matched=true
+            ;;
+        # the CI workflows themselves and anything else under .github run everything
         .github/* | Makefile | infra/scripts/changed-areas.sh | infra/scripts/test-changed-areas.sh)
             all
             matched=true
