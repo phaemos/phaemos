@@ -39,13 +39,13 @@ Do the steps in order. Each one says what to click or type. Run commands from th
 5. **Keep the token out of files and shell history.** Store it in the macOS keychain. The command asks for the token itself, so it is never typed into the command line and never saved in your history:
 
    ```bash
-   security add-generic-password -s phaemos-discord-bot -a bot -w
+   security add-generic-password -s discord-bot-token -a bot -w
    ```
 
    Paste the token at the prompt. In each new terminal session load it for the commands that follow:
 
    ```bash
-   export DISCORD_BOT_TOKEN="$(security find-generic-password -s phaemos-discord-bot -a bot -w)"
+   export DISCORD_BOT_TOKEN="$(security find-generic-password -s discord-bot-token -a bot -w)"
    ```
 
    Never put it in a `.env` file, a script or a chat. `.env.example` lists the names only. The script does not read a `.env` file.

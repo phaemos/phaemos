@@ -39,7 +39,7 @@ By default the public site and the dashboard answer on one address and nothing b
 - Set both values for the Production environment only. On a preview deployment they send every dashboard and legal link to the live site.
 - The content security policy needs no change: it names the API origin only and both addresses share the policy. It allows `'unsafe-eval'` for the development server only.
 
-To try it locally without changing a system setting, start a second dev server on its own copy of the project (two `next dev` servers cannot share one `.next` folder) with both values set and send the `Host` header with `curl`: `curl -i -H "Host: dashboard.phaemos.test:3200" http://localhost:3200/about`. Sign-in across two real addresses (the cookie, the OAuth return and the refresh cookie) cannot be proved this way. Check it on the deployed addresses with `docs/deployment-checklist.md`.
+To try it locally without changing a system setting, start a second dev server on its own copy of the project (two `next dev` servers cannot share one `.next` folder) with both values set and send the `Host` header with `curl`: `curl -i -H "Host: dashboard.phaemos.test:3200" http://localhost:3200/about`. Sign-in across two real addresses (the cookie, the OAuth return and the refresh cookie) cannot be proved this way. Check it on the deployed addresses.
 
 ## Docker
 

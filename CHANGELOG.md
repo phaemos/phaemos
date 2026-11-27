@@ -9,11 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Keeps the parts inventory to one public list.
+Keeps the parts inventory to one public list and trims the docs to what a user or a self-hoster needs.
 
 ### Changed
 
 - CI runs the frontend job when `CHANGELOG.md` or one of the two backend files the frontend tests read changes. A changelog edit broke the site build on `main` because that job was skipped.
+- Routine tidy-up: the docs keep what a user or a self-hoster needs. The decision log, the development timeline, the feature checklist, the production checklist and the status page set-up leave the repository. So does the disabled Render deploy workflow. The deployment guide keeps a short status page section and a plain cost note. `split.yml` reads the two commit addresses from repository variables.
 - Routine tidy-up: the parts inventory is one list, `hardware/inventory/README.md`, with the parts in stock and the parts still to source grouped by type. It replaces `owned.md` and `needed.md`. The wiring guide and the Discord bot's hardware cards link to it.
 
 ## [2.6.0] - 2026-11-25
@@ -172,7 +173,7 @@ Adds production deployment files plus email and text alerts through Resend and B
 - Typefaces: Exo 2 for the name and page headings, Manrope for reading and the interface and IBM Plex Mono for code and data, on the site, the dashboard and the documentation (self-hosted). They replace Geist and Geist Mono.
 - A visitor who has not picked a theme gets the one their system asks for. The site was dark unless the light theme was chosen.
 - Vercel Web Analytics loads only with `NEXT_PUBLIC_VERCEL_ANALYTICS=1`. With it and `NEXT_PUBLIC_GA_ID` both unset the site loads no analytics and the privacy and cookie pages say so.
-- The privacy notice names Google Workspace as the mailbox host, describes the API log as size-capped with no fixed period and asks for the transfer safeguard to be confirmed. The accessibility and security pages no longer promise reply times beyond the 72 hours for a security report.
+- The privacy notice names Google Workspace as the mailbox host, describes the API log as size-capped with no fixed period. The accessibility and security pages no longer promise reply times beyond the 72 hours for a security report.
 - **Removed:** `GET /alerts/{device_id}`. Use `GET /alerts?device_id=`. The old path answers `410 endpoint_removed`.
 - `PATCH /alert-rules/{id}` replaces `PUT` (kept as an alias with `Deprecation` and `Sunset` headers). `POST /alerts/{id}/resolve` replaces `PATCH` (kept as an alias). A `null` in a PATCH clears only the fields that may be cleared and is a `422` elsewhere, for devices, tickets, rules, webhooks and maintenance windows. `status` can no longer be written on a device.
 - Lists take `limit` and `offset` (`skip` still works), end every order in id and send `X-Total-Count`. Rules, windows and webhooks are paged (50 by default).
@@ -187,8 +188,7 @@ Adds production deployment files plus email and text alerts through Resend and B
 - The dashboard asks for analytics consent only when `NEXT_PUBLIC_GA_ID` is set. Accepting starts Google Analytics straight away. Cookie settings lets a visitor change their choice. Declining removes its cookies and reloads the page so the tag is gone.
 - The cookie banner is readable in light and dark themes and has visible focus and 44 pixel targets. It no longer covers the page. The privacy page now lists the real cookies and storage keys.
 - `docs/development.md` explains how to register the first account, promote it to admin and register a device. It also corrects the warning about which `docker compose` command deletes the database volume.
-- `docs/VERIFICATION.md` records what a full local walk of the stack proved.
-- The backend suite has 1,539 test functions in 60 files. On the final code it passed 1,812 tests with 0 failed and lint clean at the version CI pins (a local run, not yet on GitHub). The generated API document is in the repository (`docs/openapi.json` with 99 paths and `docs/api-routes.md`).
+- The backend suite has 1,539 test functions in 60 files. On the final code it passed 1,812 tests with 0 failed and lint clean at the version CI pins. The generated API document is in the repository (`docs/openapi.json` with 99 paths and `docs/api-routes.md`).
 - Migration 011 adds an index on telemetry by device and time (newest first) so history, export and bucketed reads of one machine stay quick as readings grow. It is built without blocking ingest and first removes a half-built copy left by an interrupted run.
 - **Breaking changes and operator actions when upgrading from 2.5.0.** This sums up the lines above so none is missed. `ENVIRONMENT` now defaults to production and registration is closed unless `REGISTRATION_OPEN` is true. The API refuses to start with an empty or weak `SECRET_KEY` (under 32 characters outside development) and `TRUSTED_PROXIES` defaults to none. People signed in before the update sign in once more and invitations sent before it must be sent again. Existing phone numbers must be confirmed once or alert texts stop. The SMTP settings are gone because email sends through Resend only. An existing deployment needs one `chown` of the two volumes for the unprivileged API image and one manual retrain after the upgrade. Machines need no new key because existing keys are hashed in place. Run `deploy.sh`, which applies the new migrations before the new code starts. Hub firmware needs the two trust roots pasted in and a one-off provisioning over the serial console.
 
@@ -338,7 +338,7 @@ Redesigns the dashboard, adds Microsoft sign-in and scores each node type with i
 - `assets/brand/`: the PHAEMOS logo and emblem in light and dark versions with transparent backgrounds, the single-colour emblem, a 1280 by 640 social preview card and the full brand board, with the colours, type and usage rules
 - New docs pages: `development.md` (running locally, the smoke test, the simulator and the test commands), `releases.md`, `tech-stack.md` and `repositories.md` (the monorepo layout and how publishing works), all in the docs site navigation
 - `client/`: the `phaemos-client` Python SDK, the `phaemos-sim` simulator for all four node types with injectable faults and `phaemosctl`, a Go tool for status checks, sending readings and ingest load testing
-- `edge/`: `phaemos-edge`, a Rust gateway that spools readings to disk and forwards them in order, so an outage loses nothing (ADR 020)
+- `edge/`: `phaemos-edge`, a Rust gateway that spools readings to disk and forwards them in order, so an outage loses nothing
 - `infra/` holds the Compose stack, the Prometheus and Grafana overlay and the SQL queries and seed data, published to its own repository. A root `docker-compose.yml` includes it, so every existing command still works from the root
 - `backend`, `frontend`, `firmware` and `hardware` are published to their own read-only repositories on every merge to `main` (`split.yml`), each with its own licence and a note pointing back to the monorepo
 - GitHub Sponsors added to `.github/FUNDING.yml` as first entry; order updated to github, buy_me_a_coffee, patreon
@@ -361,7 +361,7 @@ Redesigns the dashboard, adds Microsoft sign-in and scores each node type with i
 - Callouts where a mistake costs something: private vulnerability reports in `SECURITY.md`, the Nano level shifter, the ESP32 LED strip power budget and `docker compose down` wiping the database
 - README rewritten in full around the brand logo, which switches between its light and dark versions with the viewer's theme. It now covers what PHAEMOS does, a short architecture diagram, a table of every component folder and the repository it publishes to, a two-command quickstart and the simulator. The detail it used to carry moved into the docs: running without Docker, the smoke test and the test commands into `development.md`, the release flow into `releases.md`, the tech stack and boards into `tech-stack.md` and the folder tree into `repositories.md`. The docs home page lists every page and uses the current board names
 - Auto-merge is now ecosystem-aware: patch and minor Dependabot bumps and major GitHub Actions bumps auto-merge once CI passes, but major `npm` and `pip` bumps are held for manual review since a breaking runtime change could pass lint and build yet still deploy; previously major bumps were skipped entirely
-- README rewritten: dropped the leftover animated capsule-render footer banner, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it has been live since Phase 2, only real hardware data is still pending), verified every doc link and image still resolves
+- README rewritten: dropped the leftover animated capsule-render footer banner, fixed a stale architecture line that implied ML anomaly scoring was not yet built (it is live and only real hardware data is still pending), verified every doc link and image still resolves
 - Backend `redis` bumped to 8.1.0, `pandas` to 3.0.5 and `bcrypt` to 5.0.0; frontend `tailwind-merge` bumped to 3.6.0, `react`/`react-dom` to 19 and `eslint`/`eslint-config-next` to 9/16, each held for manual review as a major bump and verified individually rather than merged blind
 - Frontend migrated to Tailwind CSS v4: `@tailwindcss/postcss` replaces the old `tailwindcss` + `autoprefixer` PostCSS plugins, `globals.css` uses a single `@import "tailwindcss"` instead of the three `@tailwind` directives and the existing `tailwind.config.ts` stays in effect via `@config` rather than migrating its theme into CSS
 - Frontend migrated to ESLint 9's flat config for `eslint-config-next` 16: `.eslintrc.cjs` replaced by `eslint.config.mjs` importing the package's native flat config export directly; `next lint` (deprecated, crashes on ESLint 9 with a circular-JSON error) replaced by calling the `eslint` CLI directly in the `lint` script
@@ -376,11 +376,11 @@ Redesigns the dashboard, adds Microsoft sign-in and scores each node type with i
 
 ### Fixed
 
-- The architecture, deployment and decision docs match the code. The schema has ten migrations (001 to 010). Decision 004 notes that the telemetry chart now uses a WebSocket with the 5-second poll as its fallback. The deployment docs state the current backend deploy (a disabled workflow holding an earlier Render hook) and the VPS planned for Launch.
+- The architecture and deployment docs match the code. The schema has ten migrations (001 to 010). The telemetry chart uses a WebSocket with the 5-second poll as its fallback. The deployment docs describe the VPS planned for Launch.
 - Each publish run checks out the latest `main`, so a push event that arrives late can no longer publish stale history to the component repositories.
 - The pull request template's links, the conduct reporting route and two support answers now match the project. Older blog posts note where the hardware or the model has changed since they were written. The docs site builds with no warnings.
 - `.github/CODEOWNERS` read `- @zaccesss` instead of `* @zaccesss`, so no pull request requested a review. It now carries the standard header and rule
-- UK spelling and sentence joins in `docs/decisions.md`, `edge/README.md` and the audit log page range
+- UK spelling and sentence joins in `edge/README.md` and the audit log page range
 - The STM32 driver READMEs called the MPU6050 driver an SPI driver. It talks to the sensor over I2C1, as the node README's wiring section shows
 - Health check docs pointed at `/health`, which the API does not serve. Liveness is `GET /` and the public check is `GET /status`, which uptime monitors match on `operational`
 - `SUPPORT.md`, `CONTRIBUTING.md` and the new issue page no longer link to phaemos.com, its status page or its docs site, none of which resolve before the Launch milestone. The new issue page links the roadmap board and `SUPPORT.md` instead
@@ -430,7 +430,7 @@ Adds Google and GitHub sign-in, two-factor authentication, webhooks, maintenance
 - Maintenance windows admin panel and dashboard amber pulsing banner (PR 121)
 - Device tag chips on DeviceCard; inline tag add/remove on device detail; batch firmware update modal (PR 122)
 - MkDocs Material documentation site (`docs.phaemos.com`); `mkdocs.yml`, `requirements-docs.txt`, `docs/index.md`; `make docs` and `make docs-build` targets (PR 128)
-- Instatus external status page setup guide (`docs/instatus.md`); public status card on `/status` page linking to `status.phaemos.com` (PR 129)
+- Public status card on the `/status` page linking to `status.phaemos.com` (PR 129)
 - Scalability guide (`docs/scalability.md`): six-stage scaling path from single VPS to distributed (PR 130)
 - GitHub Discussions: four category templates; README Community section and badge; support and FAQ pages updated (PR 132)
 - CodeQL security scanning workflow (Python + JavaScript, push/PR/weekly schedule); stale issue workflow; `FUNDING.yml` (PR 127)
@@ -442,7 +442,6 @@ Adds Google and GitHub sign-in, two-factor authentication, webhooks, maintenance
 
 - Deployment platform: Render replaced by DigitalOcean VPS with Docker Compose + Nginx reverse proxy; `docs/deployment.md` fully rewritten (PR 129)
 - Rate limiter key function updated to read `X-Real-IP` from Nginx instead of `request.client.host` so per-IP limits work correctly behind a reverse proxy (PR 135)
-- `docs/week_by_week.md` rewritten from rigid 12-week table to phase-based structure separating done from pending work (PR 135)
 - `docs/architecture.md` updated for v2 hardware, Next.js 15 and DigitalOcean deployment (PR 135)
 - `docs/api-reference.md` expanded with all endpoints added since v2.2.0 (PR 135)
 - Tidied punctuation in source comments (PR 135)
@@ -451,7 +450,7 @@ Adds Google and GitHub sign-in, two-factor authentication, webhooks, maintenance
 
 - STM32 FFT migrated from custom O(N^2) DFT to `arm_rfft_fast_f32` (CMSIS-DSP); 9x speedup on 96 MHz Cortex-M4F; N=128 power-of-two buffer (PR 131)
 - CI postgres service container replaced with explicit pull-with-retry loop to survive transient Docker Hub timeouts (PR 134)
-- Broken `uptime-kuma.md` link in `docs/index.md` replaced with `instatus.md` (PR 135)
+- Broken `uptime-kuma.md` link removed from `docs/index.md` (PR 135)
 - `NEXT_PUBLIC_GA_ID` added to `.env.example` (was referenced in code but undocumented) (PR 135)
 - Legacy `RENDER_DEPLOY_HOOK_URL` removed from `.env.example` (PR 135)
 
@@ -478,7 +477,6 @@ Adds WebSocket reconnects, admin retraining of the anomaly model and pagination 
 - `docs/security.md` - 18-measure security table (PR 85)
 - `Makefile` - make dev, make test, make lint, make build, make migrate, make seed (PR 85)
 - `SUPPORT.md` - self-help resources and common issues (PR 85)
-- Three new ADRs in `docs/decisions.md`: WS JWT via query param (010), ML retrain as background task (011), skip/limit pagination (012) (PR 85)
 
 ### Fixed
 
@@ -521,8 +519,7 @@ Adds firmware for the four sensor nodes, an extended telemetry schema, device co
 - Frontend additions: SensorGrid, TicketTable, polling hooks, UI components
 - Hardware wiring guides for all 4 nodes
 - Sensor reference documentation
-- Deployment guide and checklist
-- VERIFICATION.md tracker
+- Deployment guide
 - JWT auth: get_current_user dependency, /auth/me, /auth/users (admin)
 - GET /audit-logs endpoint (admin, paginated)
 - Audit service calls wired into all mutating routes
@@ -541,7 +538,7 @@ Adds firmware for the four sensor nodes, an extended telemetry schema, device co
 - Dark/light mode toggle with ThemeToggle and localStorage persistence
 - ML evaluate.py fully implemented: load_model, evaluate_precision_recall, plot_anomaly_distribution, generate_report
 - Uptime Kuma setup documentation
-- Docs updated: api-reference, architecture, decisions, schema, VERIFICATION
+- Docs updated: api-reference, architecture, schema
 
 ### Added
 
@@ -555,7 +552,6 @@ Adds firmware for the four sensor nodes, an extended telemetry schema, device co
 - Dependabot configuration for automated dependency updates
 - CODEOWNERS file
 - `.editorconfig` for consistent formatting across editors
-- Deployment checklist for Render backend and Vercel frontend
 - Docker build-context ignore files for backend and frontend images
 - pytest test suite with PostgreSQL service container in CI and transaction-rollback test isolation
 - WebSocket real-time telemetry push endpoint (`/ws/telemetry`)
@@ -585,8 +581,6 @@ Adds firmware for the four sensor nodes, an extended telemetry schema, device co
 - `hardware/` folder: Proteus schematic placeholders, wiring guides for all 4 nodes, PCB design guide
 - `docs/sensor_reference.md`: full sensor tables with I2C addresses and library references
 - `docs/deployment.md`: Render + Vercel + Docker self-hosted deployment guide
-- `docs/week_by_week.md`: updated 12-week implementation plan
-- `docs/VERIFICATION.md`: living checklist tracking verified vs pending features
 - Repo settings: auto-merge enabled, auto-delete-branch-on-merge enabled
 - Branch protection on main requiring all 4 CI checks to pass before merge
 

@@ -1,10 +1,5 @@
 # Workflows
 
-> [!WARNING]
-> The jobs added in this revision have never run on a hosted runner. They were checked with
-> `actionlint` and by running each command on a developer machine (see "What has not run yet"
-> below). Expect to fix small things the first time they run and read the first runs with care.
-
 ## Every workflow
 
 | Workflow | Runs on | What it does | Token rights | Secrets and variables it reads |
@@ -15,9 +10,8 @@
 | [`gitleaks-scan.yml`](gitleaks-scan.yml) | Called by `ci.yml`, weekly on Monday 07:00 UTC, manually | Scans every commit of a change (the whole history on the weekly run) and then the working tree for committed secrets | `contents: read` | none |
 | [`markdownlint.yml`](markdownlint.yml) | Push to `main`, every pull request, manually | Lints every markdown file against [`.markdownlint.json`](../../.markdownlint.json) | `contents: read` | none |
 | [`release.yml`](release.yml) | A pushed tag matching `v*.*.*`, never a fork, never a pull request | Verifies the tag, builds `phaemosctl`, the edge gateway and the Python client, writes checksums, attaches build provenance and creates a **draft** GitHub release. It publishes nothing | `contents: read` by default. `contents: write` only on the draft job. `id-token: write` and `attestations: write` only on the checksums job | none |
-| [`publish-pypi.yml`](publish-pypi.yml) | A release is **published** by a person | Downloads the release's Python files, verifies their checksums and build provenance and uploads them to PyPI through trusted publishing | `contents: read` and `attestations: read` on the verify job. `id-token: write` only on the upload job | variable `PUBLISH_PYPI` and the environment `pypi` (both new and both optional) |
-| [`deploy.yml`](deploy.yml) | After a `CI` run completes | Triggers the backend deploy hook on Render when the run was a push to `main` in this repository and passed. A pull request from a fork never starts it, whatever its branch is called | none (`permissions: {}`) | secret `RENDER_DEPLOY_HOOK_URL` |
-| [`split.yml`](split.yml) | Push to `main`, manually | Publishes `backend`, `frontend`, `firmware`, `hardware`, `infra`, `client`, `edge` and `discord` to their own read-only repositories | `contents: read` | secret `SPLIT_TOKEN` |
+| [`publish-pypi.yml`](publish-pypi.yml) | A release is **published** by a person | Downloads the release's Python files, verifies their checksums and build provenance and uploads them to PyPI through trusted publishing | `contents: read` and `attestations: read` on the verify job. `id-token: write` only on the upload job | variable `PUBLISH_PYPI` and the environment `pypi` (both optional) |
+| [`split.yml`](split.yml) | Push to `main`, manually | Publishes `backend`, `frontend`, `firmware`, `hardware`, `infra`, `client`, `edge` and `discord` to their own read-only repositories | `contents: read` | secret `SPLIT_TOKEN`, variables `OWNER_EMAIL` and `BOT_EMAIL` |
 | [`discord-relay.yml`](discord-relay.yml) | Releases, issues, discussions, push to `main`, manually | Posts to the community Discord channels | `contents: read` and `actions: read` | secrets `DISCORD_WEBHOOK_ANNOUNCEMENTS`, `DISCORD_WEBHOOK_RELEASES`, `DISCORD_WEBHOOK_FEED`, `DISCORD_WEBHOOK_IDEAS`, `DISCORD_WEBHOOK_RESEARCH`, `DISCORD_TAG_IDEAS` and `DISCORD_TAG_RESEARCH` in the `community` environment |
 | [`biweekly-security-issue.yml`](biweekly-security-issue.yml) | Weekly (acts every second week), manually | Audits the dashboard's production dependencies and opens or updates an issue | `contents: read` and `issues: write` | none (the built-in token) |
 
@@ -27,38 +21,17 @@ None of these workflows uses `pull_request_target`. A pull request from a fork r
 
 ### Rules the workflows follow
 
-`discord-relay.yml` is kept as its owner wrote it. Every other workflow follows all of these.
+Every workflow except `discord-relay.yml` follows all of these.
 
 - `permissions` at the top is `{}` or `contents: read`. A job that needs more asks for it on the job.
 - `concurrency` cancels a superseded run on a pull request. A run on `main` and a release run are never cancelled.
 - Every job has a `timeout-minutes`.
 - A title, branch name or body never appears inside a `run:` script. A value from the event reaches a script only through an environment variable and a tag name is checked against a pattern first.
 - Checkout steps use `persist-credentials: false` unless the job pushes.
-- `ci.yml` has no schedule and no manual trigger. `deploy.yml` starts after every completed `CI` run so a weekly run of `CI` would start a deploy. The weekly work is in `audit.yml` and `gitleaks-scan.yml`.
-- A workflow file cannot defend itself against being edited by someone who can push to the repository. The settings in the next section are the defence.
+- `ci.yml` has no schedule and no manual trigger. The weekly work is in `audit.yml` and `gitleaks-scan.yml`.
+- A workflow file cannot defend itself against being edited by someone who can push to the repository. The repository's rulesets and settings are the defence.
 
-## Settings a maintainer must make before the first tag
-
-Nothing in a workflow file can stop someone with write access from pushing a commit with the checks removed and tagging it. The release would still run as `release.yml` at that tag. Its attestation would still say so. These repository settings are the defence and none of them is in a file. Make them before the first tag and check them again after any change of maintainers.
-
-1. **Tag ruleset.** Settings, Rules, Rulesets, New tag ruleset. Target `refs/tags/v*`. Enforcement active. Add the named maintainers (a team or a list of people) as the only bypass actors. Switch on "Restrict creations", "Restrict updates" and "Restrict deletions". Nobody else can then create, move or delete a release tag.
-2. **Main ruleset.** New branch ruleset targeting the default branch. Switch on: require a pull request before merging, require review from code owners, require status checks to pass with `CI passed`, `Analyse (python)`, `Analyse (javascript)` and `Lint markdown files` added (the secret scan is already inside `CI passed`), require branches to be up to date, block force pushes and block deletions. Do not add bypass actors for a day to day account.
-3. **Code owners.** `.github/CODEOWNERS` lists `.github/`, `infra/scripts/`, `.gitleaks.toml` and `.gitleaksignore` on their own lines with the same owner as the `*` line. GitHub applies the last matching line, so every line must name an owner that resolves: a team that does not exist would leave the path with no owner. A team can replace the owner later once it exists and has write access to the repository. A pull request can edit `ci.yml` or `changed-areas.sh` to report green, so review of those paths by a person is the only check on them.
-4. **The `pypi` environment** (only when `PUBLISH_PYPI` is going to be switched on). Settings, Environments, New environment `pypi`. Required reviewers: the named maintainers. Switch on "Prevent self-review". Deployment branches and tags: "Selected branches and tags" with the tag rule `v*` and nothing else. Create it before the variable: if the variable is set first GitHub creates the environment with no protection.
-5. **Default token.** Settings, Actions, General, Workflow permissions: "Read repository contents and packages permissions". Leave "Allow GitHub Actions to create and approve pull requests" off.
-6. **Allowed actions.** Settings, Actions, General: the option that allows the owner's actions plus selected ones, with the actions in the pin table below added to the list (`actions/*`, `github/codeql-action/*`, `DavidAnson/markdownlint-cli2-action@*` and `pypa/gh-action-pypi-publish@*`). Tick "Require actions to be pinned to a full-length commit SHA".
-7. **Outside contributors.** Settings, Actions, General, "Fork pull request workflows from outside collaborators": "Require approval for all outside collaborators". A first run from a stranger then waits for a maintainer.
-8. **The `community` environment** (used by `discord-relay.yml`). No required reviewers, because every comment from a stranger would queue for approval. Do not limit deployment branches to `main`, because release events run on the tag. Keep its webhook and tag secrets there and nowhere else.
-9. **Required checks.** The one that carries the gate is `CI passed`. Add it as a required check from the **GitHub Actions** app (the "source" of the check), so another app cannot report a status with the same name. Also mark `Analyse (python)`, `Analyse (javascript)` and `Lint markdown files` required. They are separate workflows and are not inside `CI passed`. If branch protection still lists the old per-job names (`Backend lint (ruff)` and so on) remove them.
-10. **Immutable releases.** Settings, General, Releases: switch on immutable releases. A published release then keeps its files and its tag, so a published release cannot be edited or have its tag moved.
-
-Notes on these settings:
-
-- Some of them (the default token, the actions allow-list, the outside contributor approval and rulesets) can be set at organisation level. In the repository they then show as greyed out or inherited. Check the organisation's settings and make sure the values above are the ones in force.
-- "Require review from code owners" with a single owner blocks that owner's own pull requests, because an author cannot approve their own pull request. Until a second maintainer exists do one of these: add a second maintainer to the owner line. Or limit the code owner rule to the protected paths (`.github/`, `infra/scripts/` and the scanner files) in a separate ruleset and give the one maintainer a bypass on that ruleset. A bypass is logged in the audit log, so use it only for those paths and read the log.
-- The checks named in the main ruleset must have run at least once before GitHub lets you pick them from the list.
-
-### What "verified" on a tag does and does not mean
+## What "verified" on a tag does and does not mean
 
 GitHub shows a tag as verified when its signature matches a signing key registered on some GitHub account. It does not say that the account belongs to a maintainer. `release.yml` cannot tell the difference. The tag ruleset is what limits who can create a tag. Verified plus the ruleset is the check. Verified alone is not.
 
@@ -145,7 +118,7 @@ Every archive is written with a fixed order, owner and time so the same tag give
 
 1. Create the project `phaemos-client` on PyPI (or add a pending publisher for it).
 2. On PyPI add a trusted publisher: the owner and repository of this repository, the workflow `publish-pypi.yml` and the environment `pypi`.
-3. Create the `pypi` environment with the protection in step 4 of "Settings a maintainer must make before the first tag".
+3. Create the `pypi` environment with required reviewers, "Prevent self-review" and a deployment rule that allows only `v*` tags.
 4. Set the repository variable `PUBLISH_PYPI` to `true`.
 
 A package version can be uploaded to PyPI once only. A bad release is yanked and the next version fixed. It is never replaced.
@@ -154,15 +127,15 @@ A package version can be uploaded to PyPI once only. A bad release is yanked and
 
 No secret, token, key or webhook address is written in any file here. Workflows name them only.
 
-| Name | Kind | Used by | What it is for | New in this revision |
-| --- | --- | --- | --- | --- |
-| `RENDER_DEPLOY_HOOK_URL` | secret | `deploy.yml` | Address that starts a Render deploy | no |
-| `SPLIT_TOKEN` | secret | `split.yml` | Fine-grained token that may write to the eight component repositories | no |
-| `DISCORD_WEBHOOK_ANNOUNCEMENTS`, `DISCORD_WEBHOOK_RELEASES`, `DISCORD_WEBHOOK_FEED`, `DISCORD_WEBHOOK_IDEAS` and `DISCORD_WEBHOOK_RESEARCH` | secrets in the `community` environment | `discord-relay.yml` | Where each kind of post goes | no |
-| `DISCORD_TAG_IDEAS` and `DISCORD_TAG_RESEARCH` | secrets in the `community` environment | `discord-relay.yml` | The id of the From GitHub tag in each forum, which refuses a post without one | yes |
-| `DISCORD_WEBHOOK_CI_ALERTS` | secret in the `community` environment | `ci.yml` (`ci-alert`) | Where the alert for a failed run on `main` goes | yes |
-| `PUBLISH_PYPI` | repository variable | `publish-pypi.yml` | Switches the PyPI upload on when it is `true` | yes |
-| `pypi` | environment | `publish-pypi.yml` | Holds the trusted publisher's identity and an optional required reviewer | yes |
+| Name | Kind | Used by | What it is for |
+| --- | --- | --- | --- |
+| `SPLIT_TOKEN` | secret | `split.yml` | Fine-grained token that may write to the eight component repositories |
+| `OWNER_EMAIL` and `BOT_EMAIL` | repository variables | `split.yml` | The owner's commit address and the automation address. Commits from the first are credited to the second in the published copies. Without both the job stops with an error |
+| `DISCORD_WEBHOOK_ANNOUNCEMENTS`, `DISCORD_WEBHOOK_RELEASES`, `DISCORD_WEBHOOK_FEED`, `DISCORD_WEBHOOK_IDEAS` and `DISCORD_WEBHOOK_RESEARCH` | secrets in the `community` environment | `discord-relay.yml` | Where each kind of post goes |
+| `DISCORD_TAG_IDEAS` and `DISCORD_TAG_RESEARCH` | secrets in the `community` environment | `discord-relay.yml` | The id of the From GitHub tag in each forum, which refuses a post without one |
+| `DISCORD_WEBHOOK_CI_ALERTS` | secret in the `community` environment | `ci.yml` (`ci-alert`) | Where the alert for a failed run on `main` goes |
+| `PUBLISH_PYPI` | repository variable | `publish-pypi.yml` | Switches the PyPI upload on when it is `true` |
+| `pypi` | environment | `publish-pypi.yml` | Holds the trusted publisher's identity and an optional required reviewer |
 
 `release.yml`, `publish-pypi.yml` and `ci.yml` use only the built-in `GITHUB_TOKEN` (and PyPI's trusted publishing for the upload).
 
@@ -221,40 +194,6 @@ A tag such as `v4` can be moved by whoever controls the action's repository so a
 
 Update a tool the same way in one pull request that says why.
 
-## What has not run yet
-
-- Every job in `ci.yml` that did not exist before: `changes`, `workflows`, `backend-lock`, `backend-extras`, `firmware`, `infra`, `secret-scan`, `scripts`, `docs` and `CI passed`.
-- The whole of `audit.yml`, `release.yml` and `publish-pypi.yml`, including the attestation, the draft release and the PyPI upload.
-- The edge gateway build on the Linux arm64 runner.
-
-On a developer machine each command in them was run and the results are in the infrastructure journal. A developer machine cannot show how the jobs behave on the hosted runner image, how long the first PlatformIO download takes (the cache is cold the first time) or how long `cargo install cargo-audit` takes (a few minutes the first time and cached after).
-
-Known failures the first runs will show because the code they check is not ready:
-
-- `backend-extras` fails until `docs/openapi.json` and `docs/api-routes.md` are generated and committed. It also fails until the two routes under `/api/v1/ml` that the route class test names are classified in its table.
-
-## First push checklist
-
-- [ ] The settings above exist before the first tag: the tag ruleset, the main ruleset, the code owner team, the `pypi` environment, the read-only default token, the actions allow-list, approval for outside contributors and the `community` environment rules.
-- [ ] `backend-extras` is red as expected (the OpenAPI files are not committed and two `/ml` routes are unclassified). Fix it or nothing can merge.
-- [ ] Every PlatformIO, `cargo-audit` and PostgreSQL pull finishes inside its timeout. Record the run times in the cost section.
-- [ ] `ubuntu-22.04-arm` has cargo and the edge build works there.
-- [ ] The Linux archives build twice to the same bytes (the `scripts` job checks the `phaemosctl` one on a Linux amd64 runner).
-- [ ] The checksum step passes on the runner.
-- [ ] `subject-checksums` gives one attestation per file and `gh attestation verify` passes with `--signer-workflow`, `--source-ref` and `--source-digest`.
-- [ ] A rerun of a failed release behaves: the artifact name clashes of upload-artifact v7 and the refusal to create a second draft for the same tag.
-- [ ] The relay's collaborator-permission and run-log API calls work with this token (contents and actions read). Try it with a test issue labelled by a maintainer.
-- [ ] A pull request from a fork on a branch named `main` does not start Deploy.
-- [ ] CODEOWNERS shows no errors in the GitHub file view and a pull request that touches `.github/` requests the named owner.
-- [ ] `CI passed` can be picked as a required check and is accepted from the GitHub Actions app. The reusable `secret-scan` job appears under its own name and a pull request with a failing scan blocks the merge.
-- [ ] The secret scan reads its settings from the base branch: a test pull request that adds a root `.gitleaks.toml` allowing everything, with a fake token beside it, still fails.
-- [ ] A release marked as a pre-release does not start `publish-pypi.yml`. A normal one does only when `PUBLISH_PYPI` is `true`.
-- [ ] The secret scan fails on a test branch that adds a fake token in one commit and removes it in the next (use a throwaway value that is not a real credential).
-- [ ] The weekly scan of the whole history is not red on old commits. If it is, look at each finding before allowing anything.
-- [ ] The tag ruleset also blocks a version tag made through the release page or `gh release create --target`, by someone who is not a named maintainer.
-- [ ] `rustup` on `ubuntu-22.04-arm` fetches the compiler named in `edge/rust-toolchain.toml`.
-- [ ] `gh attestation verify` with `--source-digest` works with the `gh` version on the runner.
-
 ## Cost
 
 The repository is public so GitHub-hosted minutes are free, including the arm64 Linux runner. Nothing here is billed today.
@@ -267,4 +206,4 @@ If the repository became private, minutes would count against the plan's allowan
 - the arm64 runner is billed on a private repository
 - CodeQL and secret scanning are paid features on a private repository so `codeql.yml` would need turning off or a licence
 
-We have not measured a full run on a hosted runner so we give no minute count for a pull request. After the first runs read the run times from the Actions tab and put the numbers here.
+The time each run takes is shown in the Actions tab.

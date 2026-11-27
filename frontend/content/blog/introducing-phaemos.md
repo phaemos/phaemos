@@ -40,7 +40,7 @@ A reading that scores as an anomaly does not raise an alert on its own. An alert
 
 ## What comes next
 
-Our hardware plan has four phases: breadboard prototyping, circuit simulation and schematics, PCB layout and enclosures. We are in the first. Once real nodes are producing readings we train the model on them, which the decision log says needs one to two weeks of real data. The milestones on GitHub hold the order.
+Our hardware plan has four phases: breadboard prototyping, circuit simulation and schematics, PCB layout and enclosures. We are in the first. Once real nodes are producing readings we train the model on them, which needs one to two weeks of real data. The milestones on GitHub hold the order.
 
 ## Try it
 

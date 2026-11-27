@@ -5,5 +5,5 @@ export const contentType = OG_TYPE;
 export const alt = 'PHAEMOS: Documentation';
 
 export default function Image() {
-  return ogImage('Documentation', 'Setup, architecture, the API and sensor reference, security and the decision log.');
+  return ogImage('Documentation', 'Setup, architecture, the API and sensor reference and security.');
 }
