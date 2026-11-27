@@ -1,6 +1,6 @@
 // test_relay_proof.cpp - host test for outputs/relay_proof.cpp. a relay commanded on is never taken
 // as switched: it is confirmed only by a coil's worth of rise on the relay rail once it has had time
-// to pull in, and reported unconfirmed otherwise, including on a board with no rail reading.
+// to pull in. otherwise it is reported unconfirmed, including on a board with no rail reading.
 //
 // build and run from this folder:
 //   c++ -std=c++17 -Wall -Wextra -I.. test_relay_proof.cpp ../outputs/relay_proof.cpp -o "${TMPDIR:-/tmp}/test_relay_proof" && "${TMPDIR:-/tmp}/test_relay_proof"

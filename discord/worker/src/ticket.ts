@@ -71,7 +71,7 @@ export function ticketModal(kind: TicketKind, contact: string): Json {
   };
 }
 
-// what the member typed, or null when the form is empty or too long. an empty form is refused, not posted.
+// what the member typed. null when the form is empty or too long. an empty form is refused, not posted.
 export function readTicketForm(components: unknown): { subject: string; details: string } | null {
   const subject = oneLine(modalValue(components, "subject") ?? "");
   const details = plain(modalValue(components, "details") ?? "").trim();
@@ -119,7 +119,7 @@ export function buildTicketBody(ticket: Ticket, tags: Map<string, string>): Json
   return body;
 }
 
-// "sent": Discord made the post. "refused": it certainly did not (no usable address, or an answer in the 4xx range).
+// "sent": Discord made the post. "refused": it certainly did not (no usable address or an answer in the 4xx range).
 // "unknown": a timeout, a network error or a 5xx, where Discord may still have made the post
 export type PostOutcome = "sent" | "refused" | "unknown";
 
