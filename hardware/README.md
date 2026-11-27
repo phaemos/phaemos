@@ -15,7 +15,7 @@ The hardware behind PHAEMOS: wiring, schematics, PCB layouts and the parts inven
 | [`wiring/`](wiring/) | Pin assignments and wiring guides for each node |
 | [`schematics/`](schematics/) | Proteus simulation projects for each node, with the KiCad schematics alongside once they are drawn |
 | [`pcb/`](pcb/) | PCB layout notes and Gerber export guidance per node |
-| [`inventory/`](inventory/) | Parts owned and parts still to buy |
+| [`inventory/`](inventory/) | The parts in stock and the parts still to source, in one list |
 | [`images/`](images/) | Renders of the four boards and the three printed cases |
 
 ## The four nodes
