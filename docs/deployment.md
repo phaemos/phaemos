@@ -5,9 +5,9 @@ This guide covers the production deployment of Phaemos at the Launch milestone:
 - Backend (FastAPI, PostgreSQL and Redis) on one DigitalOcean droplet, behind Nginx with TLS at `api.phaemos.com`
 - Frontend (Next.js) on Vercel
 - Documentation site (MkDocs) on Vercel
-- Status page on Instatus
+- A status page on a hosted uptime service
 
-Everything the droplet needs is in the repository: `infra/docker-compose.prod.yml`, `infra/nginx/api.phaemos.com.conf` and the scripts in `infra/scripts/`. The `Deploy` workflow still holds an earlier Render deploy hook and is disabled, so the backend is deployed by hand with the steps below. See [decision 015](decisions.md).
+Everything the droplet needs is in the repository: `infra/docker-compose.prod.yml`, `infra/nginx/api.phaemos.com.conf` and the scripts in `infra/scripts/`. The backend is deployed by hand with the steps below.
 
 > [!IMPORTANT]
 > Never run `infra/docker-compose.yml` in production. It is the development stack: it hard-codes `ENVIRONMENT: development` and a throwaway database password, reads a development signing key from an ignored file, mounts the source code and starts a dashboard container. Those values override `backend/.env`, so the API would run as development and the refresh cookie would not be marked secure. The production file fixes `ENVIRONMENT` to `production` itself, so a stray value in `backend/.env` or the shell cannot change it.
@@ -31,9 +31,9 @@ Each hardening step below exists because of one of these. Read the table once so
 
 ## Prerequisites
 
-### DigitalOcean credit (GitHub Student Pack)
+### Cost
 
-The GitHub Student Developer Pack provides $200 of DigitalOcean credit, covering the $6/month Basic Droplet price for a long time. Apply at [education.github.com/pack](https://education.github.com/pack) with a verified `.edu` email. Credit is applied automatically once approved.
+The backend fits a 1 GB Basic droplet, about $6 a month at the time of writing. The dashboard and the documentation site run on Vercel.
 
 ### What the stack needs
 
@@ -54,7 +54,7 @@ Memory plan for the 1 GB droplet (about 960 MiB usable). In steady state the con
 3. Choose the following:
    - **Region:** closest to your expected users (for example London or Amsterdam for EU)
    - **Image:** Ubuntu 24.04 LTS
-   - **Size:** Basic, 1 vCPU / 1 GB RAM / 25 GB SSD (about $6/month, covered by the Student Pack)
+   - **Size:** Basic, 1 vCPU / 1 GB RAM / 25 GB SSD (about $6/month)
    - **Authentication:** SSH key (paste your public key)
 4. Click **Create Droplet** and note the assigned address.
 5. Add the DNS record from Section 8 now (`api` pointing at the droplet), so it has spread by the time Certbot needs it.
@@ -118,7 +118,7 @@ Keep the root session open and do Sections 4 and 9 from it (they need root). The
 - Inbound HTTP (TCP 80) and HTTPS (TCP 443): all addresses.
 - Outbound: leave open (the droplet needs the package mirrors, Docker's registry and Let's Encrypt).
 
-If your own address changes often, add the new one before you remove the old. The panel's Droplet Console connects through DigitalOcean's agent and not through sshd, so `AllowUsers` and the cloud firewall do not apply to it. Open it once during set-up and confirm you get a prompt, so you know you have a way in before you need one. (We could not test that on a real droplet when we wrote this.)
+If your own address changes often, add the new one before you remove the old. The panel's Droplet Console connects through DigitalOcean's agent and not through sshd, so `AllowUsers` and the cloud firewall do not apply to it. Open it once during set-up and confirm you get a prompt, so you know you have a way in before you need one.
 
 ### What can be narrowed on the deploy user
 
@@ -237,7 +237,7 @@ Contact messages, invitations and alert emails go through Resend. Critical alert
 12. Run `infra/scripts/deploy.sh` again so the API reads the new values.
 13. Confirm the API runs as production (the `pc exec -T backend python -c ...` command in Section 7 prints `production False`) before testing the form. Any value other than `development` makes the contact form answer 503 when Resend is not set up.
 
-Once the dashboard is live, try each of these once. The [deployment checklist](deployment-checklist.md) lists the exact steps and results.
+Once the dashboard is live, try each of these once.
 
 Repeats and limits, so a stuck rule cannot use up the quotas:
 
@@ -393,7 +393,7 @@ Add these records in your DNS provider (Cloudflare or DigitalOcean DNS):
 | `api` | A | `YOUR_DROPLET_IP` | Points to the droplet |
 | `dashboard` | CNAME | `cname.vercel-dns.com` | The dashboard: the same Vercel project as the site (Section 11) |
 | `docs` | CNAME | `cname.vercel-dns.com` | Vercel docs project |
-| `status` | CNAME | `<from Instatus dashboard>` | Instatus status page |
+| `status` | CNAME | `<from the status page service>` | Status page (Section 13) |
 
 If the DNS provider is Cloudflare, keep the `api` record on **DNS only** (grey cloud) permanently. A proxied record would make every visitor reach the API from a Cloudflare address, so all visitors would share one address for rate limits.
 
@@ -571,16 +571,13 @@ Registration stays closed. To add people, an admin invites them with `POST /api/
 
 ---
 
-## Section 13: Instatus - status page (status.phaemos.com)
+## Section 13: Status page
 
-1. Create a free account at [instatus.com](https://instatus.com).
-2. Create a new status page named **Phaemos Status**.
-3. Add two components:
-   - **Platform** - monitors `https://phaemos.com` (HTTP, 60s interval)
-   - **API** - monitors `https://api.phaemos.com/status`, keyword match `operational` (HTTP, 60s interval)
-4. Under **Settings** -> **Domain**, add `status.phaemos.com` as the custom domain.
-5. Instatus provides a CNAME target. Add it to your DNS as a `status CNAME <instatus-target>` record.
-6. Enable email and/or Slack notifications for incidents.
+Any hosted uptime service that can watch an HTTPS address and publish a status page works.
+
+1. Watch `https://phaemos.com` and `https://api.phaemos.com/status`. The API answers with the word `operational` when it is healthy, so use a keyword check on it.
+2. Give the status page a custom domain such as `status.phaemos.com` and add the `CNAME` record the service gives you.
+3. Turn on incident notifications for the people who run the stack.
 
 ---
 
@@ -690,7 +687,7 @@ A droplet that was set up before these changes runs the API as the database owne
 2. Add `POSTGRES_APP_USER`, `POSTGRES_APP_PASSWORD` and `REDIS_PASSWORD` to `backend/.env` (Section 5).
 3. Check out the release tag and run `bash infra/scripts/deploy.sh`. The database container is recreated with the new options and its data volume is untouched. `deploy.sh` makes the role, grants it the tables that already exist and sets default rights for the tables made later. Running it again changes nothing.
 4. Confirm that `rolsuper` is `f` for the API's login: `pc exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select rolname, rolsuper from pg_roles where rolname = '"'"'$POSTGRES_APP_USER'"'"'"'` (the `sh -c` makes the container's own variables apply, not your shell's).
-5. Rotate `SECRET_KEY` (see "Rotating `SECRET_KEY`" below, which keeps the stored secrets readable) and the database owner's password if the API has been running as the owner with them in its environment for long. The API had both.
+5. Rotate `SECRET_KEY` (see "Rotating `SECRET_KEY`" below, which keeps the stored secrets readable) and the database owner's password, since an API that ran as the owner held both in its environment.
 6. The compose file now has two networks, `data` (internal, no route out) and `edge`. An old droplet still has the single `internal` network with the same address range, so run `pc down` once (it keeps the volumes) before the first deploy of this version or the new `edge` network will clash with it.
 
 ### Rotating `SECRET_KEY`
@@ -748,5 +745,3 @@ sudo fail2ban-client status sshd
 ```
 
 The API logs warnings and above in production. A failed email or text and a reached daily cap each leave a warning. Container logs rotate at 10 MB with 3 copies each.
-
-Once the stack is live, walk [the deployment checklist](deployment-checklist.md) against production.

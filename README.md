@@ -59,7 +59,7 @@ flowchart LR
     API --> OUT["Webhooks, Discord,<br/>email and SMS"]
 ```
 
-The full picture, from each node's sensors to the background tasks, is in [docs/architecture.md](docs/architecture.md), with the reasoning behind each choice in [docs/decisions.md](docs/decisions.md).
+The full picture, from each node's sensors to the background tasks, is in [docs/architecture.md](docs/architecture.md).
 
 ## Repository layout
 

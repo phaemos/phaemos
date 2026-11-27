@@ -66,7 +66,6 @@ nav:
     - Architecture: architecture.md
     - Development: development.md
     - Deployment: deployment.md
-    - Deployment Checklist: deployment-checklist.md
     - Scalability: scalability.md
   - Reference:
     - API Reference: api-reference.md
@@ -78,11 +77,7 @@ nav:
     - Repositories: repositories.md
   - Security: security.md
   - Development:
-    - Decision Log: decisions.md
     - Releases: releases.md
-    - Week by Week: week_by_week.md
-    - Verification: VERIFICATION.md
-  - Monitoring: instatus.md
 
 exclude_docs: |
   README.md

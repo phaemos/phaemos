@@ -7,7 +7,7 @@ import { DOCS_ON_GITHUB } from '@/components/content/legal';
 
 export const metadata: Metadata = {
   title: 'Documentation',
-  description: 'The PHAEMOS documents: setup, architecture, the API and sensor reference, security and the decision log.',
+  description: 'The PHAEMOS documents: setup, architecture, the API and sensor reference and security.',
 };
 
 interface Doc {
@@ -25,9 +25,7 @@ const GROUPS: { id: string; title: string; docs: Doc[] }[] = [
     docs: [
       { name: 'Development', path: 'development', line: 'Running locally with or without Docker, the smoke test, the simulator and the tests.' },
       { name: 'Deployment', path: 'deployment', line: 'The server, Vercel and DNS setup for production.' },
-      { name: 'Deployment checklist', path: 'deployment-checklist', line: 'Checks to run in order once every service is live.' },
       { name: 'Scalability', path: 'scalability', line: 'When and how to scale each layer beyond one server.' },
-      { name: 'Monitoring', path: 'instatus', line: 'Setting up the Instatus status page.' },
     ],
   },
   {
@@ -35,7 +33,6 @@ const GROUPS: { id: string; title: string; docs: Doc[] }[] = [
     title: 'Understand it',
     docs: [
       { name: 'Architecture', path: 'architecture', line: 'The layers, how a reading travels, authentication, background tasks and webhooks.' },
-      { name: 'Decision log', path: 'decisions', line: 'Why each main choice was made.' },
       { name: 'Tech stack', path: 'tech-stack', line: 'Every language and tool by layer, plus the four boards.' },
       { name: 'Repositories', path: 'repositories', line: 'The monorepo and the component repositories it is published to.' },
     ],
@@ -55,8 +52,6 @@ const GROUPS: { id: string; title: string; docs: Doc[] }[] = [
     title: 'The project',
     docs: [
       { name: 'Releases', path: 'releases', line: 'How a release is tagged and how the changelog is checked.' },
-      { name: 'Week by week', path: 'week_by_week', line: 'The development timeline in phases.' },
-      { name: 'Verification', path: 'VERIFICATION', line: 'What is verified and merged against what is still pending.' },
     ],
   },
 ];

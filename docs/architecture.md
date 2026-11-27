@@ -1,6 +1,6 @@
 # Architecture Overview
 
-PHAEMOS has five layers: sensor nodes on the machines, an optional edge gateway beside them, a FastAPI backend that scores and stores every reading, PostgreSQL for storage and a Next.js dashboard. The reasoning behind each choice is in [the design decisions](decisions.md).
+PHAEMOS has five layers: sensor nodes on the machines, an optional edge gateway beside them, a FastAPI backend that scores and stores every reading, PostgreSQL for storage and a Next.js dashboard.
 
 ## System diagram
 
@@ -323,7 +323,7 @@ Every alert a rule raises goes to each enabled webhook (Slack incoming webhooks,
 
 ## Deployment
 
-**Current state:** the backend's `Deploy` workflow (`.github/workflows/deploy.yml`) still posts to a Render deploy hook after CI passes on `main`. That workflow is disabled and no backend is deployed automatically today. At the Launch milestone the backend moves to the VPS layout below ([decision 015](decisions.md)) and the workflow is updated to match.
+**Current state:** no backend is deployed automatically. It is deployed by hand to the VPS layout below with the steps in [Deployment](deployment.md).
 
 The target layout for the Launch milestone:
 

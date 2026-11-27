@@ -141,7 +141,7 @@ sent. No gateway has run against a real API or on real hardware.
 
 ## Why Rust
 
-The gateway runs unattended for months on small hardware. Rust gives a single 3 MB binary with no runtime, cross-compiles to ARM for a Raspberry Pi and rules out whole classes of crash. See ADR 020 in [docs/decisions.md](https://github.com/phaemos/phaemos/blob/main/docs/decisions.md).
+The gateway runs unattended for months on small hardware. Rust gives a single 3 MB binary with no runtime, cross-compiles to ARM for a Raspberry Pi and rules out whole classes of crash.
 
 ## Development
 

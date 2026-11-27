@@ -1,7 +1,6 @@
 # Tech stack
 
-Every language and tool PHAEMOS uses, by layer. The reasons behind the main choices are in
-[decisions.md](decisions.md).
+Every language and tool PHAEMOS uses, by layer.
 
 | Layer | Technology |
 | --- | --- |

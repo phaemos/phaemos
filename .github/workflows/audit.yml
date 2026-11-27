@@ -3,8 +3,7 @@
 # it runs in two ways: CI calls it with the areas a change touched. A weekly schedule runs
 # every area, so a new advisory in a dependency that nobody has changed still shows up. A
 # scheduled failure is a red run on main and an email to the people who watch the repository.
-# it is a separate workflow so that its schedule does not start deploy.yml, which runs after every
-# completed CI run on main.
+# it is a separate workflow so that ci.yml can keep no schedule of its own.
 #
 # the README next to this file says what fails the build and why. Third-party actions are pinned
 # to a full commit: see README.md.

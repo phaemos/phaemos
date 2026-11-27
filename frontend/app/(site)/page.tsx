@@ -58,7 +58,7 @@ const FOLDERS: [string, string][] = [
   ['edge/', 'Rust gateway that spools readings through network outages'],
   ['client/', 'Python SDK and simulator, plus a Go CLI'],
   ['infra/', 'Docker Compose stack, Prometheus, Grafana and SQL reports'],
-  ['docs/', 'architecture, API, deployment, security and decisions'],
+  ['docs/', 'architecture, API, deployment and security'],
 ];
 
 // static: the three latest releases come from CHANGELOG.md at build time
