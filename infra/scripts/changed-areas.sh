@@ -59,6 +59,12 @@ while IFS= read -r -d '' file; do
             ;;
     esac
     case "${file}" in
+        backend/app/schemas/telemetry.py | backend/app/services/sensor_map.py)
+            # the frontend tests read these two files to keep the dashboard in step with the API
+            hit[backend]=true
+            hit[frontend]=true
+            matched=true
+            ;;
         backend/* | docker-compose.yml)
             hit[backend]=true
             matched=true
@@ -108,7 +114,9 @@ while IFS= read -r -d '' file; do
             matched=true
             ;;
         CHANGELOG.md)
+            # the release scripts read it and the site renders it, with a frontend test on every heading
             hit[scripts]=true
+            hit[frontend]=true
             matched=true
             ;;
         # nothing reads these

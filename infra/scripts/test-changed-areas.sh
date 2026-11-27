@@ -63,6 +63,14 @@ echo a > infra/scripts/deploy.sh
 git add -A && git commit -q -m deploy
 check "infra/scripts/deploy.sh" "backend infra scripts"
 
+echo b >> CHANGELOG.md
+git add -A && git commit -q -m changelog
+check "CHANGELOG.md" "frontend scripts"
+
+mkdir -p backend/app/schemas && echo "# x" > backend/app/schemas/telemetry.py
+git add -A && git commit -q -m schema
+check "a backend file the frontend reads" "backend frontend"
+
 echo a > something-new.cfg
 git add -A && git commit -q -m unknown
 check "unknown file runs everything" "${all_areas}"
