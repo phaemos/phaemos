@@ -378,7 +378,7 @@ Do not attempt these items until all four physical nodes (ESP32, STM32 Black Pil
 
 **Blocked items:**
 
-- Custom node enclosure design - after all 4 nodes tested on breadboard; options: 3D print (Aston lab), laser cut acrylic, CNC aluminium
+- Custom node enclosure design - after all 4 nodes tested on breadboard; options: 3D print, laser cut acrylic, CNC aluminium
 - Hardware testing - full sensor suite on all 4 boards; see hardware/wiring/ for pinouts
 - Train Isolation Forest - after 1-2 weeks of real telemetry, run backend/ml/train.py and evaluate with evaluate.py
 
