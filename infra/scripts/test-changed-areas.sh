@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tests changed-areas.sh against a throwaway git repository with crafted commits: a rename out
 # of an area, a non-ASCII path, a path with a space, the root compose file, the deploy scripts, an
-# unknown file and files that must run nothing. It exits 1 when any answer is wrong.
+# unknown file, files that must run nothing, the workflow rules and the push and weekly rules. It exits 1 when any answer is wrong.
 #
 #   bash infra/scripts/test-changed-areas.sh
 set -euo pipefail
@@ -86,10 +86,37 @@ check "docs page" "docs"
 mkdir -p .github/workflows
 echo a > .github/workflows/x.yml
 git add -A && git commit -q -m workflow
-check "workflow change runs everything" "${all_areas}"
+check "unknown workflow runs everything" "${all_areas}"
 
-count="$(EVENT_NAME=push BASE_SHA=x HEAD_SHA=y bash "${SCRIPT}" | grep -c '=true')"
-if [ "${count}" = "10" ]; then echo "ok    push runs everything"; else echo "WRONG push" >&2; failures=$((failures + 1)); fi
+mkdir -p .github/workflows
+echo a > .github/workflows/ci.yml
+git add -A && git commit -q -m ci
+check "ci.yml runs everything" "${all_areas}"
+
+mkdir -p .github/workflows
+echo a > .github/workflows/publish-image.yml
+echo a > .github/CODEOWNERS
+git add -A && git commit -q -m publish
+check "a publishing workflow and CODEOWNERS run nothing" "nothing"
+
+mkdir -p .github/workflows
+echo a > .github/workflows/release.yml
+git add -A && git commit -q -m release
+check "release.yml runs the Discord and script tests" "discord scripts"
+
+# a push to main is compared like a pull request
+echo b >> docs/index.md
+git add -A && git commit -q -m pushdocs
+out="$(EVENT_NAME=push BASE_SHA="${base}" HEAD_SHA="$(git rev-parse HEAD)" bash "${SCRIPT}" | grep '=true' | cut -d= -f1 | xargs)"
+if [ "${out}" = "docs" ]; then echo "ok    push compares its commits: ${out}"; else echo "WRONG push compare: got [${out}]" >&2; failures=$((failures + 1)); fi
+git reset -q --hard "${base}"
+
+count="$(EVENT_NAME=push BASE_SHA=0000000000000000000000000000000000000000 HEAD_SHA=y bash "${SCRIPT}" | grep -c '=true')"
+if [ "${count}" = "10" ]; then echo "ok    a new branch push runs everything"; else echo "WRONG new branch push" >&2; failures=$((failures + 1)); fi
+count="$(EVENT_NAME=push BASE_SHA=deadbeef HEAD_SHA=HEAD bash "${SCRIPT}" | grep -c '=true')"
+if [ "${count}" = "10" ]; then echo "ok    a force push runs everything"; else echo "WRONG force push" >&2; failures=$((failures + 1)); fi
+count="$(EVENT_NAME=schedule BASE_SHA='' HEAD_SHA='' bash "${SCRIPT}" | grep -c '=true')"
+if [ "${count}" = "10" ]; then echo "ok    the weekly run runs everything"; else echo "WRONG schedule" >&2; failures=$((failures + 1)); fi
 count="$(EVENT_NAME=pull_request BASE_SHA=deadbeef HEAD_SHA=HEAD bash "${SCRIPT}" | grep -c '=true')"
 if [ "${count}" = "10" ]; then echo "ok    unreadable range runs everything"; else echo "WRONG range" >&2; failures=$((failures + 1)); fi
 

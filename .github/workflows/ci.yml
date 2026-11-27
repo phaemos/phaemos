@@ -1,12 +1,15 @@
-# CI pipeline - runs on every push to main and every pull request targeting main. It has no
-# schedule and no manual trigger on purpose: a run on main means a change landed. The weekly
-# dependency audit is audit.yml.
+# CI pipeline - runs on every push to main, every pull request targeting main, once a week and on
+# demand. A pull request and a push run only the jobs of the parts they touch
+# (infra/scripts/changed-areas.sh). The weekly and manual runs run everything, so a part nobody
+# touched still gets checked against the current runners and tools. The weekly dependency audit
+# is audit.yml.
 #
 # jobs:
 #   changes          - says which parts of the repository the change touches (infra/scripts/changed-areas.sh)
 #   workflows        - actionlint on the workflows and the check that every action is pinned to a commit
 #   backend-lint     - ruff for the backend
-#   backend-test     - pytest against a throwaway PostgreSQL
+#   backend-test     - pytest against a throwaway PostgreSQL, without the anomaly model tests
+#   backend-ml-test  - the anomaly model tests, in parallel with backend-test because they take half the time
 #   backend-lock     - backend/requirements.lock still matches requirements.txt
 #   backend-extras   - migrations apply from empty and twice changes nothing, the OpenAPI document and the route
 #                      table are current, the route class test passes
@@ -38,6 +41,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Sunday 05:00 UTC, a full run of every job
+    - cron: "0 5 * * 0"
+  workflow_dispatch:
 
 # default: no permissions - each job declares only what it needs.
 permissions: {}
@@ -82,8 +89,9 @@ jobs:
         id: areas
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          # a pull request is compared with its base and a push with the commit before it
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: bash infra/scripts/changed-areas.sh | tee -a "$GITHUB_OUTPUT"
 
   # ── Workflow files ───────────────────────────────────────────────────────────
@@ -155,9 +163,8 @@ jobs:
   backend-test:
     name: Backend tests (pytest)
     runs-on: ubuntu-latest
-    # the anomaly model tests train and replay simulated machines, so the suite runs past 20 minutes on a
-    # hosted runner. The limit leaves room for a slow runner and still stops a hung run
-    timeout-minutes: 40
+    # the anomaly model tests run in backend-ml-test, so this suite takes about 12 minutes
+    timeout-minutes: 25
     needs: [changes, backend-lint] # only run tests if lint passes
     if: needs.changes.outputs.backend == 'true'
 
@@ -174,6 +181,12 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          # pip's download cache, keyed on the requirement files. Packages are still installed and
+          # checked as before, only the downloads are reused
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
       - name: Start PostgreSQL
         run: bash infra/scripts/start-ci-postgres.sh postgres phaemos_test
@@ -183,7 +196,54 @@ jobs:
 
       - name: Run tests
         working-directory: backend
-        run: pytest tests/ --cov=app --cov-report=term-missing -v
+        run: >-
+          pytest tests/ --cov=app --cov-report=term-missing -v
+          --ignore=tests/test_ml_model.py --ignore=tests/test_ml_replay.py
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/phaemos_test
+          SECRET_KEY: ci-test-secret-key-not-for-production
+          REDIS_URL: redis://localhost:6379
+
+  # ── Backend: anomaly model tests ─────────────────────────────────────────────
+  # these train and replay simulated machines, which is half the backend suite's time. Run beside
+  # backend-test, the backend finishes in about half the time. The session fixture in conftest.py
+  # needs the database, so it starts one too
+  backend-ml-test:
+    name: Backend anomaly model tests (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [changes, backend-lint]
+    if: needs.changes.outputs.backend == 'true'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          # pip's download cache, keyed on the requirement files. Packages are still installed and
+          # checked as before, only the downloads are reused
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Start PostgreSQL
+        run: bash infra/scripts/start-ci-postgres.sh postgres phaemos_test
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Run tests
+        working-directory: backend
+        run: pytest tests/test_ml_model.py tests/test_ml_replay.py -v
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/phaemos_test
           SECRET_KEY: ci-test-secret-key-not-for-production
@@ -237,6 +297,10 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
       - name: Install dependencies
         run: pip install -r backend/requirements-dev.txt
@@ -350,6 +414,10 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
       - name: Install the backend
         run: pip install -r backend/requirements-dev.txt
@@ -445,6 +513,9 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            client/python/pyproject.toml
 
       - name: Install
         run: pip install -e ".[dev]"
@@ -515,6 +586,19 @@ jobs:
         with:
           persist-credentials: false
 
+      # the crates and the build output, keyed on the lock file and the toolchain. A change to either
+      # starts from an older cache and rebuilds only what changed
+      - name: Cache cargo
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            edge/target
+          key: edge-${{ runner.os }}-${{ hashFiles('edge/Cargo.lock', 'edge/rust-toolchain.toml') }}
+          restore-keys: edge-${{ runner.os }}-
+
       - name: Lint and test
         run: |
           rustup component add rustfmt clippy
@@ -543,6 +627,9 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            discord/requirements-dev.txt
 
       - name: Install
         working-directory: discord
@@ -687,6 +774,7 @@ jobs:
       - workflows
       - backend-lint
       - backend-test
+      - backend-ml-test
       - backend-lock
       - backend-extras
       - frontend-check
@@ -722,12 +810,13 @@ jobs:
     name: CI alert
     runs-on: ubuntu-latest
     timeout-minutes: 3
-    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'phaemos/phaemos'
+    if: failure() && (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main' && github.repository == 'phaemos/phaemos'
     needs:
       - changes
       - workflows
       - backend-lint
       - backend-test
+      - backend-ml-test
       - backend-lock
       - backend-extras
       - frontend-check
