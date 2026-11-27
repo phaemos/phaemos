@@ -13,6 +13,7 @@ Keeps the parts inventory to one public list.
 
 ### Changed
 
+- CI runs the frontend job when `CHANGELOG.md` or one of the two backend files the frontend tests read changes. A changelog edit broke the site build on `main` because that job was skipped.
 - Routine tidy-up: the parts inventory is one list, `hardware/inventory/README.md`, with the parts in stock and the parts still to source grouped by type. It replaces `owned.md` and `needed.md`. The wiring guide and the Discord bot's hardware cards link to it.
 
 ## [2.6.0] - 2026-11-25
