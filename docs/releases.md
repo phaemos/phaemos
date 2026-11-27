@@ -18,7 +18,7 @@ Every file has build provenance attached by GitHub. The backend and the dashboar
 
 ## Cutting a release
 
-1. **Bump the version** to the new `X.Y.Z` in every file that holds one. The first tag needs this most: the package files hold `0.1.0` while `CHANGELOG.md` has released sections up to `2.5.0`, so the owner must choose the first version and raise every file to it. The workflow refuses the tag if any of them disagrees:
+1. **Bump the version** to the new `X.Y.Z` in every file that holds one. The workflow refuses the tag if any of them disagrees:
     - `client/python/pyproject.toml` (`version`)
     - `client/python/phaemos_client/__init__.py` (`__version__`)
     - `edge/Cargo.toml` (`version`) and `edge/Cargo.lock` (the `phaemos-edge` entry, which `cargo build` updates)
@@ -93,4 +93,4 @@ PHAEMOS follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html): a br
 
 ## Deploying a release
 
-Releasing and deploying are separate steps. See [deployment.md](deployment.md) for the server, Vercel and DNS setup and [deployment-checklist.md](deployment-checklist.md) for the checks to run before a deploy.
+Releasing and deploying are separate steps. See [deployment.md](deployment.md) for the server, Vercel and DNS setup.

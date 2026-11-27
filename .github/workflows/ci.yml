@@ -1,6 +1,6 @@
 # CI pipeline - runs on every push to main and every pull request targeting main. It has no
-# schedule and no manual trigger on purpose: deploy.yml starts after every completed run of this
-# workflow on main. The weekly dependency audit is audit.yml.
+# schedule and no manual trigger on purpose: a run on main means a change landed. The weekly
+# dependency audit is audit.yml.
 #
 # jobs:
 #   changes          - says which parts of the repository the change touches (infra/scripts/changed-areas.sh)
@@ -659,9 +659,8 @@ jobs:
         run: python -m pytest --noconftest -p no:cacheprovider backend/tests/test_deploy_script.py -q
 
   # ── Dependency audits ────────────────────────────────────────────────────────
-  # the jobs live in audit.yml so the same ones also run weekly on their own. This file has no
-  # schedule because deploy.yml starts after every completed run of this workflow on main, so a
-  # weekly run here would start a deploy. The README next to this file says what fails the build and why
+  # the jobs live in audit.yml so the same ones also run weekly on their own, while this file keeps
+  # no schedule. The README next to this file says what fails the build and why
   audit:
     name: Audit
     needs: changes

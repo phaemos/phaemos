@@ -9,8 +9,7 @@ hide:
 
 **Where the project stands.** Nothing has run on real machines yet. The firmware has not been tested on physical boards
 and the anomaly model has not been trained on real data. The model is being reworked and its claims are under review.
-What exists today is the backend, the dashboard, the simulator and the automated checks. The
-[verification tracker](VERIFICATION.md) lists what is verified and merged against what is still pending.
+What exists today is the backend, the dashboard, the simulator and the automated checks.
 
 </div>
 
@@ -32,7 +31,7 @@ that fits what you are doing.
 <dl class="ph-start" markdown>
 <dt>I want to run it</dt>
 <dd markdown>Start with [Development](development.md) to run the platform on one computer with or without Docker.
-Then read [Deployment](deployment.md) and the [deployment checklist](deployment-checklist.md) before you put it on a server.</dd>
+Then read [Deployment](deployment.md) before you put it on a server.</dd>
 <dt>I am building a node</dt>
 <dd markdown>Read the [sensor reference](sensor_reference.md) for every sensor, its interface and its expected range.
 The [tech stack](tech-stack.md) lists the four boards and the [architecture](architecture.md) shows how a reading travels.</dd>
@@ -40,8 +39,7 @@ The [tech stack](tech-stack.md) lists the four boards and the [architecture](arc
 <dd markdown>The [API reference](api-reference.md) lists every endpoint. Read the [API conventions](api-conventions.md) for
 the shared rules and [API stability](api-stability.md) for what may change.</dd>
 <dt>I care about security</dt>
-<dd markdown>[Security](security.md) lists the security controls. The [decision log](decisions.md) says why each main
-choice was made.</dd>
+<dd markdown>[Security](security.md) lists the security controls.</dd>
 </dl>
 
 ## What it is designed to do
@@ -62,7 +60,6 @@ choice was made.</dd>
 | [Architecture](architecture.md) | System diagram, data flow, auth, background tasks and webhooks |
 | [Development](development.md) | Running locally with or without Docker, the smoke test, the simulator and the tests |
 | [Deployment](deployment.md) | The server, Vercel and DNS setup |
-| [Deployment checklist](deployment-checklist.md) | Checks to run before going live |
 | [Scalability](scalability.md) | Six stages from a single server to a distributed setup |
 | [API reference](api-reference.md) | Every REST endpoint with its auth and request and response shapes |
 | [Sensor reference](sensor_reference.md) | Every sensor with its interface, specs and expected ranges |
@@ -70,11 +67,7 @@ choice was made.</dd>
 | [Tech stack](tech-stack.md) | Every language and tool by layer, plus the four boards |
 | [Repositories](repositories.md) | The monorepo, the published component repositories and how publishing works |
 | [Security](security.md) | The security controls |
-| [Decision log](decisions.md) | Why each main choice was made |
 | [Releases](releases.md) | Tagging a release and the changelog check |
-| [Week by week](week_by_week.md) | The phase-based development timeline |
-| [Verification](VERIFICATION.md) | What is verified and merged against what is still pending |
-| [Monitoring](instatus.md) | The Instatus status page setup |
 
 ---
 

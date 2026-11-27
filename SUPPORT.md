@@ -27,7 +27,6 @@
 - [docs/api-reference.md](docs/api-reference.md) - Complete API reference
 - [docs/architecture.md](docs/architecture.md) - System architecture overview
 - [docs/sensor_reference.md](docs/sensor_reference.md) - Sensor wiring and data dictionary
-- [docs/VERIFICATION.md](docs/VERIFICATION.md) - Feature completion checklist
 - [docs/development.md](docs/development.md) - Running locally, the smoke test, the simulator and the test commands
 - The browsable documentation site at docs.phaemos.com goes live with the Launch milestone. `make docs` serves it locally today
 - `http://localhost:8000/docs` - Interactive Swagger UI when the backend is running locally
