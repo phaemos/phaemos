@@ -405,7 +405,7 @@ export function createApp(content: Content, deps: AppDeps) {
       env.TICKET_TAG_IDS,
     );
     if (outcome !== "sent") {
-      // the cooldown is given back only when the post certainly did not happen. After a timeout it may have, and a
+      // the cooldown is given back only when the post certainly did not happen. After a timeout it may have. A
       // second try would then make a second ticket
       if (outcome === "refused") ticketLimiter.giveBack(member);
       return {

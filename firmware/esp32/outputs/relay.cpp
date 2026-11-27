@@ -17,7 +17,7 @@ static const uint8_t RELAY_PINS[4] = {
 // the commanded state, kept so a warm reset can put the relays back.
 static uint8_t s_mask = 0;
 
-// what is known about each relay beyond its command, and the rail meter that can show it
+// what is known about each relay beyond its command, plus the rail meter that can show it
 static RelayProofTracker s_proofs;
 static bool (*s_railRead)(int32_t *ma) = nullptr;
 
