@@ -482,7 +482,7 @@
         },
         {
           "label": "Parts list",
-          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md"
+          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md"
         }
       ]
     },
@@ -504,7 +504,7 @@
         },
         {
           "label": "Parts list",
-          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md"
+          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md"
         }
       ]
     },
@@ -526,7 +526,7 @@
         },
         {
           "label": "Parts list",
-          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md"
+          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md"
         }
       ]
     },
@@ -548,7 +548,7 @@
         },
         {
           "label": "Parts list",
-          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md"
+          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md"
         }
       ]
     },
@@ -570,13 +570,13 @@
       "key": "parts",
       "title": "Parts",
       "lines": [
-        "What each build needs and what the project already owns.",
+        "The parts we hold and the parts we still need, in one list.",
         "Ask in the hardware forum before you substitute a part."
       ],
       "links": [
         {
-          "label": "Parts needed",
-          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/needed.md"
+          "label": "Parts still to source",
+          "url": "https://github.com/phaemos/phaemos/blob/main/hardware/inventory/README.md#still-to-source"
         },
         {
           "label": "Hardware overview",
