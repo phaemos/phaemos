@@ -21,6 +21,7 @@ Publishes a signed backend image on each release, halves the CI time, keeps the 
 - CI runs the frontend job when `CHANGELOG.md` or one of the two backend files the frontend tests read changes. A changelog edit broke the site build on `main` because that job was skipped.
 - Routine tidy-up: the docs keep what a user or a self-hoster needs. The decision log, the development timeline, the feature checklist, the production checklist and the status page set-up leave the repository. So does the disabled Render deploy workflow. The deployment guide keeps a short status page section and a plain cost note. `split.yml` reads the two commit addresses from repository variables.
 - Routine tidy-up: the parts inventory is one list, `hardware/inventory/README.md`, with the parts in stock and the parts still to source grouped by type. It replaces `owned.md` and `needed.md`. The wiring guide and the Discord bot's hardware cards link to it.
+- Routine tidy-up of five code comments in the Discord worker and the ESP32 relay code.
 
 ## [2.6.0] - 2026-11-25
 
