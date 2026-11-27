@@ -1,0 +1,119 @@
+# publishes the backend image to GitHub Container Registry after a person has published a release.
+#
+# release.yml only creates a DRAFT, so the image is built once a person has checked that draft and
+# published it. It builds backend/Dockerfile at the release's commit for linux/amd64 and linux/arm64
+# (a Raspberry Pi or an Arm server runs the same image) and pushes it as
+# ghcr.io/<owner>/phaemos-backend with the tags X.Y.Z, X.Y and latest. The image carries an SBOM and
+# a signed build provenance attestation, checked with
+# gh attestation verify oci://ghcr.io/<owner>/phaemos-backend:X.Y.Z --repo <owner>/<repo>
+#
+# the deployment guide still builds the image on the server from a verified signed tag. This image
+# is an optional shortcut for anyone who prefers to pull.
+#
+# nothing here runs on a fork, on a pull request or for a pre-release. The tag name is user input,
+# so it is checked against a pattern first and reaches scripts only through an environment variable.
+
+name: Publish the backend image
+
+on:
+  release:
+    types: [published]
+
+# default: no permissions - each job declares only what it needs.
+permissions: {}
+
+concurrency:
+  group: publish-image-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    name: Build, push and attest
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: ${{ !github.event.repository.fork && !github.event.release.prerelease }}
+
+    permissions:
+      contents: read
+      packages: write # pushes to ghcr.io under this owner
+      id-token: write # the signing identity for the attestation
+      attestations: write # where the attestation is stored
+
+    steps:
+      - name: Check the tag
+        id: check
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          EVENT_REF: ${{ github.ref }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          if ! [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "the release tag '${TAG}' is not a final release tag (vX.Y.Z): nothing is published" >&2
+            exit 1
+          fi
+          # the commit is the one the event carries and the ref must be this tag, so nothing is
+          # re-read from a tag that could have moved
+          if [ "${EVENT_REF}" != "refs/tags/${TAG}" ]; then
+            echo "the event ref ${EVENT_REF} is not the release tag: nothing is published" >&2
+            exit 1
+          fi
+          # registry names must be lower case and an organisation login may not be
+          echo "image=ghcr.io/${OWNER,,}/phaemos-backend" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      # arm64 is built under emulation. Every Python package in requirements.lock has an arm64
+      # wheel, so nothing is compiled and the build stays within the timeout
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: arm64
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      # the source label links the package to this repository on GitHub
+      - name: Work out the tags and labels
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ steps.check.outputs.image }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=PHAEMOS backend
+            org.opencontainers.image.description=The PHAEMOS API: telemetry, alerts and the dashboard's data
+            org.opencontainers.image.licenses=AGPL-3.0-only
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: backend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: true
+          sbom: true
+
+      # a signed attestation stored next to the image in the registry
+      - name: Attest the image
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.check.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

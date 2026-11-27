@@ -11,6 +11,7 @@
 | [`markdownlint.yml`](markdownlint.yml) | Push to `main`, every pull request, manually | Lints every markdown file against [`.markdownlint.json`](../../.markdownlint.json) | `contents: read` | none |
 | [`release.yml`](release.yml) | A pushed tag matching `v*.*.*`, never a fork, never a pull request | Verifies the tag, builds `phaemosctl`, the edge gateway and the Python client, writes checksums, attaches build provenance and creates a **draft** GitHub release. It publishes nothing | `contents: read` by default. `contents: write` only on the draft job. `id-token: write` and `attestations: write` only on the checksums job | none |
 | [`publish-pypi.yml`](publish-pypi.yml) | A release is **published** by a person | Downloads the release's Python files, verifies their checksums and build provenance and uploads them to PyPI through trusted publishing | `contents: read` and `attestations: read` on the verify job. `id-token: write` only on the upload job | variable `PUBLISH_PYPI` and the environment `pypi` (both optional) |
+| [`publish-image.yml`](publish-image.yml) | A release is **published** by a person | Builds `backend/Dockerfile` at the release's commit for amd64 and arm64, pushes `ghcr.io/phaemos/phaemos-backend` tagged `X.Y.Z`, `X.Y` and `latest` with an SBOM and attaches a signed build provenance attestation | `contents: read`, `packages: write`, `id-token: write` and `attestations: write` on its one job | none (the built-in token) |
 | [`split.yml`](split.yml) | Push to `main`, manually | Publishes `backend`, `frontend`, `firmware`, `hardware`, `infra`, `client`, `edge` and `discord` to their own read-only repositories | `contents: read` | secret `SPLIT_TOKEN`, variables `OWNER_EMAIL` and `BOT_EMAIL` |
 | [`discord-relay.yml`](discord-relay.yml) | Releases, issues, discussions, push to `main`, manually | Posts to the community Discord channels | `contents: read` and `actions: read` | secrets `DISCORD_WEBHOOK_ANNOUNCEMENTS`, `DISCORD_WEBHOOK_RELEASES`, `DISCORD_WEBHOOK_FEED`, `DISCORD_WEBHOOK_IDEAS`, `DISCORD_WEBHOOK_RESEARCH`, `DISCORD_TAG_IDEAS` and `DISCORD_TAG_RESEARCH` in the `community` environment |
 | [`biweekly-security-issue.yml`](biweekly-security-issue.yml) | Weekly (acts every second week), manually | Audits the dashboard's production dependencies and opens or updates an issue | `contents: read` and `issues: write` | none (the built-in token) |
@@ -123,6 +124,19 @@ Every archive is written with a fixed order, owner and time so the same tag give
 
 A package version can be uploaded to PyPI once only. A bad release is yanked and the next version fixed. It is never replaced.
 
+### Publishing the backend image
+
+[`publish-image.yml`](publish-image.yml) runs when a person publishes the draft release. It builds the backend image at the commit the release event carries, for `linux/amd64` and `linux/arm64`. It pushes it to `ghcr.io/phaemos/phaemos-backend` with the built-in token. `docker/build-push-action` adds an SBOM and its own provenance. `actions/attest-build-provenance` then signs a statement for the image digest through GitHub's Sigstore instance and stores it in the registry next to the image. Check a pulled image with:
+
+```bash
+gh attestation verify oci://ghcr.io/phaemos/phaemos-backend:X.Y.Z \
+  --repo phaemos/phaemos \
+  --signer-workflow phaemos/phaemos/.github/workflows/publish-image.yml \
+  --source-ref refs/tags/vX.Y.Z
+```
+
+A new package on GitHub Container Registry starts private. After the first run an owner opens the package settings once, links it to this repository and sets it to public. A pre-release or a fork never publishes.
+
 ## Secrets, variables and environments
 
 No secret, token, key or webhook address is written in any file here. Workflows name them only.
@@ -137,7 +151,7 @@ No secret, token, key or webhook address is written in any file here. Workflows 
 | `PUBLISH_PYPI` | repository variable | `publish-pypi.yml` | Switches the PyPI upload on when it is `true` |
 | `pypi` | environment | `publish-pypi.yml` | Holds the trusted publisher's identity and an optional required reviewer |
 
-`release.yml`, `publish-pypi.yml` and `ci.yml` use only the built-in `GITHUB_TOKEN` (and PyPI's trusted publishing for the upload).
+`release.yml`, `publish-pypi.yml`, `publish-image.yml` and `ci.yml` use only the built-in `GITHUB_TOKEN` (and PyPI's trusted publishing for the upload).
 
 ## Pinning actions
 
@@ -162,6 +176,11 @@ A tag such as `v4` can be moved by whoever controls the action's repository so a
 | `github/codeql-action` (`init`, `autobuild` and `analyze`) | v4.39.4 | `1bd86f2fdb4b86187fa4059f16f31a3202acc9ea` |
 | `DavidAnson/markdownlint-cli2-action` | v25.0.0 | `696eb3f2509270d7b882d2aa68347bc676e7af34` |
 | `pypa/gh-action-pypi-publish` | v1.14.3 | `7245906fb61fa33a13554f9d5fb856fe61758086` |
+| `docker/setup-qemu-action` | v4.4.0 | `99012661954931238ded8c8b007157a8430204e1` |
+| `docker/setup-buildx-action` | v4.4.1 | `f87e5991a6d7451dcb8d9637bfbc97413f497069` |
+| `docker/login-action` | v4.8.0 | `8aa5831fb8d48d8f76594c7ddde61ae58019f550` |
+| `docker/metadata-action` | v6.2.0 | `dc802804100637a589fabce1cb79ff13a1411302` |
+| `docker/build-push-action` | v7.4.0 | `c3c9e263c25d99ce0380d002d59b67737d91b0dc` |
 
 ### Updating a pin
 
